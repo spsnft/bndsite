@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; color: #fff; margin: 0; padding: 15px; padding-bottom: 80px; }
+        .header { text-align: center; padding: 20px 0; border-bottom: 2px solid #00ff00; margin-bottom: 20px; }
+        .header h1 { color: #00ff00; margin: 0; font-size: 22px; text-transform: uppercase; letter-spacing: 2px; }
+        
+        .category-title { color: #ffd700; font-size: 18px; margin: 30px 0 15px; border-left: 4px solid #ffd700; padding-left: 12px; text-transform: uppercase; font-weight: bold; }
+        
+        .product-card { background: #1a1a1a; border-radius: 15px; padding: 15px; margin-bottom: 15px; border: 1px solid #333; transition: 0.3s; }
+        .product-card:active { border-color: #00ff00; }
+        
+        .product-name { font-size: 18px; font-weight: bold; color: #00ff00; margin-bottom: 4px; }
+        .product-desc { font-size: 13px; color: #aaa; margin-bottom: 15px; line-height: 1.4; }
+        
+        .price-row { display: flex; justify-content: space-between; align-items: center; }
+        .price-val { font-size: 20px; font-weight: bold; color: #fff; }
+        
+        .add-btn { background: #00ff00; color: #000; border: none; padding: 10px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+        
+        #loader { text-align: center; margin-top: 50px; color: #00ff00; }
+    </style>
+</head>
+<body>
+    <div class="header"><h1>BND MENU</h1></div>
+    <div id="catalog"><div id="loader">Загрузка меню...</div></div>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        const SHEET_ID = '1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk';
+        const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Inventory`;
+
+        async function loadMenu() {
+            try {
+                const response = await fetch(URL);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1);
+                let html = '';
+                let currentCategory = '';
+
+                rows.forEach(row => {
+                    const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (cols.length >= 3) {
+                        const cat = cols[0].replace(/"/g, '').trim();
+                        const sub = cols[1].replace(/"/g, '').trim();
+                        const name = cols[2].replace(/"/g, '').trim();
+                        const price = cols[3].replace(/"/g, '').trim(); // Берем цену за 1г для витрины
+                        const desc = cols[8] ? cols[8].replace(/"/g, '').trim() : '';
+
+                        if (cat && cat !== currentCategory) {
+                            currentCategory = cat;
+                            html += `<div class="category-title">${cat}</div>`;
+                        }
+
+                        html += `
+                            <div class="product-card">
+                                <div class="product-name">${name}</div>
+                                <div class="product-desc"><b>${sub}</b><br>${desc}</div>
+                                <div class="price-row">
+                                    <span class="price-val">${price} ฿</span>
+                                    <button class="add-btn" onclick="order('${name}')">Заказать</button>
+                                </div>
+                            </div>`;
+                    }
+                });
+                document.getElementById('catalog').innerHTML = html || "В таблице нет данных";
+            } catch (e) { 
+                document.getElementById('catalog').innerHTML = "Ошибка связи с таблицей. Проверь доступ по ссылке!"; 
+            }
+        }
+
+        function order(name) {
+            // Пока просто отправляем название, потом сделаем корзину
+            tg.sendData(JSON.stringify({ item: name }));
+            tg.close();
+        }
+
+        loadMenu();
+    </script>
+</body>
+</html>
