@@ -6,10 +6,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --glass: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
             --accent: #00ff00;
-            /* Переменные для нового дизайна */
             --premium-bg: linear-gradient(145deg, rgba(40, 40, 40, 0.95), rgba(20, 20, 20, 0.95));
             --premium-glow: rgba(0, 255, 0, 0.2);
         }
@@ -17,41 +14,46 @@
         body {
             background-color: #000;
             color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 20px 10px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        /* КЛАСС НОВОЙ КАРТОЧКИ */
+        #catalog {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* СТИЛЬ ПРЕМИУМ-КАРТОЧКИ */
         .premium-card {
             display: flex;
             align-items: center;
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             padding: 12px 16px;
-            margin-bottom: 15px;
             background: var(--premium-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             border-radius: 22px;
             border: 1px solid rgba(0, 255, 0, 0.25);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 
-                        inset 0 0 15px var(--premium-glow);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px var(--premium-glow);
             box-sizing: border-box;
         }
 
-        /* Круглая аватарка */
         .pc-avatar {
-            width: 85px;
-            height: 85px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--accent);
             box-shadow: 0 0 15px var(--premium-glow);
-            margin-right: 18px;
+            margin-right: 15px;
             flex-shrink: 0;
         }
 
@@ -61,25 +63,21 @@
         }
 
         .pc-title {
-            font-size: 19px;
+            font-size: 18px;
             font-weight: 700;
             margin: 0 0 4px 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .pc-price {
             font-size: 13px;
             color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
-        /* Слайдер и вес */
         .pc-controls {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
 
         .pc-slider {
@@ -98,7 +96,7 @@
             background: #fff;
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 0 10px var(--accent);
+            box-shadow: 0 0 8px var(--accent);
         }
 
         .pc-weight {
@@ -112,41 +110,42 @@
 </head>
 <body>
 
-    <div class="premium-card">
-        <img src="https://via.placeholder.com/150/111/00ff00?text=Bud" class="pc-avatar" alt="Product">
-        <div class="pc-info">
-            <h3 class="pc-title">Strawberry Banana</h3>
-            <div class="pc-price">600 - 1400 ฿ / g</div>
-            <div class="pc-controls">
-                <input type="range" class="pc-slider" min="0.5" max="10" step="0.5" value="1" 
-                       oninput="this.nextElementSibling.innerText = parseFloat(this.value).toFixed(1) + 'г'">
-                <span class="pc-weight">1.0г</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="premium-card">
-        <img src="https://via.placeholder.com/150/111/00ff00?text=Rice" class="pc-avatar" alt="Product">
-        <div class="pc-info">
-            <h3 class="pc-title">Sticky Rice</h3>
-            <div class="pc-price">100 - 150 ฿ / g</div>
-            <div class="pc-controls">
-                <input type="range" class="pc-slider" min="0.5" max="10" step="0.5" value="2.5" 
-                       oninput="this.nextElementSibling.innerText = parseFloat(this.value).toFixed(1) + 'г'">
-                <span class="pc-weight">2.5г</span>
-            </div>
-        </div>
-    </div>
+    <div id="catalog"></div>
 
     <script>
-        // Инициализация Telegram WebApp
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        // ТВОИ ТОВАРЫ (добавляй сюда новые)
+        const products = [
+            { id: 1, name: "Strawberry Banana", price: "600-1400", img: "strawberry.png" },
+            { id: 2, name: "Sticky Rice", price: "100-150", img: "rice.png" },
+            { id: 3, name: "Super Lemon Haze", price: "500-1200", img: "lemon.png" }
+        ];
+
         function loadCatalog() {
-            console.log("Catalog ready");
+            const container = document.getElementById('catalog');
+            container.innerHTML = '';
+
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'premium-card';
+                card.innerHTML = `
+                    <img src="${p.img}" class="pc-avatar" onerror="this.src='https://via.placeholder.com/150/222/00ff00?text=Product'">
+                    <div class="pc-info">
+                        <h3 class="pc-title">${p.name}</h3>
+                        <div class="pc-price">${p.price} ฿ / g</div>
+                        <div class="pc-controls">
+                            <input type="range" class="pc-slider" min="0.5" max="10" step="0.5" value="1" 
+                                   oninput="this.nextElementSibling.innerText = parseFloat(this.value).toFixed(1) + 'г'">
+                            <span class="pc-weight">1.0г</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         }
-        
+
         loadCatalog();
     </script>
 </body>
