@@ -155,7 +155,7 @@
         async function loadCatalog() {
             try {
                 // Твоя ссылка на GAS скрипт
-                const response = await fetch('https://script.google.com/macros/s/AKfycbwQMo7AKNGBxNPCCm46sTFQFZ-hCVr4vqexNpaBt5BhryzpXsoQZuu8gqBGmb_1M_tD/exec');
+                const response = await fetch('https://script.google.com/macros/s/AKfycbzVBkRkrD8PHKQv7efO-Ni_dGVor6epLVQzDfUu5qhGARvkcZA2f1H8sOS2kx6yIdZq/exec');
                 const products = await response.json();
                 
                 const container = document.getElementById('catalog');
