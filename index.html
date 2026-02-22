@@ -158,7 +158,8 @@
                 products.forEach(p => {
                     const name = p.Name || "Товар";
                     const price = p.Price_1g || 0;
-                    const photo = p.Photo || "";
+                    const photo = p.Photo ? './' + p.Photo : "";
+
 
                     const card = document.createElement('div');
                     card.className = 'product-card';
