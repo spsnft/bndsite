@@ -5,86 +5,83 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* Базовый стиль, чтобы было читаемо */
-        body { font-family: sans-serif; background: #0f0f0f; color: white; padding: 15px; }
-        .product-card { background: #1a1a1a; border: 1px solid #333; padding: 15px; margin-bottom: 10px; border-radius: 12px; }
-        .weight-badge { display: inline-block; padding: 5px 10px; background: #333; border-radius: 5px; margin: 5px 5px 0 0; cursor: pointer; font-size: 12px; }
-        .weight-badge.active { background: #00ff00; color: black; font-weight: bold; }
-        .total-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #1a1a1a; padding: 20px; border-top: 2px solid #00ff00; display: none; }
-        .btn-order { background: #00ff00; color: black; border: none; padding: 10px 20px; border-radius: 8px; width: 100%; font-weight: bold; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 15px; padding-bottom: 100px; }
+        .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 20px; }
+        .header h1 { color: #00ff00; margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        .category-title { color: #ffd700; font-size: 16px; margin: 25px 0 10px; font-weight: bold; text-transform: uppercase; border-left: 3px solid #ffd700; padding-left: 10px; }
+        .product-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .product-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: #eee; }
+        .product-desc { font-size: 13px; color: #888; margin-bottom: 15px; }
+        .weights { display: flex; flex-wrap: wrap; gap: 8px; }
+        .w-btn { background: #222; border: 1px solid #333; color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .w-btn.active { background: #00ff00; color: #000; border-color: #00ff00; font-weight: bold; }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17, 17, 17, 0.95); padding: 20px; border-top: 1px solid #222; display: none; }
+        .order-btn { background: #00ff00; color: #000; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; font-size: 16px; text-transform: uppercase; }
     </style>
 </head>
 <body>
-    <div id="catalog">Загрузка...</div>
-    <div id="total-bar" class="total-bar">
-        <div id="summary" style="margin-bottom: 10px;"></div>
-        <button class="btn-order" onclick="sendOrder()">ОТПРАВИТЬ ЗАКАЗ</button>
+    <div class="header"><h1>BND MENU</h1></div>
+    <div id="catalog">Загрузка товаров...</div>
+    <div id="footer" class="footer">
+        <button class="order-btn" onclick="sendOrder()">Отправить заказ</button>
     </div>
 
 <script>
-let tg = window.Telegram.WebApp;
-let cart = {}; 
-let inventoryData = [];
+    let tg = window.Telegram.WebApp;
+    tg.expand();
+    let cart = {};
+    const SHEET_ID = '1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk';
+    const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Inventory`;
 
-const SHEET_ID = '1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk';
-const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Inventory`;
+    async function loadCatalog() {
+        const res = await fetch(URL);
+        const data = await res.text();
+        const rows = data.split('\n').slice(1);
+        let html = '';
+        let currentCat = '';
 
-async function load() {
-    const res = await fetch(URL);
-    const text = await res.text();
-    const rows = text.split('\n').slice(1);
-    
-    let html = '';
-    rows.forEach((row, idx) => {
-        const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
-        if (cols[2]) {
-            inventoryData.push(cols);
-            html += `
-                <div class="product-card">
-                    <b>${cols[2]}</b><br><small>${cols[0]}</small>
-                    <div id="weights-${idx}">
-                        <span class="weight-badge" onclick="addToCart(${idx}, 1, this)">1g</span>
-                        <span class="weight-badge" onclick="addToCart(${idx}, 5, this)">5g</span>
-                        <span class="weight-badge" onclick="addToCart(${idx}, 10, this)">10g</span>
-                        <span class="weight-badge" onclick="addToCart(${idx}, 20, this)">20g</span>
-                    </div>
-                </div>`;
-        }
-    });
-    document.getElementById('catalog').innerHTML = html;
-}
-
-function addToCart(itemIdx, weight, el) {
-    // Простая логика выбора
-    const item = inventoryData[itemIdx];
-    cart[item[2]] = { weight: weight, category: item[0], prices: [item[3], item[4], item[5], item[6]] };
-    
-    // Подсветка кнопок
-    const parent = el.parentElement;
-    parent.querySelectorAll('.weight-badge').forEach(b => b.classList.remove('active'));
-    el.classList.add('active');
-    
-    updateTotal();
-}
-
-function updateTotal() {
-    let summary = '';
-    let total = 0;
-    for (let name in cart) {
-        summary += `${name}: ${cart[name].weight}g `;
+        rows.forEach((row, idx) => {
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
+            if (cols[2]) {
+                if (cols[0] !== currentCat) {
+                    currentCat = cols[0];
+                    html += `<div class="category-title">${currentCat}</div>`;
+                }
+                html += `
+                    <div class="product-card">
+                        <div class="product-name">${cols[2]}</div>
+                        <div class="product-desc">${cols[1]} | ${cols[8] || ''}</div>
+                        <div class="weights">
+                            <button class="w-btn" onclick="select(this, '${cols[2]}', 1)">1г</button>
+                            <button class="w-btn" onclick="select(this, '${cols[2]}', 5)">5г</button>
+                            <button class="w-btn" onclick="select(this, '${cols[2]}', 10)">10г</button>
+                            <button class="w-btn" onclick="select(this, '${cols[2]}', 20)">20г</button>
+                        </div>
+                    </div>`;
+            }
+        });
+        document.getElementById('catalog').innerHTML = html;
     }
-    if (summary) {
-        document.getElementById('total-bar').style.display = 'block';
-        document.getElementById('summary').innerText = summary;
+
+    function select(btn, name, weight) {
+        // Убираем активный класс у соседей
+        const parent = btn.parentElement;
+        parent.querySelectorAll('.w-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Добавляем в корзину
+        cart[name] = { weight: weight };
+        document.getElementById('footer').style.display = 'block';
+        tg.HapticFeedback.impactOccurred('medium');
     }
-}
 
-function sendOrder() {
-    tg.sendData(JSON.stringify(cart));
-    tg.close();
-}
+    function sendOrder() {
+        if (Object.keys(cart).length === 0) return;
+        tg.sendData(JSON.stringify(cart));
+        tg.close();
+    }
 
-load();
+    loadCatalog();
 </script>
 </body>
 </html>
