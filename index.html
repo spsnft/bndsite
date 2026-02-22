@@ -5,46 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 15px; padding-bottom: 140px; }
-        .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 20px; }
-        .header h1 { color: #00ff00; margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        .category-title { color: #ffd700; font-size: 16px; margin: 25px 0 10px; font-weight: bold; text-transform: uppercase; border-left: 3px solid #ffd700; padding-left: 10px; }
-        .product-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .product-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: #eee; }
-        .product-desc { font-size: 13px; color: #888; margin-bottom: 15px; line-height: 1.4; }
-        .weights { display: flex; flex-wrap: wrap; gap: 8px; }
-        .w-btn { background: #222; border: 1px solid #333; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; min-width: 55px; }
-        .w-btn.active { background: #00ff00; color: #000; font-weight: bold; border-color: #00ff00; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: #000; color: #fff; margin: 0; padding: 10px; padding-bottom: 120px; }
+        .header { text-align: center; padding: 10px 0; border-bottom: 1px solid #222; }
+        .header h1 { color: #00ff00; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; }
         
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.95); padding: 15px; border-top: 1px solid #222; display: none; backdrop-filter: blur(10px); z-index: 100; }
-        .total-info { text-align: center; margin-bottom: 12px; font-size: 20px; font-weight: bold; color: #00ff00; }
-        .order-btn { background: #00ff00; color: #000; border: none; padding: 16px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 16px; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 20px rgba(0,255,0,0.2); }
-        .contact-btn { color: #888; text-decoration: none; display: block; text-align: center; font-size: 13px; padding-top: 12px; }
+        /* Заголовки категорий */
+        .category-title { 
+            width: 100%; color: #ffd700; font-size: 14px; font-weight: bold; 
+            text-transform: uppercase; margin: 20px 0 10px; padding-left: 5px;
+            border-left: 3px solid #ffd700;
+        }
 
-        /* Стиль для модального окна */
-        #browser-notice { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
-        .notice-content { background: #1a1a1a; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #333; max-width: 300px; }
-        .notice-content h2 { color: #00ff00; margin-top: 0; }
-        .notice-content p { color: #ccc; font-size: 14px; line-height: 1.5; margin-bottom: 25px; }
+        /* Сетка товаров */
+        .catalog-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+            gap: 8px; 
+        }
+
+        .product-card { 
+            background: #111; border: 1px solid #222; border-radius: 8px; 
+            padding: 8px; display: flex; flex-direction: column; justify-content: space-between;
+        }
+
+        .product-name { font-size: 11px; font-weight: bold; margin-bottom: 8px; text-align: center; color: #eee; height: 30px; overflow: hidden; }
+
+        .weights { display: flex; flex-direction: column; gap: 4px; }
+        .w-btn { 
+            background: #222; border: 1px solid #333; color: #fff; 
+            padding: 6px 0; border-radius: 4px; font-size: 10px; cursor: pointer; 
+        }
+        .w-btn.active { background: #00ff00; color: #000; font-weight: bold; border-color: #00ff00; }
+
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); padding: 15px; border-top: 1px solid #222; backdrop-filter: blur(10px); z-index: 100; }
+        .total-info { text-align: center; margin-bottom: 10px; font-size: 16px; font-weight: bold; color: #00ff00; }
+        .order-btn { background: #00ff00; color: #000; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; font-size: 14px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <div class="header"><h1>BND MENU</h1></div>
-    <div id="catalog">Загрузка товаров...</div>
+    <div id="catalog-container">Загрузка...</div>
     
-    <div id="footer" class="footer">
+    <div id="footer" class="footer" style="display: none;">
         <div class="total-info" id="total-sum">Итого: 0 ฿</div>
-        <button class="order-btn" onclick="checkEnvAndSend()">Оформить заказ</button>
-        <a id="operator-link" href="https://t.me/phuketbnd" target="_blank" class="contact-btn">Нужна помощь? Написать оператору</a>
-    </div>
-
-    <div id="browser-notice" onclick="this.style.display='none'">
-        <div class="notice-content" onclick="event.stopPropagation()">
-            <h2>Внимание 🌿</h2>
-            <p>Чтобы оформить заказ и получить скидки, пожалуйста, откройте это меню через нашего Telegram-бота.</p>
-            <button class="order-btn" onclick="window.location.href='https://t.me/phuket_420bot'">Перейти в бота</button>
-        </div>
+        <button class="order-btn" onclick="sendOrder()">Оформить заказ</button>
     </div>
 
 <script>
@@ -67,57 +72,68 @@
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
             if (cols[2]) {
                 inventory.push(cols);
+                const itemIdx = inventory.length - 1;
+                
                 if (cols[0] !== currentCat) {
+                    if (currentCat !== '') html += '</div>'; // Закрываем предыдущую сетку
                     currentCat = cols[0];
-                    html += `<div class="category-title">${currentCat}</div>`;
+                    html += `<div class="category-title">${currentCat}</div><div class="catalog-grid">`;
                 }
+                
                 html += `
                     <div class="product-card">
                         <div class="product-name">${cols[2]}</div>
-                        <div class="product-desc">${cols[1]}</div>
                         <div class="weights">
-                            ${cols[3] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 1)">1г</button>` : ''}
-                            ${cols[4] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 5)">5г</button>` : ''}
-                            ${cols[5] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 10)">10г</button>` : ''}
-                            ${cols[6] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 20)">20г</button>` : ''}
+                            ${cols[3] ? `<button class="w-btn" data-item="${cols[2]}" data-w="1" onclick="select(this, ${itemIdx}, 1)">1г</button>` : ''}
+                            ${cols[4] ? `<button class="w-btn" data-item="${cols[2]}" data-w="5" onclick="select(this, ${itemIdx}, 5)">5г</button>` : ''}
+                            ${cols[5] ? `<button class="w-btn" data-item="${cols[2]}" data-w="10" onclick="select(this, ${itemIdx}, 10)">10г</button>` : ''}
+                            ${cols[6] ? `<button class="w-btn" data-item="${cols[2]}" data-w="20" onclick="select(this, ${itemIdx}, 20)">20г</button>` : ''}
                         </div>
                     </div>`;
             }
         });
-        document.getElementById('catalog').innerHTML = html;
+        html += '</div>';
+        document.getElementById('catalog-container').innerHTML = html;
     }
 
     function select(btn, itemIdx, weight) {
-        const parent = btn.parentElement;
-        parent.querySelectorAll('.w-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
+        const itemName = inventory[itemIdx][2];
         const item = inventory[itemIdx];
-        let price = 0;
-        if (weight === 1) price = item[3];
-        if (weight === 5) price = item[4];
-        if (weight === 10) price = item[5];
-        if (weight === 20) price = item[6];
 
-        cart[item[2]] = { weight: weight, price: parseInt(price) || 0 };
+        // Если кнопка уже активна — отменяем выбор
+        if (btn.classList.contains('active')) {
+            btn.classList.remove('active');
+            delete cart[itemName];
+        } else {
+            // Снимаем актив с других весов ЭТОГО товара
+            const parent = btn.parentElement;
+            parent.querySelectorAll('.w-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            let price = 0;
+            if (weight === 1) price = item[3];
+            if (weight === 5) price = item[4];
+            if (weight === 10) price = item[5];
+            if (weight === 20) price = item[6];
+
+            cart[itemName] = { weight: weight, price: parseInt(price) || 0 };
+        }
+
         calculateTotal();
     }
 
     function calculateTotal() {
         let total = 0;
-        for (let id in cart) { total += cart[id].price; }
-        document.getElementById('total-sum').innerText = `Итого: ${total} ฿`;
-        document.getElementById('footer').style.display = 'block';
-        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
-    }
-
-    function checkEnvAndSend() {
-        // Проверяем, есть ли данные от ТГ. Если нет — мы в обычном браузере.
-        if (tg.initData && tg.initData.length > 0) {
-            sendOrder();
-        } else {
-            document.getElementById('browser-notice').style.display = 'flex';
+        let count = 0;
+        for (let id in cart) { 
+            total += cart[id].price; 
+            count++;
         }
+        
+        document.getElementById('total-sum').innerText = `Итого: ${total} ฿`;
+        document.getElementById('footer').style.display = count > 0 ? 'block' : 'none';
+        
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
 
     function sendOrder() {
