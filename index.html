@@ -6,42 +6,81 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --accent: #00ff00; --bg: #000; --card: #1a1a1a; }
-        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 140px; }
+        body { background: var(--bg); color: #fff; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 140px; -webkit-user-select: none; }
         
         header { padding: 15px; text-align: center; background: linear-gradient(to bottom, rgba(0,255,0,0.1), transparent); }
-        .logo { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        .logo { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; box-shadow: 0 0 15px rgba(0,255,0,0.2); }
         
-        /* Табы категорий */
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding: 5px; }
-        .tab { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--accent); font-size: 12px; cursor: pointer; white-space: nowrap; }
-        .tab.active { background: var(--accent); color: #000; font-weight: bold; }
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; overflow-x: auto; padding: 10px; scrollbar-width: none; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { padding: 8px 18px; border-radius: 20px; border: 1px solid var(--accent); font-size: 12px; cursor: pointer; white-space: nowrap; transition: 0.3s; }
+        .tab.active { background: var(--accent); color: #000; font-weight: bold; box-shadow: 0 0 10px var(--accent); }
 
-        #catalog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; }
-        .product-card { background: var(--card); border-radius: 12px; padding: 6px; text-align: center; border: 1px solid #333; }
-        .product-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent); }
-        .product-title { font-size: 10px; height: 2.4em; overflow: hidden; margin: 5px 0; }
-        .product-price { font-size: 10px; color: var(--accent); font-weight: bold; }
+        #catalog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; max-width: 600px; margin: 0 auto; }
         
-        .controls { margin-top: 8px; }
-        input[type="range"] { width: 100%; accent-color: var(--accent); }
-        .weight-display { font-size: 11px; font-weight: bold; display: block; margin-top: 2px; }
+        .subcategory-header { 
+            grid-column: span 3; 
+            padding: 8px 12px; 
+            font-weight: 800; 
+            text-transform: uppercase; 
+            font-size: 13px; 
+            margin-top: 15px; 
+            border-radius: 6px; 
+            text-align: left;
+            display: flex;
+            align-items: center;
+        }
 
-        #footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); padding: 15px; border-top: 2px solid var(--accent); text-align: center; backdrop-filter: blur(10px); }
-        .order-btn { background: var(--accent); border: none; padding: 12px; border-radius: 12px; font-weight: 800; width: 100%; text-transform: uppercase; }
+        .product-card { 
+            background: var(--card); 
+            border-radius: 12px; 
+            padding: 8px 6px; 
+            text-align: center; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            transition: 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .product-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); margin: 0 auto 5px; background: #111; }
+        .product-title { font-size: 10px; height: 2.4em; overflow: hidden; margin: 5px 0; line-height: 1.2; font-weight: 600; }
+        .product-price { font-size: 10px; font-weight: bold; margin-bottom: 8px; }
+        
+        .controls { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        input[type="range"] { width: 100%; margin: 5px 0; }
+        .weight-display { font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 6px; min-width: 30px; }
+
+        #footer { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: rgba(0,0,0,0.95); 
+            padding: 15px 20px 30px; 
+            border-top: 2px solid var(--accent); 
+            text-align: center; 
+            backdrop-filter: blur(15px); 
+            z-index: 1000; 
+        }
+        .total-sum { margin-bottom: 12px; font-size: 18px; font-weight: 900; }
+        .order-btn { 
+            background: var(--accent); color: #000; border: none; 
+            padding: 14px; border-radius: 14px; font-weight: 800; 
+            width: 100%; text-transform: uppercase; font-size: 14px; 
+            box-shadow: 0 4px 15px rgba(0,255,0,0.3);
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <img src="img/bnd.png" class="logo" alt="logo">
-        <div style="font-weight:900; letter-spacing:1px; margin-top:5px;">BND DELIVERY</div>
+        <img src="img/bnd.png" class="logo" alt="BND">
+        <div style="font-weight:900; letter-spacing:2px; margin-top:8px; font-size: 18px;">BND DELIVERY</div>
     </header>
 
     <div class="tabs" id="tabs"></div>
-    <div id="catalog">Загрузка...</div>
+    <div id="catalog">Загрузка витрины...</div>
 
     <div id="footer">
-        <div style="margin-bottom:10px; font-size:18px;">ИТОГО: <span id="total-sum" style="color:var(--accent); font-weight:900">0</span> ฿</div>
+        <div class="total-sum">ИТОГО: <span id="total-sum" style="color:var(--accent)">0</span> ฿</div>
         <button class="order-btn" onclick="sendOrder()">Оформить заказ</button>
     </div>
 
@@ -51,16 +90,16 @@
         let currentCategory = 'Weed';
         let cart = {};
 
-        // Логика цен из твоих скриншотов
+        // Настройки оформления и цен для подкатегорий
         const priceTiers = {
-            'Silver Grade': { 1: 150, 5: 700, 10: 1200, 20: 2000 },
-            'Golden Grade': { 1: 250, 5: 1100, 10: 1700, 20: 3000 },
-            'Premium Grade': { 1: 300, 5: 1300, 10: 2000, 20: 3500 },
-            'Selected Premium': { 1: 350, 5: 1500, 10: 2500, 20: 4000 },
-            'Old School': { 1: 350, 5: 1500, 10: 2500 },
-            'Fresh Frozen': { 1: 700, 5: 3000, 10: 5500 },
-            'Fresh Frozen Premium': { 1: 900, 5: 4000, 10: 7000 },
-            'Live Rosin': { 1: 1400, 5: 5000, 10: 9000 }
+            'Silver Grade': { 1: 150, 5: 700, 10: 1200, 20: 2000, color: '#C0C0C0' },
+            'Golden Grade': { 1: 250, 5: 1100, 10: 1700, 20: 3000, color: '#FFD700' },
+            'Premium Grade': { 1: 300, 5: 1300, 10: 2000, 20: 3500, color: '#2E7D32' },
+            'Selected Premium': { 1: 350, 5: 1500, 10: 2500, 20: 4000, color: '#5CE1E6' },
+            'Old School': { 1: 350, 5: 1500, 10: 2500, color: '#8B4513' },
+            'Fresh Frozen': { 1: 700, 5: 3000, 10: 5500, color: '#00BFFF' },
+            'Fresh Frozen Premium': { 1: 900, 5: 4000, 10: 7000, color: '#FF4500' },
+            'Live Rosin': { 1: 1400, 5: 5000, 10: 9000, color: '#DA70D6' }
         };
 
         async function init() {
@@ -68,9 +107,10 @@
                 const r = await fetch('https://script.google.com/macros/s/AKfycbyBxYyuEyLObKsYOpwBb2jhCg1ZWtqkhHw0ONl0ZjxtOi6TeLX6KpUp9WD2IH4i5s_5/exec');
                 allProducts = await r.json();
                 
-                // Создаем табы на основе категорий из таблицы
-                const categories = [...new Set(allProducts.map(p => p.Category))];
+                const categories = [...new Set(allProducts.map(p => p.Category))].filter(Boolean);
                 const tabsContainer = document.getElementById('tabs');
+                tabsContainer.innerHTML = '';
+                
                 categories.forEach(cat => {
                     const btn = document.createElement('div');
                     btn.className = `tab ${cat === currentCategory ? 'active' : ''}`;
@@ -84,67 +124,82 @@
                     tabsContainer.appendChild(btn);
                 });
                 render();
-            } catch (e) { document.getElementById('catalog').innerText = 'Ошибка загрузки'; }
+            } catch (e) { document.getElementById('catalog').innerText = 'Ошибка загрузки данных.'; }
         }
 
         function render() {
             const container = document.getElementById('catalog');
             container.innerHTML = '';
-            allProducts.filter(p => p.Category === currentCategory).forEach(p => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <img src="${p.Photo}" class="product-img" onerror="this.src='https://via.placeholder.com/60/111/00ff00?text=BND'">
-                    <div class="product-title">${p.Name}</div>
-                    <div class="product-price" id="p-${p.Name}">${p.Price_1g} ฿/г</div>
-                    <div class="controls">
-                        <input type="range" min="0" max="20" step="0.5" value="${cart[p.Name]?.w || 0}" 
-                            oninput="updateCart('${p.Name}', this.value, '${p.Subcategory}', this)">
-                        <span class="weight-display">${cart[p.Name]?.w || 0}г</span>
-                    </div>
-                `;
-                container.appendChild(card);
+            
+            const filtered = allProducts.filter(p => p.Category === currentCategory);
+            const subcats = [...new Set(filtered.map(p => p.Subcategory))];
+            
+            subcats.forEach(sub => {
+                const tier = priceTiers[sub] || { color: '#00ff00' };
+                const accent = tier.color;
+
+                if(sub) {
+                    const h = document.createElement('div');
+                    h.className = 'subcategory-header';
+                    h.style.color = accent;
+                    h.style.borderLeft = `4px solid ${accent}`;
+                    h.style.background = `linear-gradient(90deg, ${accent}1A, transparent)`;
+                    h.innerText = sub;
+                    container.appendChild(h);
+                }
+
+                filtered.filter(p => p.Subcategory === sub).forEach(p => {
+                    const isSoldOut = parseInt(p.Stock) <= 0;
+                    const card = document.createElement('div');
+                    card.className = 'product-card';
+                    card.style.borderColor = isSoldOut ? '#333' : `${accent}4D`;
+                    if(isSoldOut) card.style.opacity = "0.5";
+
+                    card.innerHTML = `
+                        <img src="${p.Photo}" class="product-img" 
+                             style="border-color: ${isSoldOut ? '#555' : accent}; ${isSoldOut ? 'filter: grayscale(1);' : ''}" 
+                             onerror="this.src='https://via.placeholder.com/60/111/00ff00?text=BND'">
+                        <div class="product-title">${p.Name} ${isSoldOut ? '<br><b style="color:#ff4444">SOLD OUT</b>' : ''}</div>
+                        <div class="product-price" id="p-${p.Name}" style="color: ${accent}">${p.Price_1g} ฿/г</div>
+                        <div class="controls">
+                            <span class="weight-display" style="background: ${accent}33; color: #fff">${cart[p.Name]?.w || 0}г</span>
+                            <input type="range" min="0" max="20" step="0.5" value="${cart[p.Name]?.w || 0}" 
+                                ${isSoldOut ? 'disabled' : ''} 
+                                style="accent-color: ${accent}"
+                                oninput="updateCart('${p.Name}', this.value, '${p.Subcategory}', this)">
+                        </div>`;
+                    container.appendChild(card);
+                });
             });
         }
 
         function updateCart(name, weight, subcat, el) {
             const w = parseFloat(weight);
-            el.nextElementSibling.innerText = w + 'г';
-            
+            el.previousElementSibling.innerText = w + 'г';
             if (w > 0) cart[name] = { w, subcat }; else delete cart[name];
-            
             calculateTotal();
+            if (tg.HapticFeedback && w % 1 === 0) tg.HapticFeedback.impactOccurred('light');
         }
 
         function calculateTotal() {
             let total = 0;
-            const subcatTotals = {};
-
-            // Считаем общий вес по каждой подкатегории
-            for (let name in cart) {
-                const item = cart[name];
-                subcatTotals[item.subcat] = (subcatTotals[item.subcat] || 0) + item.w;
-            }
-
-            // Применяем ступенчатые цены
-            for (let name in cart) {
-                const item = cart[name];
-                const totalSubcatWeight = subcatTotals[item.subcat];
+            const subWeights = {};
+            for (let n in cart) subWeights[cart[n].subcat] = (subWeights[cart[n].subcat] || 0) + cart[n].w;
+            
+            for (let n in cart) {
+                const item = cart[n];
+                const tw = subWeights[item.subcat];
                 const tiers = priceTiers[item.subcat] || { 1: 0 };
+                let ppg = tiers[1] || 0;
                 
-                // Находим актуальную цену за грамм исходя из общего веса категории
-                let pricePerGram = tiers[1];
-                if (totalSubcatWeight >= 20 && tiers[20]) pricePerGram = tiers[20] / 20;
-                else if (totalSubcatWeight >= 10 && tiers[10]) pricePerGram = tiers[10] / 10;
-                else if (totalSubcatWeight >= 5 && tiers[5]) pricePerGram = tiers[5] / 5;
-
-                total += item.w * pricePerGram;
+                if (tw >= 20 && tiers[20]) ppg = tiers[20] / 20;
+                else if (tw >= 10 && tiers[10]) ppg = tiers[10] / 10;
+                else if (tw >= 5 && tiers[5]) ppg = tiers[5] / 5;
                 
-                // Обновляем ценник в карточке (опционально)
-                const priceLabel = document.getElementById(`p-${name}`);
-                if (priceLabel) priceLabel.innerText = `${Math.round(pricePerGram)} ฿/г`;
+                total += item.w * ppg;
+                const lbl = document.getElementById(`p-${n}`);
+                if (lbl) lbl.innerText = `${Math.round(ppg)} ฿/г`;
             }
-
             document.getElementById('total-sum').innerText = Math.round(total);
         }
 
