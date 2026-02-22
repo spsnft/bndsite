@@ -11,24 +11,40 @@
         .category-title { color: #ffd700; font-size: 16px; margin: 25px 0 10px; font-weight: bold; text-transform: uppercase; border-left: 3px solid #ffd700; padding-left: 10px; }
         .product-card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
         .product-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: #eee; }
-        .product-desc { font-size: 13px; color: #888; margin-bottom: 15px; }
+        .product-desc { font-size: 13px; color: #888; margin-bottom: 15px; line-height: 1.4; }
         .weights { display: flex; flex-wrap: wrap; gap: 8px; }
-        .w-btn { background: #222; border: 1px solid #333; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .w-btn { background: #222; border: 1px solid #333; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; min-width: 55px; }
         .w-btn.active { background: #00ff00; color: #000; font-weight: bold; border-color: #00ff00; }
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.95); padding: 15px; border-top: 1px solid #222; display: none; backdrop-filter: blur(10px); }
-        .total-info { text-align: center; margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #00ff00; }
-        .order-btn { background: #00ff00; color: #000; border: none; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; font-size: 16px; text-transform: uppercase; margin-bottom: 8px; cursor: pointer; }
-        .contact-btn { color: #888; text-decoration: none; display: block; text-align: center; font-size: 13px; padding: 5px; }
+        
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.95); padding: 15px; border-top: 1px solid #222; display: none; backdrop-filter: blur(10px); z-index: 100; }
+        .total-info { text-align: center; margin-bottom: 12px; font-size: 20px; font-weight: bold; color: #00ff00; }
+        .order-btn { background: #00ff00; color: #000; border: none; padding: 16px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 16px; text-transform: uppercase; cursor: pointer; box-shadow: 0 4px 20px rgba(0,255,0,0.2); }
+        .contact-btn { color: #888; text-decoration: none; display: block; text-align: center; font-size: 13px; padding-top: 12px; }
+
+        /* Стиль для модального окна */
+        #browser-notice { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; padding: 20px; box-sizing: border-box; }
+        .notice-content { background: #1a1a1a; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #333; max-width: 300px; }
+        .notice-content h2 { color: #00ff00; margin-top: 0; }
+        .notice-content p { color: #ccc; font-size: 14px; line-height: 1.5; margin-bottom: 25px; }
     </style>
 </head>
 <body>
+
     <div class="header"><h1>BND MENU</h1></div>
     <div id="catalog">Загрузка товаров...</div>
     
     <div id="footer" class="footer">
         <div class="total-info" id="total-sum">Итого: 0 ฿</div>
-        <button class="order-btn" onclick="sendOrder()">Оформить заказ</button>
-        <a id="operator-link" href="#" target="_blank" class="contact-btn">Нужна помощь? Написать оператору</a>
+        <button class="order-btn" onclick="checkEnvAndSend()">Оформить заказ</button>
+        <a id="operator-link" href="https://t.me/phuketbnd" target="_blank" class="contact-btn">Нужна помощь? Написать оператору</a>
+    </div>
+
+    <div id="browser-notice" onclick="this.style.display='none'">
+        <div class="notice-content" onclick="event.stopPropagation()">
+            <h2>Внимание 🌿</h2>
+            <p>Чтобы оформить заказ и получить скидки, пожалуйста, откройте это меню через нашего Telegram-бота.</p>
+            <button class="order-btn" onclick="window.location.href='https://t.me/phuket_420bot'">Перейти в бота</button>
+        </div>
     </div>
 
 <script>
@@ -37,7 +53,6 @@
     let cart = {};
     let inventory = [];
 
-    const OPERATOR_NICK = "phuketbnd";
     const SHEET_ID = '1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk';
     const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Inventory`;
 
@@ -51,7 +66,7 @@
         rows.forEach((row, idx) => {
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
             if (cols[2]) {
-                inventory.push(cols); // Сохраняем данные для цен
+                inventory.push(cols);
                 if (cols[0] !== currentCat) {
                     currentCat = cols[0];
                     html += `<div class="category-title">${currentCat}</div>`;
@@ -70,7 +85,6 @@
             }
         });
         document.getElementById('catalog').innerHTML = html;
-        document.getElementById('operator-link').href = `https://t.me/${OPERATOR_NICK}`;
     }
 
     function select(btn, itemIdx, weight) {
@@ -80,7 +94,6 @@
 
         const item = inventory[itemIdx];
         let price = 0;
-        // Берем цену в зависимости от веса из колонок 3, 4, 5, 6 таблицы
         if (weight === 1) price = item[3];
         if (weight === 5) price = item[4];
         if (weight === 10) price = item[5];
@@ -93,11 +106,18 @@
     function calculateTotal() {
         let total = 0;
         for (let id in cart) { total += cart[id].price; }
-        
         document.getElementById('total-sum').innerText = `Итого: ${total} ฿`;
         document.getElementById('footer').style.display = 'block';
-        
         if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+    }
+
+    function checkEnvAndSend() {
+        // Проверяем, есть ли данные от ТГ. Если нет — мы в обычном браузере.
+        if (tg.initData && tg.initData.length > 0) {
+            sendOrder();
+        } else {
+            document.getElementById('browser-notice').style.display = 'flex';
+        }
     }
 
     function sendOrder() {
