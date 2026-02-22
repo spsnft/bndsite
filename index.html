@@ -2,179 +2,152 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --glass: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
             --accent: #00ff00;
-        }
-        body { 
-            font-family: -apple-system, system-ui, sans-serif; 
-            background: radial-gradient(circle at top, #1a1a1a, #000); 
-            color: #fff; margin: 0; padding: 15px; padding-bottom: 160px;
-            -webkit-user-select: none;
-        }
-        .header { text-align: center; padding: 15px 0; margin-bottom: 20px; }
-        .header h1 { font-size: 18px; text-transform: uppercase; letter-spacing: 4px; color: var(--accent); margin: 0; text-shadow: 0 0 10px rgba(0,255,0,0.5); }
-
-        .main-category { color: #888; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; margin-top: 30px; text-align: center; }
-        .subcategory-title { 
-            font-size: 14px; font-weight: 800; text-transform: uppercase; 
-            margin: 15px 0 10px; padding: 6px 12px; border-radius: 8px;
-            background: var(--glass); border: 1px solid var(--glass-border);
-            display: inline-block; backdrop-filter: blur(10px);
+            /* Переменные для нового дизайна */
+            --premium-bg: linear-gradient(145deg, rgba(40, 40, 40, 0.95), rgba(20, 20, 20, 0.95));
+            --premium-glow: rgba(0, 255, 0, 0.2);
         }
 
-        .catalog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 30px; }
-
-        /* Эффект жидкого стекла */
-        .product-card { 
-            background: var(--glass); border: 1px solid var(--glass-border);
-            border-radius: 16px; padding: 12px; backdrop-filter: blur(15px);
-            display: flex; flex-direction: column; align-items: center;
-            transition: 0.3s; opacity: 0.6;
-        }
-        .product-card.active { opacity: 1; border-color: var(--accent); box-shadow: 0 0 15px rgba(0,255,0,0.1); }
-
-        .product-name { font-size: 13px; font-weight: 600; text-align: center; height: 32px; margin-bottom: 10px; display: flex; align-items: center; }
-        
-        .price-tag { font-size: 11px; color: #888; margin-bottom: 10px; }
-
-        .weight-display { font-size: 20px; font-weight: 800; color: var(--accent); margin-bottom: 10px; }
-        .weight-display span { font-size: 12px; margin-left: 2px; }
-
-        /* Стили ползунка */
-        .slider {
-            -webkit-appearance: none; width: 100%; height: 4px;
-            background: #333; border-radius: 2px; outline: none;
-        }
-        .slider::-webkit-slider-thumb {
-            -webkit-appearance: none; width: 18px; height: 18px;
-            background: #fff; border-radius: 50%; cursor: pointer;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .footer { 
-            position: fixed; bottom: 0; left: 0; right: 0; 
-            background: rgba(0,0,0,0.8); padding: 20px; 
-            border-top: 1px solid var(--glass-border); 
-            backdrop-filter: blur(20px); z-index: 100;
-        }
-        .total-info { text-align: center; margin-bottom: 15px; font-size: 22px; font-weight: bold; color: var(--accent); }
-        .order-btn { 
-            background: var(--accent); color: #000; border: none; 
-            padding: 16px; border-radius: 14px; width: 100%; 
-            font-weight: bold; font-size: 16px; text-transform: uppercase;
+        /* КЛАСС НОВОЙ КАРТОЧКИ */
+        .premium-card {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 380px;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            background: var(--premium-bg);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 22px;
+            border: 1px solid rgba(0, 255, 0, 0.25);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 
+                        inset 0 0 15px var(--premium-glow);
+            box-sizing: border-box;
         }
 
-        /* Цвета подкатегорий */
-        .cat-silver { border-left: 4px solid #C0C0C0 !important; color: #C0C0C0; }
-        .cat-gold { border-left: 4px solid #FFD700 !important; color: #FFD700; }
-        .cat-diamond { border-left: 4px solid #B9F2FF !important; color: #B9F2FF; }
+        /* Круглая аватарка */
+        .pc-avatar {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+            box-shadow: 0 0 15px var(--premium-glow);
+            margin-right: 18px;
+            flex-shrink: 0;
+        }
+
+        .pc-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .pc-title {
+            font-size: 19px;
+            font-weight: 700;
+            margin: 0 0 4px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .pc-price {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 12px;
+        }
+
+        /* Слайдер и вес */
+        .pc-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .pc-slider {
+            flex-grow: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .pc-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent);
+        }
+
+        .pc-weight {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 40px;
+            text-align: right;
+        }
     </style>
 </head>
 <body>
 
-    <div class="header"><h1>BND DELIVERY</h1></div>
-    <div id="catalog-container"></div>
-    
-    <div id="footer" class="footer" style="display: none;">
-        <div class="total-info" id="total-sum">0 ฿</div>
-        <button class="order-btn" onclick="sendOrder()">Оформить заказ</button>
+    <div class="premium-card">
+        <img src="https://via.placeholder.com/150/111/00ff00?text=Bud" class="pc-avatar" alt="Product">
+        <div class="pc-info">
+            <h3 class="pc-title">Strawberry Banana</h3>
+            <div class="pc-price">600 - 1400 ฿ / g</div>
+            <div class="pc-controls">
+                <input type="range" class="pc-slider" min="0.5" max="10" step="0.5" value="1" 
+                       oninput="this.nextElementSibling.innerText = parseFloat(this.value).toFixed(1) + 'г'">
+                <span class="pc-weight">1.0г</span>
+            </div>
+        </div>
     </div>
 
-<script>
-    let tg = window.Telegram.WebApp;
-    tg.expand();
-    let cart = {};
-    let inventory = [];
+    <div class="premium-card">
+        <img src="https://via.placeholder.com/150/111/00ff00?text=Rice" class="pc-avatar" alt="Product">
+        <div class="pc-info">
+            <h3 class="pc-title">Sticky Rice</h3>
+            <div class="pc-price">100 - 150 ฿ / g</div>
+            <div class="pc-controls">
+                <input type="range" class="pc-slider" min="0.5" max="10" step="0.5" value="2.5" 
+                       oninput="this.nextElementSibling.innerText = parseFloat(this.value).toFixed(1) + 'г'">
+                <span class="pc-weight">2.5г</span>
+            </div>
+        </div>
+    </div>
 
-    const SHEET_ID = '1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk';
-    const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Inventory`;
+    <script>
+        // Инициализация Telegram WebApp
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-    async function loadCatalog() {
-        const res = await fetch(URL);
-        const data = await res.text();
-        const rows = data.split('\n').slice(1);
-        let html = '';
-        let currentMain = '';
-        let currentSub = '';
-
-        rows.forEach((row, idx) => {
-            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
-            if (cols[2]) {
-                inventory.push(cols);
-                const itemIdx = inventory.length - 1;
-
-                if (cols[0] !== currentMain) {
-                    currentMain = cols[0];
-                    html += `<div class="main-category">${currentMain}</div>`;
-                }
-
-                if (cols[1] !== currentSub) {
-                    if (currentSub !== '') html += '</div>';
-                    currentSub = cols[1];
-                    let sClass = currentSub.toLowerCase().includes('silver') ? 'cat-silver' : 
-                                 currentSub.toLowerCase().includes('gold') ? 'cat-gold' : 
-                                 currentSub.toLowerCase().includes('diamond') ? 'cat-diamond' : '';
-                    html += `<div class="subcategory-title ${sClass}">${currentSub}</div><div class="catalog-grid">`;
-                }
-                
-                html += `
-                    <div class="product-card" id="card-${itemIdx}">
-                        <div class="product-name">${cols[2]}</div>
-                        <div class="price-tag">${cols[3]} ฿/г</div>
-                        <div class="weight-display"><span id="val-${itemIdx}">0</span><span>г</span></div>
-                        <input type="range" class="slider" min="0" max="20" step="0.5" value="0" 
-                               oninput="updateWeight(this, ${itemIdx})">
-                    </div>`;
-            }
-        });
-        document.getElementById('catalog-container').innerHTML = html;
-    }
-
-    function updateWeight(el, idx) {
-        const val = parseFloat(el.value);
-        const card = document.getElementById(`card-${idx}`);
-        const display = document.getElementById(`val-${idx}`);
-        const item = inventory[idx];
-        
-        display.innerText = val;
-        
-        if (val > 0) {
-            card.classList.add('active');
-            // Математика: берем цену за 1г (столбец D) и умножаем на вес
-            const pricePerGram = parseInt(item[3]) || 0;
-            cart[item[2]] = { weight: val, price: val * pricePerGram };
-        } else {
-            card.classList.remove('active');
-            delete cart[item[2]];
+        function loadCatalog() {
+            console.log("Catalog ready");
         }
         
-        calculateTotal();
-    }
-
-    function calculateTotal() {
-        let total = 0;
-        let hasItems = false;
-        for (let id in cart) { 
-            total += cart[id].price; 
-            hasItems = true;
-        }
-        document.getElementById('total-sum').innerText = `${Math.round(total)} ฿`;
-        document.getElementById('footer').style.display = hasItems ? 'block' : 'none';
-        if (tg.HapticFeedback && total > 0) tg.HapticFeedback.selectionChanged();
-    }
-
-    function sendOrder() {
-        if (Object.keys(cart).length === 0) return;
-        tg.sendData(JSON.stringify(cart));
-        tg.close();
-    }
-
-    loadCatalog();
-</script>
+        loadCatalog();
+    </script>
 </body>
 </html>
