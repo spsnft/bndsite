@@ -5,197 +5,147 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --accent: #00ff00;
-            --premium-bg: linear-gradient(145deg, rgba(30, 30, 30, 0.98), rgba(10, 10, 10, 0.98));
-            --premium-glow: rgba(0, 255, 0, 0.15);
-        }
+        :root { --accent: #00ff00; --bg: #000; --card: #1a1a1a; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; margin: 0; padding-bottom: 140px; }
+        
+        header { padding: 15px; text-align: center; background: linear-gradient(to bottom, rgba(0,255,0,0.1), transparent); }
+        .logo { width: 65px; height: 65px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; }
+        
+        /* Табы категорий */
+        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding: 5px; }
+        .tab { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--accent); font-size: 12px; cursor: pointer; white-space: nowrap; }
+        .tab.active { background: var(--accent); color: #000; font-weight: bold; }
 
-        body {
-            background: #000;
-            color: #fff;
-            font-family: -apple-system, system-ui, sans-serif;
-            margin: 0;
-            padding: 10px;
-            padding-bottom: 140px;
-            -webkit-user-select: none;
-        }
+        #catalog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; }
+        .product-card { background: var(--card); border-radius: 12px; padding: 6px; text-align: center; border: 1px solid #333; }
+        .product-img { width: 55px; height: 55px; border-radius: 50%; object-fit: cover; border: 1px solid var(--accent); }
+        .product-title { font-size: 10px; height: 2.4em; overflow: hidden; margin: 5px 0; }
+        .product-price { font-size: 10px; color: var(--accent); font-weight: bold; }
+        
+        .controls { margin-top: 8px; }
+        input[type="range"] { width: 100%; accent-color: var(--accent); }
+        .weight-display { font-size: 11px; font-weight: bold; display: block; margin-top: 2px; }
 
-        /* Сетка: 3 колонки */
-        #catalog {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .product-card {
-            background: var(--premium-bg);
-            border-radius: 16px;
-            border: 1px solid rgba(0, 255, 0, 0.1);
-            padding: 8px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-            position: relative;
-        }
-
-        .product-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 1.5px solid var(--accent);
-            margin-bottom: 6px;
-            background: #1a1a1a;
-            box-shadow: 0 0 10px var(--premium-glow);
-        }
-
-        .product-title {
-            font-size: 11px;
-            font-weight: 700;
-            margin: 0 0 2px 0;
-            line-height: 1.2;
-            height: 2.4em; /* Ограничение высоты для выравнивания */
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-        }
-
-        .product-price {
-            font-size: 10px;
-            color: var(--accent);
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        /* Управление весом */
-        .controls {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-        }
-
-        input[type="range"] {
-            width: 100%;
-            height: 3px;
-            -webkit-appearance: none;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 2px;
-            accent-color: var(--accent);
-        }
-
-        .weight-badge {
-            font-size: 11px;
-            font-weight: 800;
-            background: rgba(0, 255, 0, 0.1);
-            padding: 2px 6px;
-            border-radius: 8px;
-            color: #fff;
-        }
-
-        /* Футер */
-        #footer {
-            position: fixed;
-            bottom: 0; left: 0; right: 0;
-            background: rgba(0, 0, 0, 0.95);
-            padding: 15px 20px 25px 20px;
-            border-top: 1px solid var(--premium-glow);
-            text-align: center;
-            backdrop-filter: blur(15px);
-            z-index: 100;
-        }
-
-        .total-sum {
-            font-size: 18px;
-            font-weight: 900;
-            color: var(--accent);
-            margin-bottom: 10px;
-        }
-
-        .order-btn {
-            background: var(--accent);
-            color: #000;
-            border: none;
-            padding: 12px;
-            border-radius: 12px;
-            font-weight: 800;
-            width: 100%;
-            text-transform: uppercase;
-            font-size: 14px;
-        }
+        #footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); padding: 15px; border-top: 2px solid var(--accent); text-align: center; backdrop-filter: blur(10px); }
+        .order-btn { background: var(--accent); border: none; padding: 12px; border-radius: 12px; font-weight: 800; width: 100%; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <div id="catalog">Загрузка витрины...</div>
+    <header>
+        <img src="img/bnd.png" class="logo" alt="logo">
+        <div style="font-weight:900; letter-spacing:1px; margin-top:5px;">BND DELIVERY</div>
+    </header>
+
+    <div class="tabs" id="tabs"></div>
+    <div id="catalog">Загрузка...</div>
 
     <div id="footer">
-        <div class="total-sum">ИТОГО: <span id="total-sum">0</span> ฿</div>
+        <div style="margin-bottom:10px; font-size:18px;">ИТОГО: <span id="total-sum" style="color:var(--accent); font-weight:900">0</span> ฿</div>
         <button class="order-btn" onclick="sendOrder()">Оформить заказ</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        let allProducts = [];
+        let currentCategory = 'Weed';
         let cart = {};
 
-        async function loadCatalog() {
+        // Логика цен из твоих скриншотов
+        const priceTiers = {
+            'Silver Grade': { 1: 150, 5: 700, 10: 1200, 20: 2000 },
+            'Golden Grade': { 1: 250, 5: 1100, 10: 1700, 20: 3000 },
+            'Premium Grade': { 1: 300, 5: 1300, 10: 2000, 20: 3500 },
+            'Selected Premium': { 1: 350, 5: 1500, 10: 2500, 20: 4000 },
+            'Old School': { 1: 350, 5: 1500, 10: 2500 },
+            'Fresh Frozen': { 1: 700, 5: 3000, 10: 5500 },
+            'Fresh Frozen Premium': { 1: 900, 5: 4000, 10: 7000 },
+            'Live Rosin': { 1: 1400, 5: 5000, 10: 9000 }
+        };
+
+        async function init() {
             try {
-                // Твоя прямая ссылка вставлена
-                const response = await fetch('https://script.google.com/macros/s/AKfycbzVBkRkrD8PHKQv7efO-Ni_dGVor6epLVQzDfUu5qhGARvkcZA2f1H8sOS2kx6yIdZq/exec');
-                const products = await response.json();
+                const r = await fetch('https://script.google.com/macros/s/AKfycbzVBkRkrD8PHKQv7efO-Ni_dGVor6epLVQzDfUu5qhGARvkcZA2f1H8sOS2kx6yIdZq/exec');
+                allProducts = await r.json();
                 
-                const container = document.getElementById('catalog');
-                container.innerHTML = '';
-
-                products.forEach(p => {
-                    const name = p.Name || "Товар";
-                    const price = p.Price_1g || 0;
-                    const photo = p.Photo ? 'https://spsnft.github.io/bndsite/' + p.Photo : "";
-
-
-
-                    const card = document.createElement('div');
-                    card.className = 'product-card';
-                    card.innerHTML = `
-                        <img src="${photo}" class="product-img" onerror="this.src='https://via.placeholder.com/80/111/00ff00?text=BND'">
-                        <div class="product-info">
-                            <h3 class="product-title">${name}</h3>
-                            <div class="product-price">${price} ฿/г</div>
-                            <div class="controls">
-                                <span class="weight-badge">0г</span>
-                                <input type="range" min="0" max="10" step="0.5" value="0" 
-                                    oninput="updateCart('${name}', this.value, ${price}, this)">
-                            </div>
-                        </div>
-                    `;
-                    container.appendChild(card);
+                // Создаем табы на основе категорий из таблицы
+                const categories = [...new Set(allProducts.map(p => p.Category))];
+                const tabsContainer = document.getElementById('tabs');
+                categories.forEach(cat => {
+                    const btn = document.createElement('div');
+                    btn.className = `tab ${cat === currentCategory ? 'active' : ''}`;
+                    btn.innerText = cat;
+                    btn.onclick = () => {
+                        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                        btn.classList.add('active');
+                        currentCategory = cat;
+                        render();
+                    };
+                    tabsContainer.appendChild(btn);
                 });
-            } catch (e) {
-                document.getElementById('catalog').innerText = 'Ошибка загрузки данных.';
-            }
+                render();
+            } catch (e) { document.getElementById('catalog').innerText = 'Ошибка загрузки'; }
         }
 
-        function updateCart(name, weight, price, el) {
-            el.previousElementSibling.innerText = weight + 'г';
+        function render() {
+            const container = document.getElementById('catalog');
+            container.innerHTML = '';
+            allProducts.filter(p => p.Category === currentCategory).forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${p.Photo}" class="product-img" onerror="this.src='https://via.placeholder.com/60/111/00ff00?text=BND'">
+                    <div class="product-title">${p.Name}</div>
+                    <div class="product-price" id="p-${p.Name}">${p.Price_1g} ฿/г</div>
+                    <div class="controls">
+                        <input type="range" min="0" max="20" step="0.5" value="${cart[p.Name]?.w || 0}" 
+                            oninput="updateCart('${p.Name}', this.value, '${p.Subcategory}', this)">
+                        <span class="weight-display">${cart[p.Name]?.w || 0}г</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateCart(name, weight, subcat, el) {
             const w = parseFloat(weight);
-            if (w > 0) cart[name] = { weight: w, total: w * price };
-            else delete cart[name];
+            el.nextElementSibling.innerText = w + 'г';
             
+            if (w > 0) cart[name] = { w, subcat }; else delete cart[name];
+            
+            calculateTotal();
+        }
+
+        function calculateTotal() {
             let total = 0;
-            for (let i in cart) total += cart[i].total;
-            document.getElementById('total-sum').innerText = total;
-            
-            if (tg.HapticFeedback && w % 1 === 0) {
-                tg.HapticFeedback.impactOccurred('light');
+            const subcatTotals = {};
+
+            // Считаем общий вес по каждой подкатегории
+            for (let name in cart) {
+                const item = cart[name];
+                subcatTotals[item.subcat] = (subcatTotals[item.subcat] || 0) + item.w;
             }
+
+            // Применяем ступенчатые цены
+            for (let name in cart) {
+                const item = cart[name];
+                const totalSubcatWeight = subcatTotals[item.subcat];
+                const tiers = priceTiers[item.subcat] || { 1: 0 };
+                
+                // Находим актуальную цену за грамм исходя из общего веса категории
+                let pricePerGram = tiers[1];
+                if (totalSubcatWeight >= 20 && tiers[20]) pricePerGram = tiers[20] / 20;
+                else if (totalSubcatWeight >= 10 && tiers[10]) pricePerGram = tiers[10] / 10;
+                else if (totalSubcatWeight >= 5 && tiers[5]) pricePerGram = tiers[5] / 5;
+
+                total += item.w * pricePerGram;
+                
+                // Обновляем ценник в карточке (опционально)
+                const priceLabel = document.getElementById(`p-${name}`);
+                if (priceLabel) priceLabel.innerText = `${Math.round(pricePerGram)} ฿/г`;
+            }
+
+            document.getElementById('total-sum').innerText = Math.round(total);
         }
 
         function sendOrder() {
@@ -204,7 +154,8 @@
             tg.close();
         }
 
-        loadCatalog();
+        init();
+        tg.expand();
     </script>
 </body>
 </html>
