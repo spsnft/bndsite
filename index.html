@@ -7,16 +7,16 @@
     <style>
         :root {
             --accent: #00ff00;
-            --premium-bg: linear-gradient(145deg, rgba(40, 40, 40, 0.95), rgba(20, 20, 20, 0.95));
+            --premium-bg: linear-gradient(145deg, rgba(35, 35, 35, 0.95), rgba(15, 15, 15, 0.95));
             --premium-glow: rgba(0, 255, 0, 0.2);
         }
 
         body {
-            background-color: #000;
+            background-color: #050505;
             color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             margin: 0;
-            padding: 20px 10px;
+            padding: 20px 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -26,34 +26,32 @@
             width: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 15px;
+            gap: 12px;
+            max-width: 450px;
         }
 
-        /* СТИЛЬ ПРЕМИУМ-КАРТОЧКИ */
+        /* ТА САМАЯ ПРЕМИУМ-КАРТОЧКА */
         .premium-card {
             display: flex;
             align-items: center;
-            width: 100%;
-            max-width: 400px;
-            padding: 12px 16px;
+            padding: 10px 14px;
             background: var(--premium-bg);
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
-            border-radius: 22px;
-            border: 1px solid rgba(0, 255, 0, 0.25);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 0 15px var(--premium-glow);
-            box-sizing: border-box;
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 0, 0.15);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            transition: all 0.2s ease;
         }
 
         .pc-avatar {
-            width: 80px;
-            height: 80px;
+            width: 75px;
+            height: 75px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--accent);
-            box-shadow: 0 0 15px var(--premium-glow);
-            margin-right: 15px;
+            box-shadow: 0 0 12px var(--premium-glow);
+            margin-right: 14px;
             flex-shrink: 0;
         }
 
@@ -63,47 +61,49 @@
         }
 
         .pc-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
-            margin: 0 0 4px 0;
+            margin: 0 0 2px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .pc-price {
-            font-size: 13px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 10px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 8px;
         }
 
         .pc-controls {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .pc-slider {
             flex-grow: 1;
-            height: 4px;
+            height: 3px;
             -webkit-appearance: none;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 2px;
-            outline: none;
         }
 
         .pc-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             background: #fff;
             border-radius: 50%;
-            cursor: pointer;
             box-shadow: 0 0 8px var(--accent);
+            cursor: pointer;
         }
 
         .pc-weight {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             color: var(--accent);
-            min-width: 40px;
+            min-width: 35px;
             text-align: right;
         }
     </style>
@@ -116,11 +116,14 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // ТВОИ ТОВАРЫ (добавляй сюда новые)
+        // СЮДА ВСТАВЬ СВОЙ ПОЛНЫЙ СПИСОК ТОВАРОВ ИЗ СТАРОЙ ВЕРСИИ
         const products = [
             { id: 1, name: "Strawberry Banana", price: "600-1400", img: "strawberry.png" },
             { id: 2, name: "Sticky Rice", price: "100-150", img: "rice.png" },
-            { id: 3, name: "Super Lemon Haze", price: "500-1200", img: "lemon.png" }
+            { id: 3, name: "Super Lemon Haze", price: "500-1200", img: "lemon.png" },
+            { id: 4, name: "OG Kush", price: "700-1500", img: "og.png" },
+            { id: 5, name: "Purple Punch", price: "450-1100", img: "purple.png" }
+            // Добавляй остальные товары сюда в таком же формате
         ];
 
         function loadCatalog() {
@@ -131,7 +134,7 @@
                 const card = document.createElement('div');
                 card.className = 'premium-card';
                 card.innerHTML = `
-                    <img src="${p.img}" class="pc-avatar" onerror="this.src='https://via.placeholder.com/150/222/00ff00?text=Product'">
+                    <img src="${p.img}" class="pc-avatar" onerror="this.src='https://via.placeholder.com/100/111/00ff00?text=Bud'">
                     <div class="pc-info">
                         <h3 class="pc-title">${p.name}</h3>
                         <div class="pc-price">${p.price} ฿ / g</div>
