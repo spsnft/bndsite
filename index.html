@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 15px; padding-bottom: 100px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #000; color: #fff; margin: 0; padding: 15px; padding-bottom: 140px; }
         .header { text-align: center; padding: 20px 0; border-bottom: 1px solid #222; margin-bottom: 20px; }
         .header h1 { color: #00ff00; margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
         .category-title { color: #ffd700; font-size: 16px; margin: 25px 0 10px; font-weight: bold; text-transform: uppercase; border-left: 3px solid #ffd700; padding-left: 10px; }
@@ -13,88 +13,91 @@
         .product-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; color: #eee; }
         .product-desc { font-size: 13px; color: #888; margin-bottom: 15px; }
         .weights { display: flex; flex-wrap: wrap; gap: 8px; }
-        .w-btn { background: #222; border: 1px solid #333; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
-        .w-btn.active { background: rgba(0, 255, 0, 0.1); color: #00ff00; border: 1px solid #00ff00; font-weight: bold; }
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.9); padding: 20px; border-top: 1px solid #222; display: none; backdrop-filter: blur(10px); }
-        .order-btn { background: #00ff00; color: #000; border: none; padding: 15px; border-radius: 10px; width: 100%; font-weight: bold; font-size: 16px; text-transform: uppercase; text-decoration: none; display: block; text-align: center; box-shadow: 0 4px 15px rgba(0, 255, 0, 0.3); }
+        .w-btn { background: #222; border: 1px solid #333; color: #fff; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .w-btn.active { background: #00ff00; color: #000; font-weight: bold; border-color: #00ff00; }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.95); padding: 15px; border-top: 1px solid #222; display: none; backdrop-filter: blur(10px); }
+        .total-info { text-align: center; margin-bottom: 12px; font-size: 18px; font-weight: bold; color: #00ff00; }
+        .order-btn { background: #00ff00; color: #000; border: none; padding: 14px; border-radius: 10px; width: 100%; font-weight: bold; font-size: 16px; text-transform: uppercase; margin-bottom: 8px; cursor: pointer; }
+        .contact-btn { color: #888; text-decoration: none; display: block; text-align: center; font-size: 13px; padding: 5px; }
     </style>
 </head>
 <body>
     <div class="header"><h1>BND MENU</h1></div>
     <div id="catalog">Загрузка товаров...</div>
+    
     <div id="footer" class="footer">
-        <div id="order-container"></div>
+        <div class="total-info" id="total-sum">Итого: 0 ฿</div>
+        <button class="order-btn" onclick="sendOrder()">Оформить заказ</button>
+        <a id="operator-link" href="#" target="_blank" class="contact-btn">Нужна помощь? Написать оператору</a>
     </div>
 
 <script>
     let tg = window.Telegram.WebApp;
     tg.expand();
     let cart = {};
-    
-    // НАСТРОЙКИ
-    const OPERATOR_NICK = "phuketbnd"; // Если ник поменяется — меняй только тут
+    let inventory = [];
+
+    const OPERATOR_NICK = "phuketbnd";
     const SHEET_ID = '1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk';
     const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Inventory`;
 
     async function loadCatalog() {
-        try {
-            const res = await fetch(URL);
-            const data = await res.text();
-            const rows = data.split('\n').slice(1);
-            let html = '';
-            let currentCat = '';
+        const res = await fetch(URL);
+        const data = await res.text();
+        const rows = data.split('\n').slice(1);
+        let html = '';
+        let currentCat = '';
 
-            rows.forEach((row) => {
-                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
-                if (cols[2]) {
-                    if (cols[0] !== currentCat) {
-                        currentCat = cols[0];
-                        html += `<div class="category-title">${currentCat}</div>`;
-                    }
-                    html += `
-                        <div class="product-card">
-                            <div class="product-name">${cols[2]}</div>
-                            <div class="product-desc">${cols[1]} | ${cols[8] || ''}</div>
-                            <div class="weights">
-                                <button class="w-btn" onclick="select(this, '${cols[2]}', 1)">1г</button>
-                                <button class="w-btn" onclick="select(this, '${cols[2]}', 5)">5г</button>
-                                <button class="w-btn" onclick="select(this, '${cols[2]}', 10)">10г</button>
-                                <button class="w-btn" onclick="select(this, '${cols[2]}', 20)">20г</button>
-                            </div>
-                        </div>`;
+        rows.forEach((row, idx) => {
+            const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
+            if (cols[2]) {
+                inventory.push(cols); // Сохраняем данные для цен
+                if (cols[0] !== currentCat) {
+                    currentCat = cols[0];
+                    html += `<div class="category-title">${currentCat}</div>`;
                 }
-            });
-            document.getElementById('catalog').innerHTML = html;
-        } catch (e) {
-            document.getElementById('catalog').innerHTML = 'Ошибка загрузки меню. Попробуйте позже.';
-        }
+                html += `
+                    <div class="product-card">
+                        <div class="product-name">${cols[2]}</div>
+                        <div class="product-desc">${cols[1]}</div>
+                        <div class="weights">
+                            ${cols[3] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 1)">1г</button>` : ''}
+                            ${cols[4] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 5)">5г</button>` : ''}
+                            ${cols[5] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 10)">10г</button>` : ''}
+                            ${cols[6] ? `<button class="w-btn" onclick="select(this, ${inventory.length-1}, 20)">20г</button>` : ''}
+                        </div>
+                    </div>`;
+            }
+        });
+        document.getElementById('catalog').innerHTML = html;
+        document.getElementById('operator-link').href = `https://t.me/${OPERATOR_NICK}`;
     }
 
-    function select(btn, name, weight) {
+    function select(btn, itemIdx, weight) {
         const parent = btn.parentElement;
         parent.querySelectorAll('.w-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        cart[name] = { weight: weight };
-        
-        updateFooter();
-        
-        if (tg.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('medium');
-        }
+        const item = inventory[itemIdx];
+        let price = 0;
+        // Берем цену в зависимости от веса из колонок 3, 4, 5, 6 таблицы
+        if (weight === 1) price = item[3];
+        if (weight === 5) price = item[4];
+        if (weight === 10) price = item[5];
+        if (weight === 20) price = item[6];
+
+        cart[item[2]] = { weight: weight, price: parseInt(price) || 0 };
+        calculateTotal();
     }
 
-    function updateFooter() {
-        const container = document.getElementById('order-container');
+    function calculateTotal() {
+        let total = 0;
+        for (let id in cart) { total += cart[id].price; }
         
-        // Проверяем, запущен ли сайт через Telegram WebApp
-        if (tg.initData && tg.initData.length > 0) {
-            container.innerHTML = `<button class="order-btn" onclick="sendOrder()">Отправить заказ</button>`;
-        } else {
-            container.innerHTML = `<a href="https://t.me/${OPERATOR_NICK}" target="_blank" class="order-btn">Связаться с оператором</a>`;
-        }
-        
+        document.getElementById('total-sum').innerText = `Итого: ${total} ฿`;
         document.getElementById('footer').style.display = 'block';
+        
+        if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
 
     function sendOrder() {
