@@ -6,46 +6,60 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         body { font-family: -apple-system, system-ui, sans-serif; background: #000; color: #fff; margin: 0; padding: 10px; padding-bottom: 120px; }
-        .header { text-align: center; padding: 10px 0; border-bottom: 1px solid #222; }
-        .header h1 { color: #00ff00; font-size: 16px; text-transform: uppercase; letter-spacing: 2px; }
+        .header { text-align: center; padding: 10px 0; border-bottom: 1px solid #222; margin-bottom: 10px; }
+        .header h1 { color: #00ff00; font-size: 14px; text-transform: uppercase; letter-spacing: 2px; margin: 0; }
         
-        /* Заголовки категорий */
+        /* Заголовки категорий с динамическими цветами */
+        .category-section { margin-bottom: 25px; }
         .category-title { 
-            width: 100%; color: #ffd700; font-size: 14px; font-weight: bold; 
-            text-transform: uppercase; margin: 20px 0 10px; padding-left: 5px;
-            border-left: 3px solid #ffd700;
+            font-size: 13px; font-weight: 800; text-transform: uppercase; 
+            margin: 15px 0 10px; padding: 4px 8px; border-radius: 4px;
+            display: inline-block; letter-spacing: 1px;
         }
 
         /* Сетка товаров */
         .catalog-grid { 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 3 колонки */
-            gap: 8px; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 6px; 
         }
 
         .product-card { 
-            background: #111; border: 1px solid #222; border-radius: 8px; 
-            padding: 8px; display: flex; flex-direction: column; justify-content: space-between;
+            background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 6px; 
+            padding: 6px; display: flex; flex-direction: column; transition: 0.2s;
         }
 
-        .product-name { font-size: 11px; font-weight: bold; margin-bottom: 8px; text-align: center; color: #eee; height: 30px; overflow: hidden; }
+        .product-name { 
+            font-size: 10px; font-weight: 600; margin-bottom: 6px; 
+            text-align: center; color: #fff; height: 24px; 
+            display: flex; align-items: center; justify-content: center;
+            line-height: 1.1; overflow: hidden;
+        }
 
-        .weights { display: flex; flex-direction: column; gap: 4px; }
+        /* Кнопки в ряд */
+        .weights { display: flex; justify-content: space-between; gap: 2px; }
         .w-btn { 
-            background: #222; border: 1px solid #333; color: #fff; 
-            padding: 6px 0; border-radius: 4px; font-size: 10px; cursor: pointer; 
+            background: #1a1a1a; border: 1px solid #222; color: #ccc; 
+            flex: 1; padding: 6px 0; border-radius: 3px; font-size: 9px; 
+            cursor: pointer; text-align: center;
         }
-        .w-btn.active { background: #00ff00; color: #000; font-weight: bold; border-color: #00ff00; }
+        .w-btn.active { background: #00ff00 !important; color: #000 !important; font-weight: bold; border-color: #00ff00 !important; }
 
-        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); padding: 15px; border-top: 1px solid #222; backdrop-filter: blur(10px); z-index: 100; }
-        .total-info { text-align: center; margin-bottom: 10px; font-size: 16px; font-weight: bold; color: #00ff00; }
+        /* Цвета категорий */
+        .cat-silver { color: #C0C0C0; border-left: 3px solid #C0C0C0; background: rgba(192,192,192,0.1); }
+        .cat-golden { color: #FFD700; border-left: 3px solid #FFD700; background: rgba(255,215,0,0.1); }
+        .cat-diamond { color: #B9F2FF; border-left: 3px solid #B9F2FF; background: rgba(185,242,255,0.1); }
+        .cat-default { color: #00ff00; border-left: 3px solid #00ff00; background: rgba(0,255,0,0.1); }
+
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; border-top: 1px solid #222; backdrop-filter: blur(10px); z-index: 100; }
+        .total-info { text-align: center; margin-bottom: 8px; font-size: 16px; font-weight: bold; color: #00ff00; }
         .order-btn { background: #00ff00; color: #000; border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: bold; font-size: 14px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
     <div class="header"><h1>BND MENU</h1></div>
-    <div id="catalog-container">Загрузка...</div>
+    <div id="catalog-container">Загрузка товаров...</div>
     
     <div id="footer" class="footer" style="display: none;">
         <div class="total-info" id="total-sum">Итого: 0 ฿</div>
@@ -61,6 +75,14 @@
     const SHEET_ID = '1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk';
     const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=Inventory`;
 
+    function getCatClass(catName) {
+        catName = catName.toLowerCase();
+        if (catName.includes('silver')) return 'cat-silver';
+        if (catName.includes('gold')) return 'cat-golden';
+        if (catName.includes('diamond')) return 'cat-diamond';
+        return 'cat-default';
+    }
+
     async function loadCatalog() {
         const res = await fetch(URL);
         const data = await res.text();
@@ -68,31 +90,34 @@
         let html = '';
         let currentCat = '';
 
-        rows.forEach((row, idx) => {
+        rows.forEach((row) => {
             const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
             if (cols[2]) {
                 inventory.push(cols);
                 const itemIdx = inventory.length - 1;
+                const catClass = getCatClass(cols[0]);
                 
                 if (cols[0] !== currentCat) {
-                    if (currentCat !== '') html += '</div>'; // Закрываем предыдущую сетку
+                    if (currentCat !== '') html += '</div></div>';
                     currentCat = cols[0];
-                    html += `<div class="category-title">${currentCat}</div><div class="catalog-grid">`;
+                    html += `<div class="category-section">
+                                <div class="category-title ${catClass}">${currentCat}</div>
+                                <div class="catalog-grid">`;
                 }
                 
                 html += `
-                    <div class="product-card">
+                    <div class="product-card" style="border-color: rgba(255,255,255,0.05)">
                         <div class="product-name">${cols[2]}</div>
                         <div class="weights">
-                            ${cols[3] ? `<button class="w-btn" data-item="${cols[2]}" data-w="1" onclick="select(this, ${itemIdx}, 1)">1г</button>` : ''}
-                            ${cols[4] ? `<button class="w-btn" data-item="${cols[2]}" data-w="5" onclick="select(this, ${itemIdx}, 5)">5г</button>` : ''}
-                            ${cols[5] ? `<button class="w-btn" data-item="${cols[2]}" data-w="10" onclick="select(this, ${itemIdx}, 10)">10г</button>` : ''}
-                            ${cols[6] ? `<button class="w-btn" data-item="${cols[2]}" data-w="20" onclick="select(this, ${itemIdx}, 20)">20г</button>` : ''}
+                            ${cols[3] ? `<button class="w-btn" onclick="select(this, ${itemIdx}, 1)">1г</button>` : ''}
+                            ${cols[4] ? `<button class="w-btn" onclick="select(this, ${itemIdx}, 5)">5г</button>` : ''}
+                            ${cols[5] ? `<button class="w-btn" onclick="select(this, ${itemIdx}, 10)">10г</button>` : ''}
+                            ${cols[6] ? `<button class="w-btn" onclick="select(this, ${itemIdx}, 20)">20г</button>` : ''}
                         </div>
                     </div>`;
             }
         });
-        html += '</div>';
+        html += '</div></div>';
         document.getElementById('catalog-container').innerHTML = html;
     }
 
@@ -100,12 +125,10 @@
         const itemName = inventory[itemIdx][2];
         const item = inventory[itemIdx];
 
-        // Если кнопка уже активна — отменяем выбор
         if (btn.classList.contains('active')) {
             btn.classList.remove('active');
             delete cart[itemName];
         } else {
-            // Снимаем актив с других весов ЭТОГО товара
             const parent = btn.parentElement;
             parent.querySelectorAll('.w-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -129,10 +152,8 @@
             total += cart[id].price; 
             count++;
         }
-        
         document.getElementById('total-sum').innerText = `Итого: ${total} ฿`;
         document.getElementById('footer').style.display = count > 0 ? 'block' : 'none';
-        
         if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
     }
 
