@@ -1,28 +1,10 @@
 "use client"
-// BND-UPDATE-V10: Grid Home Layout, New Glass Styles, Background #193D2E
 import * as React from "react"
-import { getProducts } from "@/lib/fetchers/product"
 import { 
   ShoppingCart, X, Trash2, Info, CheckCircle2, ArrowRight, Leaf, Zap, Phone
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-
-// --- CONFIG ---
-const TG_TOKEN = process.env.NEXT_PUBLIC_TG_TOKEN;
-const TG_CHAT_ID = process.env.NEXT_PUBLIC_TG_CHAT_ID;
-
-const GRADE_STYLES: Record<string, any> = {
-  "silver": { color: "#C1C1C1", bg: "bg-white/5", border: "border-white/10" },
-  "golden": { color: "#FEC107", bg: "bg-[#FEC107]/5", border: "border-[#FEC107]/20" },
-  "premium": { color: "#34D399", bg: "bg-[#34D399]/10", border: "border-[#34D399]/20" },
-  "selected premium": { color: "#A855F7", bg: "bg-[#A855F7]/10", border: "border-[#A855F7]/20" },
-};
-
-const getImageUrl = (path: string) => {
-  if (!path) return '/product-placeholder.webp';
-  return path.startsWith('http') ? path : `/images/${path}`;
-}
 
 // --- STORE ---
 interface CartStore {
@@ -31,6 +13,7 @@ interface CartStore {
   removeItem: (id: string, weight: any) => void;
   clearCart: () => void;
 }
+
 const useCart = create<CartStore>()(persist((set) => ({
   items: [],
   addItem: (newItem) => set((state) => {
@@ -44,28 +27,23 @@ const useCart = create<CartStore>()(persist((set) => ({
   clearCart: () => set({ items: [] })
 }), { name: "bnd-cart-v6" }));
 
-// --- MAIN COMPONENT ---
 export default function IndexPage() {
-  const [products, setProducts] = React.useState<any[]>([]);
+  // Заглушка для продуктов, чтобы не было ошибок импорта
+  const [products] = React.useState<any[]>([]);
   const [view, setView] = React.useState<"landing" | "shop">("landing");
   const [activeCategory, setActiveCategory] = React.useState("Buds");
-  const [activeSubcat, setActiveSubcat] = React.useState("All Grades");
-  const [isCartOpen, setIsCartOpen] = React.useState(false);
-
-  const { items, clearCart } = useCart();
-  const totalPrice = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-  React.useEffect(() => {
-    getProducts().then(setProducts);
-  }, []);
+  
+  const { items } = useCart();
 
   if (view === "landing") {
     return (
-      <div className="min-h-screen bg-[#193D2E] flex flex-col items-center justify-center p-6 overflow-hidden">
+      <div className="min-h-screen bg-[#193D2E] flex flex-col items-center justify-center p-6 overflow-hidden relative">
         {/* Фоновое свечение */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-[radial-gradient(circle_at_center,rgba(52,211,153,0.08)_0%,transparent_70%)] pointer-events-none" />
         
-        <img src="/images/logo-optimized.webp" alt="BND" className="w-48 h-48 object-contain mb-16 relative z-10 drop-shadow-[0_0_30px_rgba(52,211,153,0.2)]" />
+        <div className="w-48 h-48 mb-16 relative z-10 flex items-center justify-center bg-white/5 rounded-full backdrop-blur-xl border border-white/10">
+           <span className="text-4xl font-black italic text-white/20">BND</span>
+        </div>
         
         {/* Квадратные кнопки "Лево-Право" */}
         <div className="grid grid-cols-2 gap-4 w-full max-w-lg relative z-10">
@@ -93,8 +71,12 @@ export default function IndexPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#193D2E] text-white pb-24">
-      {/* Здесь остается твой текущий код магазина (header, фильтры, карточки), который мы уже отладили */}
+    <div className="min-h-screen bg-[#193D2E] text-white p-8">
+      <button onClick={() => setView("landing")} className="mb-8 flex items-center gap-2 text-sm opacity-50 hover:opacity-100 transition-opacity">
+        <ArrowRight size={16} className="rotate-180" /> Назад
+      </button>
+      <h1 className="text-4xl font-black italic uppercase mb-4">{activeCategory}</h1>
+      <p className="opacity-50 italic">Раздел находится в разработке...</p>
     </div>
   );
 }
