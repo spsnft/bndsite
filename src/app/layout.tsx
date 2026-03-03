@@ -1,21 +1,17 @@
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./src/**/*.{js,ts,jsx,tsx}",
-    "./app/**/*.{js,ts,jsx,tsx}",
-    "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          green: "#193D2E",
-          emerald: "#34D399",
-          gold: "#FEC107",
-        }
-      }
-    },
-  },
-  plugins: [],
+"use client"
+import "@/styles/globals.css"
+import { Inter } from "next/font/google"
+
+const inter = Inter({ subsets: ["latin"] })
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en" className="dark">
+      <body className={inter.className}>{children}</body>
+    </html>
+  )
 }
