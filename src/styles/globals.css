@@ -3,56 +3,15 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* Твой базовый темно-зеленый фон #193D2E */
-    --background: 145 42% 17%;
-    --foreground: 0 0% 100%;
-    
-    --card: 145 42% 17%;
-    --card-foreground: 0 0% 100%;
-    
-    --popover: 145 42% 17%;
-    --popover-foreground: 0 0% 100%;
-    
-    --primary: 158 64% 52%; /* Изумрудный акцент */
-    --primary-foreground: 145 42% 10%;
-    
-    --secondary: 145 42% 25%;
-    --secondary-foreground: 0 0% 100%;
-    
-    --muted: 145 42% 25%;
-    --muted-foreground: 0 0% 70%;
-    
-    --accent: 158 64% 52%;
-    --accent-foreground: 145 42% 10%;
-    
-    --border: 145 42% 25%;
-    --input: 145 42% 25%;
-    --ring: 158 64% 52%;
-    
-    --radius: 2.5rem; /* Твои закругленные углы */
-  }
-
-  .dark {
-    --background: 145 42% 17%;
-    --foreground: 0 0% 100%;
-    --border: 145 42% 25%;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    background-color: #193D2E !important; /* Принудительный фикс фона */
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: #193D2E !important;
+    color: white !important;
+    @apply antialiased;
   }
 }
 
 @layer utilities {
-  /* Тот самый эффект глубокого стекла для iPad */
+  /* Твое вчерашнее стекло */
   .backdrop-blur-3xl {
     -webkit-backdrop-filter: blur(60px) !important;
     backdrop-filter: blur(60px) !important;
@@ -65,8 +24,4 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-}
-
-input[type="range"] {
-  @apply accent-white;
 }
