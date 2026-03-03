@@ -33,7 +33,6 @@
     --radius: 2.5rem; /* Твои закругленные углы */
   }
 
-  /* Для темной темы оставляем те же параметры, так как сайт всегда темный */
   .dark {
     --background: 145 42% 17%;
     --foreground: 0 0% 100%;
@@ -59,7 +58,6 @@
     backdrop-filter: blur(60px) !important;
   }
   
-  /* Убираем стандартные скроллбары для красоты */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -69,7 +67,6 @@
   }
 }
 
-/* Фикс для кнопок и инпутов */
 input[type="range"] {
   @apply accent-white;
 }

@@ -3,7 +3,6 @@ import { type Config } from "tailwindcss/types/config"
 
 export default {
   darkMode: ["class"],
-  // ВАЖНО: Добавил путь к app, чтобы Tailwind видел твои файлы
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx}",
     "./src/components/**/*.{js,ts,jsx,tsx}",
@@ -48,7 +47,6 @@ export default {
         sans: ["var(--font-geist-sans)", ...fontFamily.sans],
         mono: ["var(--font-geist-mono)", ...fontFamily.mono],
       },
-      // Добавил поддержку блюра для старых браузеров
       backdropBlur: {
         xs: '2px',
       },
