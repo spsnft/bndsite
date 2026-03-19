@@ -2,7 +2,15 @@
 import * as React from "react"
 import Link from "next/link"
 import { getProducts } from "@/lib/product" 
-import { ShoppingCart, LayoutGrid, Zap, ChevronRight, Info } from "lucide-react"
+import { 
+  LayoutGrid, 
+  Zap, 
+  ChevronRight, 
+  Sparkles, 
+  Flame, 
+  Percent, 
+  Check 
+} from "lucide-react"
 
 // --- CONFIG ---
 const GRADES = [
@@ -14,10 +22,30 @@ const GRADES = [
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
 
-const BADGE_ICONS: Record<string, string> = {
-  "NEW": "🆕",
-  "HIT": "🔥",
-  "SALE": "%"
+// Компонент для красивых бейджей
+const BadgeIcon = ({ type }: { type: string }) => {
+  switch (type.toUpperCase()) {
+    case "NEW":
+      return (
+        <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shadow-[0_0_10px_rgba(59,130,246,0.2)]">
+          <Sparkles size={10} className="text-blue-400" />
+        </div>
+      );
+    case "HIT":
+      return (
+        <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shadow-[0_0_10px_rgba(249,115,22,0.2)]">
+          <Flame size={10} className="text-orange-400" />
+        </div>
+      );
+    case "SALE":
+      return (
+        <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+          <Percent size={10} className="text-emerald-400" />
+        </div>
+      );
+    default:
+      return null;
+  }
 };
 
 export default function LandingPage() {
@@ -32,10 +60,9 @@ export default function LandingPage() {
       {/* HEADER / LOGO */}
       <div className="flex flex-col items-center mb-10">
         <div className="w-20 h-20 mb-6 flex items-center justify-center bg-white/5 rounded-full border border-white/10 backdrop-blur-3xl shadow-2xl">
-           <span className="text-2xl font-black italic text-white tracking-tighter">BND</span>
+           <span className="text-2xl font-black italic text-white tracking-tighter uppercase">BND</span>
         </div>
         
-        {/* НОВАЯ НАВИГАЦИЯ */}
         <div className="flex gap-3 w-full max-w-sm">
           <Link href="/v2" className="flex-1 flex gap-2 justify-center items-center bg-white text-[#193D2E] py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest active:scale-95 transition-all">
             <LayoutGrid size={14} /> Full Menu
@@ -61,7 +88,7 @@ export default function LandingPage() {
                   <p className="text-[9px] font-black opacity-40 mt-1 uppercase tracking-widest leading-none">{grade.priceLine}</p>
                 </div>
                 <div className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center bg-white/5">
-                   <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px]" style={{ backgroundColor: grade.color, shadowColor: grade.color }} />
+                   <div className="w-2.5 h-2.5 rounded-full shadow-[0_0_10px]" style={{ backgroundColor: grade.color, boxShadow: `0 0 10px ${grade.color}` }} />
                 </div>
               </div>
 
@@ -76,19 +103,18 @@ export default function LandingPage() {
               <div className="divide-y divide-white/5">
                 {gradeItems.map((p) => {
                   const badge = String(p.badge || "").toUpperCase();
-                  const icon = BADGE_ICONS[badge];
                   const typeColor = p.type === 'indica' ? '#EF4444' : p.type === 'sativa' ? '#3B82F6' : '#10B981';
 
                   return (
                     <Link 
-                      href="/v2" // Пока ведем в общий каталог v2
+                      href="/v2" 
                       key={p.id} 
                       className="grid grid-cols-12 gap-2 px-6 py-4 items-center hover:bg-white/5 transition-all group"
                     >
                       {/* STRAIN NAME WITH FIXED ALIGNMENT */}
-                      <div className="col-span-6 flex items-center gap-3 relative">
-                        <div className="w-4 flex justify-center shrink-0">
-                          {icon && <span className="text-[10px] drop-shadow-md">{icon}</span>}
+                      <div className="col-span-6 flex items-center gap-4 relative">
+                        <div className="w-5 flex justify-center shrink-0">
+                          {badge && <BadgeIcon type={badge} />}
                         </div>
                         <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white transition-colors">
                           {p.name}
@@ -96,7 +122,7 @@ export default function LandingPage() {
                       </div>
 
                       {/* GENOTYPE */}
-                      <div className="col-span-2 text-center text-[9px] font-black" style={{ color: typeColor }}>
+                      <div className="col-span-2 text-center text-[9px] font-black uppercase" style={{ color: typeColor }}>
                         {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
                       </div>
 
