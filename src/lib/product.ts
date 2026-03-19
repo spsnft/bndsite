@@ -17,21 +17,24 @@ export async function getProducts() {
 
     return items.map((item: any) => ({
       ...item,
-      // Приводим данные к формату, который ждет страница
       id: String(item.id || Math.random()),
       name: String(item.name || "Unnamed"),
       category: String(item.category || "").toLowerCase().trim(),
       subcategory: String(item.subcategory || "").toLowerCase().trim(),
-      // Мапим photo из таблицы в image для кода
       image: item.photo || '/images/placeholder.webp', 
-      // Собираем сетку цен для Buds
+      
+      // Новые поля для детальной карточки
+      description: String(item.description || ""),
+      farm: String(item.farm || "Organic Thai Farm"),
+      taste: String(item.taste || "Sweet, Earthy"),
+      terpenes: String(item.terpenes || "Myrcene, Limonene"),
+
       prices: {
         1: Number(item.price_1g) || 0,
         5: Number(item.price_5g) || 0,
         10: Number(item.price_10g) || 0,
         20: Number(item.price_20g) || 0
       },
-      // Для аксессуаров оставляем обычную цену
       price: Number(item.price_1g) || Number(item.price) || 0 
     }));
   } catch (error) {
