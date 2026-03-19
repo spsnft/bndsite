@@ -2,24 +2,40 @@
 
 export async function getProducts() {
   try {
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydASYY66CcKhk7m6JuBHBA4W3AaXQMIFDiqLyoXchpbYnuwOqofhdv7CXlhcXsvzLF/exec';
 
     const response = await fetch(SCRIPT_URL, {
       method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-      cache: 'no-store' // Получаем свежие данные при каждой загрузке
+      headers: { 'Accept': 'application/json' },
+      cache: 'no-store'
     });
     
-    if (!response.ok) throw new Error("Ошибка при запросе к таблице");
+    if (!response.ok) throw new Error("Ошибка сети");
 
     const data = await response.json();
+    const items = Array.isArray(data) ? data : (data.data || []);
 
-    // Возвращаем массив товаров. Если данные в объекте, вытаскиваем их из поля data или products
-    return Array.isArray(data) ? data : (data.data || data.products || []); 
+    return items.map((item: any) => ({
+      ...item,
+      // Приводим данные к формату, который ждет страница
+      id: String(item.id || Math.random()),
+      name: String(item.name || "Unnamed"),
+      category: String(item.category || "").toLowerCase().trim(),
+      subcategory: String(item.subcategory || "").toLowerCase().trim(),
+      // Мапим photo из таблицы в image для кода
+      image: item.photo || '/images/placeholder.webp', 
+      // Собираем сетку цен для Buds
+      prices: {
+        1: Number(item.price_1g) || 0,
+        5: Number(item.price_5g) || 0,
+        10: Number(item.price_10g) || 0,
+        20: Number(item.price_20g) || 0
+      },
+      // Для аксессуаров оставляем обычную цену
+      price: Number(item.price_1g) || Number(item.price) || 0 
+    }));
   } catch (error) {
-    console.error("❌ Ошибка загрузки из Google Sheets:", error);
+    console.error("❌ Ошибка загрузки:", error);
     return [];
   }
 }
