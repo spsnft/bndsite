@@ -2,7 +2,7 @@
 
 export async function getProducts() {
   try {
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydASYY66CcKhk7m6JuBHBA4W3AaXQMIFDiqLyoXchpbYnuwOqofhdv7CXlhcXsvzLF/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec';
 
     const response = await fetch(SCRIPT_URL, {
       method: 'GET',
