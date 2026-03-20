@@ -19,10 +19,10 @@ import { persist } from "zustand/middleware"
 
 // --- CONFIG & STYLES ---
 const GRADES = [
-  { id: "silver", title: "SILVER GRADE", priceLine: "1g—150 / 5g—700 / 10g—1200 / 20g—2000", color: "#C1C1C1", icon: Percent },
-  { id: "golden", title: "GOLDEN GRADE", priceLine: "1g—250 / 5g—1100 / 10g—1700 / 20g—3000", color: "#FEC107", icon: Sparkles },
-  { id: "premium", title: "PREMIUM GRADE", priceLine: "1g—300 / 5g—1300 / 10g—2000 / 20g—3500", color: "#34D399", icon: Flame },
-  { id: "selected", title: "SELECTED GRADE", priceLine: "1g—350 / 5g—1500 / 10g—2500 / 20g—4000", color: "#A855F7", icon: Crown }
+  { id: "silver", title: "SILVER GRADE", prices: [ {w:1, p:150}, {w:5, p:700}, {w:10, p:1200}, {w:20, p:2000} ], color: "#C1C1C1", icon: Percent },
+  { id: "golden", title: "GOLDEN GRADE", prices: [ {w:1, p:250}, {w:5, p:1100}, {w:10, p:1700}, {w:20, p:3000} ], color: "#FEC107", icon: Sparkles },
+  { id: "premium", title: "PREMIUM GRADE", prices: [ {w:1, p:300}, {w:5, p:1300}, {w:10, p:2000}, {w:20, p:3500} ], color: "#34D399", icon: Flame },
+  { id: "selected", title: "SELECTED GRADE", prices: [ {w:1, p:350}, {w:5, p:1500}, {w:10, p:2500}, {w:20, p:4000} ], color: "#A855F7", icon: Crown }
 ];
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
@@ -78,7 +78,6 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50"><X size={20}/></button>
-        
         <div className="aspect-square w-full relative bg-black/10">
           <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
@@ -86,28 +85,23 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
              <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1" style={{ color: typeColor }}>{product.type} • {product.subcategory} Grade</p>
           </div>
         </div>
-
         <div className="p-8 space-y-6">
           <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-6">
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product.terpenes}</p></div>
           </div>
-          
           <div className="space-y-4">
             <div className="flex justify-between items-end">
                <div className="text-4xl font-black italic tracking-tighter" style={{ color: style.color }}>{currentPrice}฿</div>
                <div className="text-[10px] font-black uppercase opacity-20 tracking-widest">{weight} Grams</div>
             </div>
-
             <div className="grid grid-cols-4 gap-2">
               {[1, 5, 10, 20].map(v => (
                 <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
               ))}
             </div>
-            
             <input type="range" min="0.5" max="20" step="0.5" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
-
             <button 
               onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }}
               className="w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest transition-all shadow-xl active:scale-95"
@@ -138,7 +132,6 @@ export default function LandingPage() {
            <span className="text-2xl font-black italic text-white tracking-tighter uppercase">BND</span>
            {items.length > 0 && <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-400 text-black text-[10px] font-black rounded-full flex items-center justify-center">{items.length}</div>}
         </div>
-        
         <div className="flex gap-3 w-full max-w-sm">
           <Link href="/v2" className="flex-1 flex gap-2 justify-center items-center bg-white text-[#193D2E] py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest active:scale-95 transition-all">
             <LayoutGrid size={14} /> Full Menu
@@ -160,9 +153,16 @@ export default function LandingPage() {
               <div className="p-5 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
                 <div>
                   <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                  <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">{grade.priceLine}</p>
+                  {/* Price Line с цветным символом бата */}
+                  <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5">
+                    {grade.prices.map((item, idx) => (
+                      <React.Fragment key={idx}>
+                        <span>{item.w}g—{item.p}<span style={{ color: grade.color }}>฿</span></span>
+                        {idx !== grade.prices.length - 1 && <span className="opacity-20 px-0.5">/</span>}
+                      </React.Fragment>
+                    ))}
+                  </p>
                 </div>
-                {/* Новые иконки категорий */}
                 <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
                    <GradeIcon size={16} style={{ color: grade.color }} className="drop-shadow-md" />
                 </div>
@@ -196,8 +196,7 @@ export default function LandingPage() {
                       <div className="col-span-2 text-center text-[9px] font-black uppercase" style={{ color: typeColor }}>
                         {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
                       </div>
-                      {/* Выравнивание Farm по правому краю, стрелка убрана */}
-                      <div className="col-span-4 text-right text-[9px] font-bold opacity-30 italic line-clamp-1">
+                      <div className="col-span-4 text-right text-[9px] font-bold opacity-30 italic truncate">
                         {p.farm}
                       </div>
                     </div>
