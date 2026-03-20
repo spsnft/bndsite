@@ -3,7 +3,7 @@ import * as React from "react"
 import Link from "next/link"
 import { getProducts } from "@/lib/product" 
 import { 
-  LayoutGrid, Zap, Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal
+  LayoutGrid, Zap, Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Megaphone
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -16,11 +16,18 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", prices: [ {w:1, p:350}, {w:5, p:1500}, {w:10, p:2500}, {w:20, p:4000} ], color: "#A855F7", icon: Crown }
 ];
 
-// Обновленная структура промо для Bento Grid
 const PROMOS = [
   { id: 1, title: "Free Delivery", desc: "On orders over 3000฿", icon: Zap, color: "#34D399", size: "large", bgImage: "" },
   { id: 2, title: "First Order", desc: "10% OFF: BND24", icon: Sparkles, color: "#FEC107", size: "small", bgImage: "" },
   { id: 3, title: "Fast Shipping", desc: "< 60 mins", icon: Flame, color: "#FB7185", size: "small", bgImage: "" },
+];
+
+// ТЕКСТ ДЛЯ БЕГУЩЕЙ СТРОКИ
+const NEWS_TICKER = [
+  "🔥 UPDATE: NEW HASH ARRIVED!",
+  "🚚 FAST DELIVERY IN PHUKET WITHIN 60 MINUTES",
+  "⭐ PREMIUM QUALITY ONLY",
+  "📱 FOLLOW OUR TELEGRAM BOT FOR EXCLUSIVE OFFERS",
 ];
 
 const CONTACT_METHODS = [
@@ -215,9 +222,9 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      {/* HEADER SECTION WITH NEW LOGO & BENTO PROMOS */}
-      <header className="flex flex-col items-center mb-12 relative">
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32 overflow-x-hidden">
+      {/* HEADER SECTION */}
+      <header className="flex flex-col items-center mb-6 relative">
         {/* BIG FLOATING LOGO */}
         <div className="relative w-32 h-32 mb-6 group">
            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[45px] group-hover:bg-emerald-500/30 transition-all duration-1000"></div>
@@ -225,7 +232,7 @@ export default function LandingPage() {
         </div>
         
         {/* BENTO PROMO GRID */}
-        <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-3 gap-3 px-2 mb-10">
+        <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-3 gap-3 px-2 mb-6">
            {PROMOS.map(p => (
              <div 
                key={p.id} 
@@ -239,9 +246,7 @@ export default function LandingPage() {
                  backgroundPosition: 'center'
                }}
              >
-                {/* Overlay for text legibility if image exists */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-0"></div>
-                
                 <div className="relative z-10">
                   <div className="w-9 h-9 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md" style={{ backgroundColor: `${p.color}20` }}>
                     <p.icon size={18} style={{ color: p.color }} />
@@ -251,6 +256,19 @@ export default function LandingPage() {
                 </div>
              </div>
            ))}
+        </div>
+
+        {/* NEWS TICKER (БЕГУЩАЯ СТРОКА) */}
+        <div className="w-screen relative left-1/2 -translate-x-1/2 bg-emerald-400/5 border-y border-white/5 py-3 mb-8 overflow-hidden">
+          <div className="flex whitespace-nowrap animate-marquee">
+            {[...NEWS_TICKER, ...NEWS_TICKER].map((text, i) => (
+              <div key={i} className="flex items-center mx-4">
+                <Megaphone size={12} className="text-emerald-400 mr-2" />
+                <span className="text-[10px] font-black uppercase italic tracking-widest text-emerald-400/80">{text}</span>
+                <span className="mx-8 text-white/10 opacity-30">///</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* QUICK CATEGORIES */}
@@ -279,7 +297,7 @@ export default function LandingPage() {
               <div className="divide-y divide-white/5">
                 {gradeItems.map((p) => (
                   <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
-                    <div className="col-span-6 flex items-center gap-4 relative">
+                    <div className="col-span-6 flex items-center gap-4 relative text-white">
                       <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
                     </div>
@@ -307,6 +325,17 @@ export default function LandingPage() {
       {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
       
       <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/10"><div className="h-px w-16 bg-white/5"></div><p className="text-center text-[10px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • 2022</p></div>
+
+      {/* АНИМАЦИЯ ДЛЯ ТИКЕРА */}
+      <style jsx global>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
