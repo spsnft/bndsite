@@ -16,10 +16,11 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", prices: [ {w:1, p:350}, {w:5, p:1500}, {w:10, p:2500}, {w:20, p:4000} ], color: "#A855F7", icon: Crown }
 ];
 
+// Обновленная структура промо для Bento Grid
 const PROMOS = [
-  { id: 1, title: "Free Delivery", desc: "On orders over 3000฿", icon: Zap, color: "#34D399" },
-  { id: 2, title: "First Order", desc: "Get 10% off with code BND24", icon: Sparkles, color: "#FEC107" },
-  { id: 3, title: "Fast Shipping", desc: "Under 60 mins in Phuket", icon: Flame, color: "#FB7185" },
+  { id: 1, title: "Free Delivery", desc: "On orders over 3000฿", icon: Zap, color: "#34D399", size: "large", bgImage: "" },
+  { id: 2, title: "First Order", desc: "10% OFF: BND24", icon: Sparkles, color: "#FEC107", size: "small", bgImage: "" },
+  { id: 3, title: "Fast Shipping", desc: "< 60 mins", icon: Flame, color: "#FB7185", size: "small", bgImage: "" },
 ];
 
 const CONTACT_METHODS = [
@@ -167,10 +168,10 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           </div>
         </div>
         <div className="p-6 space-y-4">
-          <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
-             <div className="space-y-1 text-white"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
-             <div className="space-y-1 text-white"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
-             <div className="space-y-1 text-white"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product.terpenes}</p></div>
+          <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4 text-white">
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product.terpenes}</p></div>
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-end">
@@ -215,30 +216,55 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      <div className="flex flex-col items-center mb-10">
-        <div className="w-24 h-24 mb-6 relative group">
-           <div className="absolute inset-0 bg-white/5 rounded-full blur-2xl group-hover:bg-white/15 transition-all"></div>
-           <img src="/icon.png" alt="BND Logo" className="w-full h-full object-contain relative z-10" />
+      {/* HEADER SECTION WITH NEW LOGO & BENTO PROMOS */}
+      <header className="flex flex-col items-center mb-12 relative">
+        {/* BIG FLOATING LOGO */}
+        <div className="relative w-32 h-32 mb-6 group">
+           <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[45px] group-hover:bg-emerald-500/30 transition-all duration-1000"></div>
+           <img src="/icon.png" alt="BND Logo" className="w-full h-full object-contain relative z-10 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" />
         </div>
-        <div className="w-full max-w-4xl overflow-x-auto no-scrollbar flex gap-4 pb-8 px-2">
+        
+        {/* BENTO PROMO GRID */}
+        <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-3 gap-3 px-2 mb-10">
            {PROMOS.map(p => (
-             <div key={p.id} className="min-w-[260px] p-5 bg-white/5 border border-white/10 rounded-3xl flex items-start gap-4 backdrop-blur-sm">
-                <div className="p-3 rounded-2xl" style={{ backgroundColor: `${p.color}20` }}><p.icon size={20} style={{ color: p.color }} /></div>
-                <div><h4 className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">{p.title}</h4><p className="text-[10px] font-bold opacity-30 italic">{p.desc}</p></div>
+             <div 
+               key={p.id} 
+               className={`relative overflow-hidden rounded-[2.2rem] border border-white/10 p-5 min-h-[150px] flex flex-col justify-end transition-all active:scale-[0.97]
+                 ${p.size === 'large' ? 'col-span-2 md:col-span-2' : 'col-span-1'}
+               `}
+               style={{ 
+                 backgroundColor: p.bgImage ? 'transparent' : 'rgba(255,255,255,0.03)',
+                 backgroundImage: p.bgImage ? `url(${p.bgImage})` : 'none',
+                 backgroundSize: 'cover',
+                 backgroundPosition: 'center'
+               }}
+             >
+                {/* Overlay for text legibility if image exists */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-0"></div>
+                
+                <div className="relative z-10">
+                  <div className="w-9 h-9 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md" style={{ backgroundColor: `${p.color}20` }}>
+                    <p.icon size={18} style={{ color: p.color }} />
+                  </div>
+                  <h4 className="text-[13px] font-black uppercase tracking-tighter leading-none mb-1 italic text-white">{p.title}</h4>
+                  <p className="text-[10px] font-bold opacity-40 italic uppercase tracking-[0.15em] text-white">{p.desc}</p>
+                </div>
              </div>
            ))}
         </div>
-        <div className="flex gap-3 w-full max-sm:flex-col sm:max-w-sm">
-          {/* ОБНОВЛЕННАЯ КНОПКА ACCESSORIES (DISABLED) */}
-          <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest opacity-40 cursor-not-allowed">
+
+        {/* QUICK CATEGORIES */}
+        <div className="flex gap-3 w-full max-w-md px-2">
+          <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-5 rounded-2xl font-black uppercase italic text-[10px] tracking-[0.2em] opacity-40 cursor-not-allowed backdrop-blur-md text-white">
             <ShoppingBag size={14} /> Accessories
           </button>
-          <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest opacity-40 cursor-not-allowed">
+          <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-5 rounded-2xl font-black uppercase italic text-[10px] tracking-[0.2em] opacity-40 cursor-not-allowed backdrop-blur-md text-white">
             <Zap size={14} /> Concentrates
           </button>
         </div>
-      </div>
+      </header>
 
+      {/* PRODUCT LIST */}
       <div className="max-w-4xl mx-auto space-y-8">
         {GRADES.map((grade) => {
           const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds');
@@ -247,7 +273,7 @@ export default function LandingPage() {
             <div key={grade.id} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
               <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
                 <div><h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5">{grade.prices.map((item, idx) => (<React.Fragment key={idx}><span>{item.w}g—{item.p}฿</span>{idx !== grade.prices.length - 1 && <span className="opacity-20 px-0.5">/</span>}</React.Fragment>))}</p></div>
+                <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5 text-white">{grade.prices.map((item, idx) => (<React.Fragment key={idx}><span>{item.w}g—{item.p}฿</span>{idx !== grade.prices.length - 1 && <span className="opacity-20 px-0.5">/</span>}</React.Fragment>))}</p></div>
                 <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"><grade.icon size={18} style={{ color: grade.color }} /></div>
               </div>
               <div className="divide-y divide-white/5">
@@ -258,7 +284,7 @@ export default function LandingPage() {
                       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
                     </div>
                     <div className="col-span-2 text-center text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</div>
-                    <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic truncate">{p.farm}</div>
+                    <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic truncate text-white">{p.farm}</div>
                   </div>
                 ))}
               </div>
@@ -267,6 +293,7 @@ export default function LandingPage() {
         })}
       </div>
 
+      {/* FLOATING CART BUTTON */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]">
@@ -278,6 +305,7 @@ export default function LandingPage() {
 
       {selectedProduct && <ProductModal product={selectedProduct} style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }} onClose={() => setSelectedProduct(null)} />}
       {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
+      
       <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/10"><div className="h-px w-16 bg-white/5"></div><p className="text-center text-[10px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • 2022</p></div>
     </div>
   );
