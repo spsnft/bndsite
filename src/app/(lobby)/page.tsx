@@ -54,7 +54,11 @@ const useCart = create<any>()(persist((set, get) => ({
 // --- COMPONENTS ---
 const BadgeIcon = ({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
-    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30"><Sparkles size={10} className="text-blue-400" /></div>;
+    case "NEW": return (
+      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+        <span className="text-[6px] font-black text-blue-400 leading-none">NEW</span>
+      </div>
+    );
     case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30"><Flame size={10} className="text-orange-400" /></div>;
     case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30"><Percent size={10} className="text-emerald-400" /></div>;
     default: return null;
@@ -123,11 +127,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           onChange={(e) => setContact(e.target.value)}
           className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30"
         />
-        <button 
-          onClick={handleSubmit} 
-          disabled={isSending}
-          className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-50"
-        >
+        <button onClick={handleSubmit} disabled={isSending} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-50">
           {isSending ? "Отправка..." : "Отправить заказ"}
         </button>
       </div>
@@ -140,7 +140,6 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const [weight, setWeight] = React.useState(1);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart(s => s.addItem);
-
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices));
   const pricePerGram = Math.round(currentPrice / weight);
   const typeColor = TYPE_COLORS[String(product.type || "").toLowerCase()] || "#FFF";
@@ -160,14 +159,14 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
              <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
-             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1">
+             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
                 <span style={{ color: typeColor }}>{product.type}</span>
-                <span className="mx-2 opacity-20 text-white">•</span>
+                <span className="mx-2 opacity-20">•</span>
                 <span style={{ color: style.color }}>{product.subcategory} Grade</span>
              </p>
           </div>
         </div>
-        <div className="p-6 space-y-4"> {/* Compacted spacing */}
+        <div className="p-6 space-y-4">
           <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
              <div className="space-y-1 text-white"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
              <div className="space-y-1 text-white"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
@@ -186,21 +185,14 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                 <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
               ))}
             </div>
-            {/* BIGGER SLIDER - Height 3 for easier touch */}
             <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-3 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
-            
             {tip && (
               <div className="flex items-center gap-2 py-2 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10">
                 <TrendingDown size={12} className="text-emerald-400" />
-                <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tight">
-                  Add {(tip.next - weight).toFixed(0)}g more for {tip.p}฿ per gram!
-                </p>
+                <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tight">Add {(tip.next - weight).toFixed(0)}g more for {tip.p}฿ per gram!</p>
               </div>
             )}
-            {/* BIGGER BUTTON - Taller for better ergonomics */}
-            <button 
-              onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }}
-              className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
               {isAdded ? "Added to Cart" : "Add to Order"}
             </button>
           </div>
@@ -232,17 +224,15 @@ export default function LandingPage() {
            {PROMOS.map(p => (
              <div key={p.id} className="min-w-[260px] p-5 bg-white/5 border border-white/10 rounded-3xl flex items-start gap-4 backdrop-blur-sm">
                 <div className="p-3 rounded-2xl" style={{ backgroundColor: `${p.color}20` }}><p.icon size={20} style={{ color: p.color }} /></div>
-                <div>
-                   <h4 className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">{p.title}</h4>
-                   <p className="text-[10px] font-bold opacity-30 italic">{p.desc}</p>
-                </div>
+                <div><h4 className="text-[11px] font-black uppercase tracking-widest leading-none mb-1">{p.title}</h4><p className="text-[10px] font-bold opacity-30 italic">{p.desc}</p></div>
              </div>
            ))}
         </div>
         <div className="flex gap-3 w-full max-sm:flex-col sm:max-w-sm">
-          <Link href="/v2" className="flex-1 flex gap-2 justify-center items-center bg-white text-[#193D2E] py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest active:scale-95 transition-all">
-            <LayoutGrid size={14} /> Full Menu
-          </Link>
+          {/* ОБНОВЛЕННАЯ КНОПКА ACCESSORIES (DISABLED) */}
+          <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest opacity-40 cursor-not-allowed">
+            <ShoppingBag size={14} /> Accessories
+          </button>
           <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest opacity-40 cursor-not-allowed">
             <Zap size={14} /> Concentrates
           </button>
@@ -256,20 +246,9 @@ export default function LandingPage() {
           return (
             <div key={grade.id} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
               <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-                <div>
-                  <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                  <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5">
-                    {grade.prices.map((item, idx) => (
-                      <React.Fragment key={idx}>
-                        <span>{item.w}g—{item.p}฿</span>
-                        {idx !== grade.prices.length - 1 && <span className="opacity-20 px-0.5">/</span>}
-                      </React.Fragment>
-                    ))}
-                  </p>
-                </div>
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                   <grade.icon size={18} style={{ color: grade.color }} />
-                </div>
+                <div><h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5">{grade.prices.map((item, idx) => (<React.Fragment key={idx}><span>{item.w}g—{item.p}฿</span>{idx !== grade.prices.length - 1 && <span className="opacity-20 px-0.5">/</span>}</React.Fragment>))}</p></div>
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"><grade.icon size={18} style={{ color: grade.color }} /></div>
               </div>
               <div className="divide-y divide-white/5">
                 {gradeItems.map((p) => (
@@ -290,17 +269,8 @@ export default function LandingPage() {
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button 
-            onClick={() => setIsCheckoutOpen(true)}
-            className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]"
-          >
-            <div className="flex items-center gap-4">
-               <div className="bg-black/10 p-2 rounded-xl"><ShoppingBag size={20}/></div>
-               <div className="text-left">
-                  <p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p>
-                  <p className="text-[16px] font-black italic">{getTotal()}฿ Total</p>
-               </div>
-            </div>
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]">
+            <div className="flex items-center gap-4"><div className="bg-black/10 p-2 rounded-xl"><ShoppingBag size={20}/></div><div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p><p className="text-[16px] font-black italic">{getTotal()}฿ Total</p></div></div>
             <div className="bg-black/10 p-3 rounded-full group-hover:translate-x-1 transition-transform"><Send size={18}/></div>
           </button>
         </div>
@@ -308,11 +278,7 @@ export default function LandingPage() {
 
       {selectedProduct && <ProductModal product={selectedProduct} style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }} onClose={() => setSelectedProduct(null)} />}
       {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
-
-      <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/10">
-        <div className="h-px w-16 bg-white/5"></div>
-        <p className="text-center text-[10px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • 2022</p>
-      </div>
+      <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/10"><div className="h-px w-16 bg-white/5"></div><p className="text-center text-[10px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • 2022</p></div>
     </div>
   );
 }
