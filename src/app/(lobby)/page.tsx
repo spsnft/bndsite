@@ -3,7 +3,7 @@ import * as React from "react"
 import Link from "next/link"
 import { getProducts } from "@/lib/product" 
 import { 
-  LayoutGrid, Zap, Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Megaphone
+  LayoutGrid, Zap, Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Megaphone, Clock3
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -16,25 +16,28 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", prices: [ {w:1, p:350}, {w:5, p:1500}, {w:10, p:2500}, {w:20, p:4000} ], color: "#A855F7", icon: Crown }
 ];
 
-const PROMOS = [
-  { id: 1, title: "Free Delivery", desc: "On orders over 3000฿", icon: Zap, color: "#34D399", size: "large", bgImage: "" },
-  { id: 2, title: "First Order", desc: "10% OFF: BND24", icon: Sparkles, color: "#FEC107", size: "small", bgImage: "" },
-  { id: 3, title: "Fast Shipping", desc: "< 60 mins", icon: Flame, color: "#FB7185", size: "small", bgImage: "" },
-];
+// ГЛАВНЫЙ БАННЕР (ОДИН)
+const MAIN_PROMO = {
+  title: "BONG FOR FREE",
+  desc: "On first order over 4000฿",
+  icon: Crown,
+  color: "#A855F7",
+  bgImage: "" // Сюда путь к картинке 800x300px
+};
 
-// ТЕКСТ ДЛЯ БЕГУЩЕЙ СТРОКИ
-const NEWS_TICKER = [
-  "🔥 UPDATE: NEW HASH ARRIVED!",
-  "🚚 FAST DELIVERY IN PHUKET WITHIN 60 MINUTES",
-  "⭐ PREMIUM QUALITY ONLY",
-  "📱 FOLLOW OUR TELEGRAM BOT FOR EXCLUSIVE OFFERS",
+// ТЕХНИЧЕСКИЙ ТИКЕР (УСКОРЕННЫЙ)
+const TECH_TICKER = [
+  "14:20 — AMNESIA HAZE BACK IN STOCK",
+  "Working today until 03:00 AM",
+  "Updated Gold Grade: 3 new strains added",
+  "Phuket Delivery: < 60 mins typical",
 ];
 
 const CONTACT_METHODS = [
-  { id: "telegram", label: "Telegram", icon: SendHorizontal, placeholder: "@username or phone number" },
-  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, placeholder: "phone number" },
-  { id: "line", label: "Line", icon: MessageCircle, placeholder: "phone number" },
-  { id: "instagram", label: "Instagram", icon: Instagram, placeholder: "@username or phone number" },
+  { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, ph: "phone number" },
+  { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
+  { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
 ];
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
@@ -89,8 +92,6 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const [isSending, setIsSending] = React.useState(false);
   const clearCart = useCart(s => s.clearCart);
 
-  const currentMethod = CONTACT_METHODS.find(m => m.id === method);
-
   const handleSubmit = async () => {
     if (!contact) return alert("Введите данные для связи");
     setIsSending(true);
@@ -130,7 +131,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
         </div>
         <input 
           type="text" 
-          placeholder={currentMethod?.placeholder || "Контакт для связи"}
+          placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph || "Контакт для связи"}
           value={contact}
           onChange={(e) => setContact(e.target.value)}
           className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30"
@@ -174,8 +175,8 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
              </p>
           </div>
         </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4 text-white">
+        <div className="p-6 space-y-4 text-white">
+          <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product.terpenes}</p></div>
@@ -222,52 +223,53 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32 overflow-x-hidden">
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
       {/* HEADER SECTION */}
-      <header className="flex flex-col items-center mb-6 relative">
+      <header className="flex flex-col items-center mb-12 relative">
         {/* BIG FLOATING LOGO */}
-        <div className="relative w-32 h-32 mb-6 group">
+        <div className="relative w-32 h-32 mb-8 group">
            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[45px] group-hover:bg-emerald-500/30 transition-all duration-1000"></div>
            <img src="/icon.png" alt="BND Logo" className="w-full h-full object-contain relative z-10 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" />
         </div>
         
-        {/* BENTO PROMO GRID */}
-        <div className="w-full max-w-4xl grid grid-cols-2 md:grid-cols-3 gap-3 px-2 mb-6">
-           {PROMOS.map(p => (
-             <div 
-               key={p.id} 
-               className={`relative overflow-hidden rounded-[2.2rem] border border-white/10 p-5 min-h-[150px] flex flex-col justify-end transition-all active:scale-[0.97]
-                 ${p.size === 'large' ? 'col-span-2 md:col-span-2' : 'col-span-1'}
-               `}
-               style={{ 
-                 backgroundColor: p.bgImage ? 'transparent' : 'rgba(255,255,255,0.03)',
-                 backgroundImage: p.bgImage ? `url(${p.bgImage})` : 'none',
-                 backgroundSize: 'cover',
-                 backgroundPosition: 'center'
-               }}
-             >
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-0"></div>
-                <div className="relative z-10">
-                  <div className="w-9 h-9 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-md" style={{ backgroundColor: `${p.color}20` }}>
-                    <p.icon size={18} style={{ color: p.color }} />
-                  </div>
-                  <h4 className="text-[13px] font-black uppercase tracking-tighter leading-none mb-1 italic text-white">{p.title}</h4>
-                  <p className="text-[10px] font-bold opacity-40 italic uppercase tracking-[0.15em] text-white">{p.desc}</p>
+        {/* SINGLE MAIN PROMO BANNER (v3.0) */}
+        <div className="w-full max-w-4xl px-2 mb-4">
+           <div 
+             className="relative overflow-hidden rounded-[2.5rem] border border-white/10 p-8 min-h-[160px] flex flex-col justify-end transition-all active:scale-[0.98] shadow-inner"
+             style={{ 
+               backgroundColor: MAIN_PROMO.bgImage ? 'transparent' : 'rgba(255,255,255,0.03)',
+               backgroundImage: MAIN_PROMO.bgImage ? `url(${MAIN_PROMO.bgImage})` : 'none',
+               backgroundSize: 'cover',
+               backgroundPosition: 'center'
+             }}
+           >
+              {/* Overlay for text legibility */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-0"></div>
+              
+              <div className="relative z-10 flex items-center gap-6 text-white">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 backdrop-blur-md" style={{ backgroundColor: `${MAIN_PROMO.color}20` }}>
+                  <MAIN_PROMO.icon size={24} style={{ color: MAIN_PROMO.color }} />
                 </div>
-             </div>
-           ))}
+                <div>
+                   <h3 className="text-[18px] font-black uppercase tracking-tighter leading-none mb-1.5 italic">{MAIN_PROMO.title}</h3>
+                   <p className="text-[11px] font-bold opacity-50 italic uppercase tracking-[0.15em]">{MAIN_PROMO.desc}</p>
+                </div>
+              </div>
+           </div>
         </div>
 
-        {/* NEWS TICKER (БЕГУЩАЯ СТРОКА) */}
-        <div className="w-screen relative left-1/2 -translate-x-1/2 bg-emerald-400/5 border-y border-white/5 py-3 mb-8 overflow-hidden">
-          <div className="flex whitespace-nowrap animate-marquee">
-            {[...NEWS_TICKER, ...NEWS_TICKER].map((text, i) => (
-              <div key={i} className="flex items-center mx-4">
-                <Megaphone size={12} className="text-emerald-400 mr-2" />
-                <span className="text-[10px] font-black uppercase italic tracking-widest text-emerald-400/80">{text}</span>
-                <span className="mx-8 text-white/10 opacity-30">///</span>
-              </div>
-            ))}
+        {/* ALIGNED & ACCELERATED TECH TICKER (v3.0) */}
+        <div className="w-full max-w-4xl px-2 mb-10">
+          <div className="bg-emerald-400/5 border border-white/5 rounded-2xl py-3 overflow-hidden shadow-inner">
+            <div className="flex whitespace-nowrap animate-marquee_fast">
+              {[...TECH_TICKER, ...TECH_TICKER, ...TECH_TICKER].map((text, i) => (
+                <div key={i} className="flex items-center mx-3">
+                  <Clock3 size={11} className="text-emerald-400 mr-2 opacity-50" />
+                  <span className="text-[10px] font-bold uppercase italic tracking-widest text-emerald-400/80">{text}</span>
+                  <span className="mx-6 text-white/5 opacity-20">•</span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -296,8 +298,8 @@ export default function LandingPage() {
               </div>
               <div className="divide-y divide-white/5">
                 {gradeItems.map((p) => (
-                  <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
-                    <div className="col-span-6 flex items-center gap-4 relative text-white">
+                  <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10 text-white">
+                    <div className="col-span-6 flex items-center gap-4 relative">
                       <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
                     </div>
@@ -326,14 +328,14 @@ export default function LandingPage() {
       
       <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/10"><div className="h-px w-16 bg-white/5"></div><p className="text-center text-[10px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • 2022</p></div>
 
-      {/* АНИМАЦИЯ ДЛЯ ТИКЕРА */}
+      {/* УСКОРЕННАЯ АНИМАЦИЯ ДЛЯ ТИКЕРА */}
       <style jsx global>{`
-        @keyframes marquee {
+        @keyframes marquee_fast {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+          100% { transform: translateX(-33.33%); } // Теперь -33%, так как мы дублируем массив 3 раза для плотности
         }
-        .animate-marquee {
-          animation: marquee 30s linear infinite;
+        .animate-marquee_fast {
+          animation: marquee_fast 12s linear infinite; // Ускорил с 30с до 12с
         }
       `}</style>
     </div>
