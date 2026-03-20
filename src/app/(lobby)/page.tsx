@@ -88,7 +88,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
     setIsSending(true);
     const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity}`).join(", ");
     try {
-      const GOOGLE_SCRIPT_URL = "YOUR_SCRIPT_URL_HERE";
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       await fetch(GOOGLE_SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
