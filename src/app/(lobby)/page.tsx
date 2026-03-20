@@ -5,7 +5,6 @@ import { getProducts } from "@/lib/product"
 import { 
   LayoutGrid, 
   Zap, 
-  ChevronRight, 
   Sparkles, 
   Flame, 
   Percent, 
@@ -13,21 +12,25 @@ import {
   MapPin, 
   Leaf, 
   Wind,
-  ShoppingCart
+  Crown
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 
 // --- CONFIG & STYLES ---
 const GRADES = [
-  { id: "silver", title: "SILVER GRADE", priceLine: "1g—150 / 5g—700 / 10g—1200 / 20g—2000", color: "#C1C1C1" },
-  { id: "golden", title: "GOLDEN GRADE", priceLine: "1g—250 / 5g—1100 / 10g—1700 / 20g—3000", color: "#FEC107" },
-  { id: "premium", title: "PREMIUM GRADE", priceLine: "1g—300 / 5g—1300 / 10g—2000 / 20g—3500", color: "#34D399" },
-  { id: "selected", title: "SELECTED GRADE", priceLine: "1g—350 / 5g—1500 / 10g—2500 / 20g—4000", color: "#A855F7" }
+  { id: "silver", title: "SILVER GRADE", priceLine: "1g—150 / 5g—700 / 10g—1200 / 20g—2000", color: "#C1C1C1", icon: Percent },
+  { id: "golden", title: "GOLDEN GRADE", priceLine: "1g—250 / 5g—1100 / 10g—1700 / 20g—3000", color: "#FEC107", icon: Sparkles },
+  { id: "premium", title: "PREMIUM GRADE", priceLine: "1g—300 / 5g—1300 / 10g—2000 / 20g—3500", color: "#34D399", icon: Flame },
+  { id: "selected", title: "SELECTED GRADE", priceLine: "1g—350 / 5g—1500 / 10g—2500 / 20g—4000", color: "#A855F7", icon: Crown }
 ];
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
-const TYPE_COLORS: Record<string, string> = { "indica": "#EF4444", "sativa": "#3B82F6", "hybrid": "#10B981" };
+const TYPE_COLORS: Record<string, string> = { 
+  "indica": "#A855F7", 
+  "sativa": "#FBBF24", 
+  "hybrid": "#2DD4BF" 
+};
 
 // --- STORE (Basket) ---
 const useCart = create<any>()(persist((set) => ({
@@ -85,14 +88,12 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
         </div>
 
         <div className="p-8 space-y-6">
-          {/* Характеристики */}
           <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-6">
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic">{product.farm}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic">{product.taste}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase">Terps</span></div><p className="text-[10px] font-bold italic">{product.terpenes}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product.terpenes}</p></div>
           </div>
           
-          {/* Логика покупки */}
           <div className="space-y-4">
             <div className="flex justify-between items-end">
                <div className="text-4xl font-black italic tracking-tighter" style={{ color: style.color }}>{currentPrice}฿</div>
@@ -132,7 +133,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-40">
-      {/* Header */}
       <div className="flex flex-col items-center mb-10">
         <div className="w-20 h-20 mb-6 flex items-center justify-center bg-white/5 rounded-full border border-white/10 backdrop-blur-3xl shadow-2xl relative">
            <span className="text-2xl font-black italic text-white tracking-tighter uppercase">BND</span>
@@ -149,11 +149,11 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Menu Board */}
       <div className="max-w-4xl mx-auto space-y-8">
         {GRADES.map((grade) => {
           const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds');
           if (gradeItems.length === 0) return null;
+          const GradeIcon = grade.icon;
 
           return (
             <div key={grade.id} className="rounded-[2rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
@@ -162,8 +162,9 @@ export default function LandingPage() {
                   <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
                   <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">{grade.priceLine}</p>
                 </div>
-                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center">
-                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: grade.color, boxShadow: `0 0 10px ${grade.color}` }} />
+                {/* Новые иконки категорий */}
+                <div className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                   <GradeIcon size={16} style={{ color: grade.color }} className="drop-shadow-md" />
                 </div>
               </div>
 
@@ -195,8 +196,9 @@ export default function LandingPage() {
                       <div className="col-span-2 text-center text-[9px] font-black uppercase" style={{ color: typeColor }}>
                         {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
                       </div>
-                      <div className="col-span-4 text-right flex items-center justify-end gap-2 text-[9px] font-bold opacity-30 italic line-clamp-1">
-                        {p.farm} <ChevronRight size={10} className="opacity-30 group-hover:translate-x-1 transition-transform" />
+                      {/* Выравнивание Farm по правому краю, стрелка убрана */}
+                      <div className="col-span-4 text-right text-[9px] font-bold opacity-30 italic line-clamp-1">
+                        {p.farm}
                       </div>
                     </div>
                   );
@@ -207,7 +209,6 @@ export default function LandingPage() {
         })}
       </div>
 
-      {/* Поп-ап открывается здесь */}
       {selectedProduct && (
         <ProductModal 
           product={selectedProduct} 
@@ -216,7 +217,7 @@ export default function LandingPage() {
         />
       )}
       
-      <p className="mt-16 text-center text-[9px] font-black uppercase tracking-[0.6em] text-white/5 italic italic">Premium Delivery Phuket • 2024</p>
+      <p className="mt-16 text-center text-[9px] font-black uppercase tracking-[0.6em] text-white/5 italic">Premium Delivery Phuket • 2024</p>
     </div>
   );
 }
