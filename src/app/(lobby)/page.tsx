@@ -12,7 +12,8 @@ import {
   MapPin, 
   Leaf, 
   Wind,
-  Crown
+  Crown,
+  TrendingDown
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
@@ -71,8 +72,19 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const [weight, setWeight] = React.useState(1);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart(s => s.addItem);
+  
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices));
+  const pricePerGram = Math.round(currentPrice / weight);
   const typeColor = TYPE_COLORS[String(product.type || "").toLowerCase()] || "#FFF";
+
+  // Логика подсказки (Upsell)
+  const getUpsellTip = () => {
+    if (weight < 5) return { next: 5, p: Math.round(product.prices[5]/5) };
+    if (weight < 10) return { next: 10, p: Math.round(product.prices[10]/10) };
+    if (weight < 20) return { next: 20, p: Math.round(product.prices[20]/20) };
+    return null;
+  };
+  const tip = getUpsellTip();
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl" onClick={onClose}>
@@ -82,7 +94,12 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
              <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
-             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1" style={{ color: typeColor }}>{product.type} • {product.subcategory} Grade</p>
+             {/* РАЗДЕЛЬНЫЕ ЦВЕТА */}
+             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1">
+                <span style={{ color: typeColor }}>{product.type}</span>
+                <span className="mx-2 opacity-20 text-white">•</span>
+                <span style={{ color: style.color }}>{product.subcategory} Grade</span>
+             </p>
           </div>
         </div>
         <div className="p-8 space-y-6">
@@ -93,19 +110,34 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           </div>
           <div className="space-y-4">
             <div className="flex justify-between items-end">
-               <div className="text-4xl font-black italic tracking-tighter" style={{ color: style.color }}>{currentPrice}฿</div>
-               <div className="text-[10px] font-black uppercase opacity-20 tracking-widest">{weight} Grams</div>
+               <div>
+                 <div className="text-4xl font-black italic tracking-tighter text-white">{currentPrice}฿</div>
+                 {/* ЦЕНА ЗА ГРАММ */}
+                 <div className="text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1">Price per gram: {pricePerGram}฿</div>
+               </div>
+               <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full mb-1">{weight}g</div>
             </div>
             <div className="grid grid-cols-4 gap-2">
               {[1, 5, 10, 20].map(v => (
                 <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
               ))}
             </div>
-            <input type="range" min="0.5" max="20" step="0.5" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
+            <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
+            
+            {/* ТЕКСТОВЫЙ ПРИЗЫВ (UPSELL) */}
+            {tip && (
+              <div className="flex items-center gap-2 py-2.5 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10">
+                <TrendingDown size={12} className="text-emerald-400" />
+                <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tight">
+                  Add {(tip.next - weight).toFixed(0)}g more to drop price to {tip.p}฿ per gram!
+                </p>
+              </div>
+            )}
+
+            {/* ЕДИНАЯ КНОПКА */}
             <button 
               onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }}
-              className="w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-widest transition-all shadow-xl active:scale-95"
-              style={{ backgroundColor: isAdded ? '#34D399' : style.color, color: '#000' }}>
+              className={`w-full py-4.5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
               {isAdded ? "Added to Cart" : "Add to Order"}
             </button>
           </div>
@@ -132,7 +164,7 @@ export default function LandingPage() {
            <span className="text-2xl font-black italic text-white tracking-tighter uppercase">BND</span>
            {items.length > 0 && <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-400 text-black text-[10px] font-black rounded-full flex items-center justify-center">{items.length}</div>}
         </div>
-        <div className="flex gap-3 w-full max-w-sm">
+        <div className="flex gap-3 w-full max-sm:flex-col sm:max-w-sm">
           <Link href="/v2" className="flex-1 flex gap-2 justify-center items-center bg-white text-[#193D2E] py-4 rounded-2xl font-black uppercase italic text-[10px] tracking-widest active:scale-95 transition-all">
             <LayoutGrid size={14} /> Full Menu
           </Link>
