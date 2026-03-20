@@ -16,16 +16,14 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", prices: [ {w:1, p:350}, {w:5, p:1500}, {w:10, p:2500}, {w:20, p:4000} ], color: "#A855F7", icon: Crown }
 ];
 
-// ГЛАВНЫЙ БАННЕР (ОДИН)
 const MAIN_PROMO = {
   title: "BONG FOR FREE",
   desc: "On first order over 4000฿",
   icon: Crown,
   color: "#A855F7",
-  bgImage: "" // Сюда путь к картинке 800x300px
+  bgImage: "" 
 };
 
-// ТЕХНИЧЕСКИЙ ТИКЕР (УСКОРЕННЫЙ)
 const TECH_TICKER = [
   "14:20 — AMNESIA HAZE BACK IN STOCK",
   "Working today until 03:00 AM",
@@ -43,7 +41,7 @@ const CONTACT_METHODS = [
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
 const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
 
-// --- STORE (Basket) ---
+// --- STORE ---
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
   addItem: (newItem) => set((state: any) => {
@@ -85,7 +83,6 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   return (prices[20] / 20) * weight;
 };
 
-// --- MODAL: CHECKOUT ---
 function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
@@ -117,9 +114,9 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl" onClick={onClose}>
       <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-6 space-y-5" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={20} className="text-white"/></button>
-        <div className="text-center">
-          <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">Оформление</h2>
-          <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mt-1 text-white italic">Сумма: {total}฿</p>
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-black italic uppercase tracking-tighter">Оформление</h2>
+          <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mt-1 italic">Сумма: {total}฿</p>
         </div>
         <div className="grid grid-cols-4 gap-2">
           {CONTACT_METHODS.map(m => (
@@ -144,7 +141,6 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   );
 }
 
-// --- MODAL SHOP ---
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
   const [weight, setWeight] = React.useState(1);
   const [isAdded, setIsAdded] = React.useState(false);
@@ -224,15 +220,12 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      {/* HEADER SECTION */}
       <header className="flex flex-col items-center mb-12 relative">
-        {/* BIG FLOATING LOGO */}
         <div className="relative w-32 h-32 mb-8 group">
            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[45px] group-hover:bg-emerald-500/30 transition-all duration-1000"></div>
            <img src="/icon.png" alt="BND Logo" className="w-full h-full object-contain relative z-10 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" />
         </div>
         
-        {/* SINGLE MAIN PROMO BANNER (v3.0) */}
         <div className="w-full max-w-4xl px-2 mb-4">
            <div 
              className="relative overflow-hidden rounded-[2.5rem] border border-white/10 p-8 min-h-[160px] flex flex-col justify-end transition-all active:scale-[0.98] shadow-inner"
@@ -243,9 +236,7 @@ export default function LandingPage() {
                backgroundPosition: 'center'
              }}
            >
-              {/* Overlay for text legibility */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-0"></div>
-              
               <div className="relative z-10 flex items-center gap-6 text-white">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 backdrop-blur-md" style={{ backgroundColor: `${MAIN_PROMO.color}20` }}>
                   <MAIN_PROMO.icon size={24} style={{ color: MAIN_PROMO.color }} />
@@ -258,22 +249,21 @@ export default function LandingPage() {
            </div>
         </div>
 
-        {/* ALIGNED & ACCELERATED TECH TICKER (v3.0) */}
+        {/* INFINITE FAST TICKER */}
         <div className="w-full max-w-4xl px-2 mb-10">
-          <div className="bg-emerald-400/5 border border-white/5 rounded-2xl py-3 overflow-hidden shadow-inner">
-            <div className="flex whitespace-nowrap animate-marquee_fast">
+          <div className="bg-emerald-400/5 border border-white/5 rounded-2xl py-3 overflow-hidden shadow-inner pointer-events-none">
+            <div className="flex whitespace-nowrap animate-marquee_infinite will-change-transform">
               {[...TECH_TICKER, ...TECH_TICKER, ...TECH_TICKER].map((text, i) => (
-                <div key={i} className="flex items-center mx-3">
+                <div key={i} className="flex items-center mx-4">
                   <Clock3 size={11} className="text-emerald-400 mr-2 opacity-50" />
                   <span className="text-[10px] font-bold uppercase italic tracking-widest text-emerald-400/80">{text}</span>
-                  <span className="mx-6 text-white/5 opacity-20">•</span>
+                  <span className="mx-8 text-white/5 opacity-20">•</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
 
-        {/* QUICK CATEGORIES */}
         <div className="flex gap-3 w-full max-w-md px-2">
           <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-5 rounded-2xl font-black uppercase italic text-[10px] tracking-[0.2em] opacity-40 cursor-not-allowed backdrop-blur-md text-white">
             <ShoppingBag size={14} /> Accessories
@@ -284,7 +274,6 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* PRODUCT LIST */}
       <div className="max-w-4xl mx-auto space-y-8">
         {GRADES.map((grade) => {
           const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds');
@@ -313,7 +302,6 @@ export default function LandingPage() {
         })}
       </div>
 
-      {/* FLOATING CART BUTTON */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]">
@@ -328,14 +316,13 @@ export default function LandingPage() {
       
       <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/10"><div className="h-px w-16 bg-white/5"></div><p className="text-center text-[10px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • 2022</p></div>
 
-      {/* УСКОРЕННАЯ АНИМАЦИЯ ДЛЯ ТИКЕРА */}
       <style jsx global>{`
-        @keyframes marquee_fast {
+        @keyframes marquee_infinite {
           0% { transform: translateX(0); }
-          100% { transform: translateX(-33.33%); } // Теперь -33%, так как мы дублируем массив 3 раза для плотности
+          100% { transform: translateX(-33.3333%); }
         }
-        .animate-marquee_fast {
-          animation: marquee_fast 12s linear infinite; // Ускорил с 30с до 12с
+        .animate-marquee_infinite {
+          animation: marquee_infinite 4s linear infinite;
         }
       `}</style>
     </div>
