@@ -1,12 +1,11 @@
 "use client"
 import * as React from "react"
-import Link from "next/link"
-import { getProducts } from "@/lib/product" 
 import { 
-  LayoutGrid, Zap, Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Megaphone, Clock3
+  Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Gift, Info, Clock3
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { getProducts } from "@/lib/product"
 
 // --- CONFIG & STYLES ---
 const GRADES = [
@@ -16,19 +15,11 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", prices: [ {w:1, p:350}, {w:5, p:1500}, {w:10, p:2500}, {w:20, p:4000} ], color: "#A855F7", icon: Crown }
 ];
 
-const MAIN_PROMO = {
-  title: "BONG FOR FREE",
-  desc: "On first order over 4000฿",
-  icon: Crown,
-  color: "#A855F7",
-  bgImage: "" 
-};
-
-const TECH_TICKER = [
-  "14:20 — AMNESIA HAZE BACK IN STOCK",
-  "Working today until 03:00 AM",
-  "Updated Gold Grade: 3 new strains added",
-  "Phuket Delivery: < 60 mins typical",
+const STORIES = [
+  { id: "new", label: "NEW", icon: Sparkles, title: "NEW ARRIVALS", desc: "Свежее пополнение витрины! Обновили Golden и Premium грейды новыми лотами от местных ферм." },
+  { id: "sale", label: "SALE", icon: Percent, title: "OFFERS", desc: "Ищи товары с иконкой % в меню — сегодня действуют спеццены на избранные позиции Hybrid." },
+  { id: "gift", label: "GIFT", icon: Gift, title: "BONG FOR FREE", desc: "Акция для новых клиентов: при первом заказе от 4000฿ через этот сайт дарим стеклянный бонг!" },
+  { id: "info", label: "INFO", icon: Info, title: "DELIVERY INFO", desc: "Работаем ежедневно до 03:00. Доставка по Пхукету обычно занимает от 45 до 60 минут." },
 ];
 
 const CONTACT_METHODS = [
@@ -44,7 +35,7 @@ const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#F
 // --- STORE ---
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
-  addItem: (newItem) => set((state: any) => {
+  addItem: (newItem: any) => set((state: any) => {
     const ex = state.items.findIndex((i: any) => i.id === newItem.id && i.weight === newItem.weight);
     if (ex > -1) {
       const newItems = [...state.items];
@@ -60,20 +51,7 @@ const useCart = create<any>()(persist((set, get) => ({
   getTotal: () => get().items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
 }), { name: "bnd-cart-v12" }));
 
-// --- COMPONENTS ---
-const BadgeIcon = ({ type }: { type: string }) => {
-  switch (type.toUpperCase()) {
-    case "NEW": return (
-      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
-        <span className="text-[6px] font-black text-blue-400 leading-none">NEW</span>
-      </div>
-    );
-    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30"><Flame size={10} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30"><Percent size={10} className="text-emerald-400" /></div>;
-    default: return null;
-  }
-};
-
+// --- HELPERS ---
 const getInterpolatedPrice = (weight: number, prices: any) => {
   if (!prices) return 0;
   if (weight <= 1) return prices[1] * weight;
@@ -82,6 +60,25 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   if (weight <= 20) return prices[10] + (prices[20] - prices[10]) * ((weight - 10) / 10);
   return (prices[20] / 20) * weight;
 };
+
+// --- MODALS ---
+function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-[250] flex items-end sm:items-center justify-center bg-black/90 backdrop-blur-xl p-0 sm:p-4 animate-in fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm bg-[#193D2E] rounded-t-[2.5rem] sm:rounded-[2.5rem] border border-white/10 p-8 pt-10 relative shadow-2xl" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-6 right-6 p-2 bg-white/5 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
+        <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-6">
+          <story.icon size={32} className="text-emerald-400" />
+        </div>
+        <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white mb-2">{story.title}</h2>
+        <p className="text-[12px] font-bold opacity-50 text-white leading-relaxed">{story.desc}</p>
+        <button onClick={onClose} className="w-full mt-8 bg-emerald-400 text-[#193D2E] py-4 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">
+          Понятно
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
   const [method, setMethod] = React.useState("telegram");
@@ -111,8 +108,8 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   };
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl" onClick={onClose}>
-      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-6 space-y-5" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl animate-in fade-in" onClick={onClose}>
+      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-6 space-y-5 shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={20} className="text-white"/></button>
         <div className="text-center text-white">
           <h2 className="text-2xl font-black italic uppercase tracking-tighter">Оформление</h2>
@@ -133,7 +130,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           onChange={(e) => setContact(e.target.value)}
           className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30"
         />
-        <button onClick={handleSubmit} disabled={isSending} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-50">
+        <button onClick={handleSubmit} disabled={isSending} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-50 shadow-lg">
           {isSending ? "Отправка..." : "Отправить заказ"}
         </button>
       </div>
@@ -157,7 +154,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   })();
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl" onClick={onClose}>
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in zoom-in-95 duration-200" onClick={onClose}>
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
@@ -207,10 +204,24 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   );
 }
 
+const BadgeIcon = ({ type }: { type: string }) => {
+  switch (type.toUpperCase()) {
+    case "NEW": return (
+      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+        <span className="text-[6px] font-black text-blue-400 leading-none">NEW</span>
+      </div>
+    );
+    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30"><Flame size={10} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30"><Percent size={10} className="text-emerald-400" /></div>;
+    default: return null;
+  }
+};
+
 // --- MAIN PAGE ---
 export default function LandingPage() {
   const [products, setProducts] = React.useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
+  const [activeStory, setActiveStory] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false); 
   const { items, getTotal } = useCart();
 
@@ -220,70 +231,58 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      <header className="flex flex-col items-center mb-12 relative">
-        <div className="relative w-32 h-32 mb-8 group">
-           <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[45px] group-hover:bg-emerald-500/30 transition-all duration-1000"></div>
-           <img src="/icon.png" alt="BND Logo" className="w-full h-full object-contain relative z-10 drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)]" />
+      <header className="flex flex-col items-center mb-10 pt-4">
+        {/* LOGO */}
+        <div className="relative w-24 h-24 mb-10 group">
+           <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px] group-hover:bg-emerald-500/30 transition-all duration-1000"></div>
+           <img src="/icon.png" alt="BND Logo" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" />
         </div>
         
-        <div className="w-full max-w-4xl px-2 mb-4">
-           <div 
-             className="relative overflow-hidden rounded-[2.5rem] border border-white/10 p-8 min-h-[160px] flex flex-col justify-end transition-all active:scale-[0.98] shadow-inner"
-             style={{ 
-               backgroundColor: MAIN_PROMO.bgImage ? 'transparent' : 'rgba(255,255,255,0.03)',
-               backgroundImage: MAIN_PROMO.bgImage ? `url(${MAIN_PROMO.bgImage})` : 'none',
-               backgroundSize: 'cover',
-               backgroundPosition: 'center'
-             }}
-           >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-0"></div>
-              <div className="relative z-10 flex items-center gap-6 text-white">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 backdrop-blur-md" style={{ backgroundColor: `${MAIN_PROMO.color}20` }}>
-                  <MAIN_PROMO.icon size={24} style={{ color: MAIN_PROMO.color }} />
-                </div>
-                <div>
-                   <h3 className="text-[18px] font-black uppercase tracking-tighter leading-none mb-1.5 italic">{MAIN_PROMO.title}</h3>
-                   <p className="text-[11px] font-bold opacity-50 italic uppercase tracking-[0.15em]">{MAIN_PROMO.desc}</p>
-                </div>
+        {/* STORIES ROW (v3.1) */}
+        <div className="flex gap-6 mb-8 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
+          {STORIES.map((s) => (
+            <button key={s.id} onClick={() => setActiveStory(s)} className="flex flex-col items-center gap-2 shrink-0 group">
+              <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-hover:border-emerald-400/50 transition-all active:scale-90 shadow-inner">
+                <s.icon size={20} className="text-white/60 group-hover:text-emerald-400 transition-colors" />
               </div>
-           </div>
+              <span className="text-[9px] font-black tracking-widest uppercase opacity-30 group-hover:opacity-100 transition-opacity">{s.label}</span>
+            </button>
+          ))}
         </div>
 
-        {/* INFINITE FAST TICKER */}
-        <div className="w-full max-w-4xl px-2 mb-10">
-          <div className="bg-emerald-400/5 border border-white/5 rounded-2xl py-3 overflow-hidden shadow-inner pointer-events-none">
-            <div className="flex whitespace-nowrap animate-marquee_infinite will-change-transform">
-              {[...TECH_TICKER, ...TECH_TICKER, ...TECH_TICKER].map((text, i) => (
-                <div key={i} className="flex items-center mx-4">
-                  <Clock3 size={11} className="text-emerald-400 mr-2 opacity-50" />
-                  <span className="text-[10px] font-bold uppercase italic tracking-widest text-emerald-400/80">{text}</span>
-                  <span className="mx-8 text-white/5 opacity-20">•</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="flex gap-3 w-full max-w-md px-2">
-          <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-5 rounded-2xl font-black uppercase italic text-[10px] tracking-[0.2em] opacity-40 cursor-not-allowed backdrop-blur-md text-white">
-            <ShoppingBag size={14} /> Accessories
+        {/* COMPACT CATEGORIES */}
+        <div className="flex gap-2 w-full max-w-sm px-2">
+          <button className="flex-1 py-4 rounded-xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 cursor-not-allowed text-white italic">
+            <ShoppingBag size={12} className="inline mr-2" /> Accessories
           </button>
-          <button className="flex-1 flex gap-2 justify-center items-center bg-white/5 border border-white/10 py-5 rounded-2xl font-black uppercase italic text-[10px] tracking-[0.2em] opacity-40 cursor-not-allowed backdrop-blur-md text-white">
-            <Zap size={14} /> Concentrates
+          <button className="flex-1 py-4 rounded-xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 cursor-not-allowed text-white italic">
+            <Flame size={12} className="inline mr-2" /> Concentrates
           </button>
         </div>
       </header>
 
+      {/* PRODUCT LIST */}
       <div className="max-w-4xl mx-auto space-y-8">
         {GRADES.map((grade) => {
           const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds');
           if (gradeItems.length === 0) return null;
           return (
-            <div key={grade.id} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
+            <div key={grade.id} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500">
               <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-                <div><h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5 text-white">{grade.prices.map((item, idx) => (<React.Fragment key={idx}><span>{item.w}g—{item.p}฿</span>{idx !== grade.prices.length - 1 && <span className="opacity-20 px-0.5">/</span>}</React.Fragment>))}</p></div>
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"><grade.icon size={18} style={{ color: grade.color }} /></div>
+                <div>
+                  <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                  <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5 text-white">
+                    {grade.prices.map((item, idx) => (
+                      <React.Fragment key={idx}>
+                        <span>{item.w}g—{item.p}฿</span>
+                        {idx !== grade.prices.length - 1 && <span className="opacity-20 px-0.5">/</span>}
+                      </React.Fragment>
+                    ))}
+                  </p>
+                </div>
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                  <grade.icon size={18} style={{ color: grade.color }} />
+                </div>
               </div>
               <div className="divide-y divide-white/5">
                 {gradeItems.map((p) => (
@@ -292,7 +291,9 @@ export default function LandingPage() {
                       <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
                     </div>
-                    <div className="col-span-2 text-center text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</div>
+                    <div className="col-span-2 text-center text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>
+                      {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
+                    </div>
                     <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic truncate text-white">{p.farm}</div>
                   </div>
                 ))}
@@ -302,28 +303,36 @@ export default function LandingPage() {
         })}
       </div>
 
+      {/* FLOATING CART BUTTON */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]">
-            <div className="flex items-center gap-4"><div className="bg-black/10 p-2 rounded-xl"><ShoppingBag size={20}/></div><div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p><p className="text-[16px] font-black italic">{getTotal()}฿ Total</p></div></div>
+            <div className="flex items-center gap-4">
+              <div className="bg-black/10 p-2 rounded-xl"><ShoppingBag size={20}/></div>
+              <div className="text-left">
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p>
+                <p className="text-[16px] font-black italic">{getTotal()}฿ Total</p>
+              </div>
+            </div>
             <div className="bg-black/10 p-3 rounded-full group-hover:translate-x-1 transition-transform"><Send size={18}/></div>
           </button>
         </div>
       )}
 
+      {/* ALL MODALS */}
+      {activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
       {selectedProduct && <ProductModal product={selectedProduct} style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }} onClose={() => setSelectedProduct(null)} />}
       {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
       
-      <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/10"><div className="h-px w-16 bg-white/5"></div><p className="text-center text-[10px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • 2022</p></div>
+      {/* FOOTER */}
+      <div className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/5">
+        <div className="h-px w-12 bg-white/10"></div>
+        <p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • PHUKET • 2026</p>
+      </div>
 
       <style jsx global>{`
-        @keyframes marquee_infinite {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.3333%); }
-        }
-        .animate-marquee_infinite {
-          animation: marquee_infinite 4s linear infinite;
-        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
     </div>
   );
