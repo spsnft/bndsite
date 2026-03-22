@@ -2,13 +2,14 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, TrendingDown, Sparkles, Percent, Crown, MapPin, Wind, MessageCircle, Instagram, SendHorizontal
+  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, TrendingDown, Sparkles, 
+  Percent, Crown, MapPin, Wind, MessageCircle, Instagram, SendHorizontal, Trash2
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
-// --- STORE (Синхронизация через bnd-cart-v12) ---
+// --- STORE (Ключ bnd-cart-v12 для синхронизации между всеми страницами) ---
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
   addItem: (newItem: any) => set((state: any) => {
@@ -23,6 +24,16 @@ const useCart = create<any>()(persist((set, get) => ({
   removeItem: (id: string, weight: string) => set((state: any) => ({
     items: state.items.filter((i: any) => !(i.id === id && i.weight === weight))
   })),
+  updateQuantity: (id: string, weight: string, delta: number) => set((state: any) => {
+    const newItems = state.items.map((i: any) => {
+      if (i.id === id && i.weight === weight) {
+        const newQty = Math.max(1, i.quantity + delta);
+        return { ...i, quantity: newQty };
+      }
+      return i;
+    });
+    return { items: newItems };
+  }),
   clearCart: () => set({ items: [] }),
   getTotal: () => get().items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
 }), { name: "bnd-cart-v12" }));
@@ -60,12 +71,12 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
-  const clearCart = useCart(s => s.clearCart);
+  const { clearCart, removeItem, updateQuantity } = useCart();
 
   const handleSubmit = async () => {
     if (!contact) return alert("Введите данные для связи");
     setIsSending(true);
-    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity}`).join(", ");
+    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
@@ -75,18 +86,56 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
-      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-6 space-y-5 shadow-2xl" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-6 right-6 p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={20} className="text-white"/></button>
-        <div className="text-center text-white"><h2 className="text-2xl font-black italic uppercase tracking-tighter">Оформление</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mt-1 italic">Сумма: {total}฿</p></div>
-        <div className="grid grid-cols-4 gap-2">
-          {CONTACT_METHODS.map(m => (
-            <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-4 rounded-2xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={18} /><span className="text-[8px] font-black uppercase">{m.label}</span></button>
+      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10">
+          <div>
+            <h2 className="text-xl font-black italic uppercase tracking-tighter text-white">Your Basket</h2>
+            <p className="text-[10px] font-bold opacity-30 uppercase text-white tracking-[0.2em]">{items.length} items</p>
+          </div>
+          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24} className="text-white"/></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+          {items.map((item) => (
+            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5">
+              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0">
+                <img src={item.image} className="w-full h-full object-contain" alt="" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[11px] font-black uppercase italic truncate text-white">{item.name}</h3>
+                <p className="text-[9px] opacity-40 font-bold text-white uppercase">{item.weight} • {item.price}฿</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center bg-black/20 rounded-xl border border-white/5">
+                  <button onClick={() => updateQuantity(item.id, item.weight, -1)} className="px-2 py-1 text-white opacity-40 hover:opacity-100">-</button>
+                  <span className="text-[10px] font-black text-white w-4 text-center">{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.id, item.weight, 1)} className="px-2 py-1 text-white opacity-40 hover:opacity-100">+</button>
+                </div>
+                <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/40 hover:text-rose-500 transition-colors p-1">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            </div>
           ))}
         </div>
-        <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-        <button onClick={handleSubmit} disabled={isSending} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-50 shadow-lg">
-          {isSending ? "Отправка..." : "Отправить заказ"}
-        </button>
+
+        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
+          <div className="grid grid-cols-4 gap-2">
+            {CONTACT_METHODS.map(m => (
+              <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white shadow-lg" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
+                <m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span>
+              </button>
+            ))}
+          </div>
+          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
+          <div className="flex items-center justify-between pt-2">
+            <p className="text-[10px] font-black uppercase opacity-40 text-white tracking-widest">Total cost</p>
+            <p className="text-3xl font-black italic text-white tracking-tighter">{total}฿</p>
+          </div>
+          <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-20 shadow-xl">
+            {isSending ? "Processing..." : "Confirm & Send Order"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -206,7 +255,7 @@ export default function ConcentratesPage() {
             <div key={subCat} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-2xl">
               <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${style.color}10` }}>
                 <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{subCat}</h2>
-                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
                   <style.icon size={18} style={{ color: style.color }} />
                 </div>
               </div>
@@ -219,7 +268,7 @@ export default function ConcentratesPage() {
                         <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                         <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
                       </div>
-                      <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">от {priceFrom}฿</div>
+                      <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">from {priceFrom}฿/g</div>
                     </div>
                   );
                 })}
@@ -250,6 +299,11 @@ export default function ConcentratesPage() {
       <footer className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/40">
         <p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БОШКУНАДОРОЖКУ • PHUKET • 2022</p>
       </footer>
+
+      <style jsx global>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
     </div>
   );
 }
