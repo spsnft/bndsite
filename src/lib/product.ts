@@ -1,5 +1,5 @@
-// ID твоей таблицы (извлечен из твоего контекста)
-const SPREADSHEET_ID = "1I9m4i-i6m_iS_Z3-U-uM3mE3N7H9_0t0-u7mH-E9mE"; 
+// ТВОЙ РЕАЛЬНЫЙ ID ТАБЛИЦЫ
+const SPREADSHEET_ID = "1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk"; 
 
 export async function getProducts() {
   const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=buds`;
@@ -10,22 +10,22 @@ export async function getProducts() {
       cache: 'no-store' 
     });
     const text = await res.text();
-    const rows = text.split('\n').slice(1);
+    // Фильтруем пустые строки, чтобы не было ошибок при отрисовке
+    const rows = text.split('\n').slice(1).filter(row => row.trim() !== "");
 
     return rows.map(row => {
-      // Регулярка для правильного парсинга CSV с запятыми внутри кавычек
       const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
       return {
         id: cols[0],
-        category: cols[1],
-        subcategory: cols[2],
-        name: cols[3],
-        type: cols[4],
-        farm: cols[5],
-        taste: cols[6],
-        terpenes: cols[7],
-        badge: cols[8],
-        image: cols[9], // Прямая ссылка из Cloudinary в колонке J
+        category: cols[1]?.toLowerCase() || "", // buds или concentrates
+        subcategory: cols[2] || "", // silver, golden, и т.д.
+        name: cols[3] || "",
+        type: cols[4] || "",
+        farm: cols[5] || "",
+        taste: cols[6] || "",
+        terpenes: cols[7] || "",
+        badge: cols[8] || "",
+        image: cols[9] || "",
         prices: {
           1: Number(cols[10]) || 0,
           5: Number(cols[11]) || 0,
@@ -45,11 +45,11 @@ export async function getMedia() {
   const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=media`;
   try {
     const res = await fetch(url, { 
-      next: { revalidate: 0 },
+      next: { revalidate: 0 }, 
       cache: 'no-store'
     });
     const text = await res.text();
-    const rows = text.split('\n').slice(1);
+    const rows = text.split('\n').slice(1).filter(row => row.trim() !== "");
     
     return rows.reduce((acc: any, row: string) => {
       const parts = row.split(',');
