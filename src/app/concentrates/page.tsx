@@ -2,17 +2,17 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, TrendingDown, Sparkles, Percent, Crown
+  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, TrendingDown, Sparkles, Percent, Crown, MapPin, Wind, MessageCircle, Instagram, SendHorizontal
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
-// --- STORE (Ключ bnd-cart-v12 объединяет корзину с главной страницей) ---
-const useCart = create()(persist((set, get) => ({
+// --- STORE (Синхронизация через bnd-cart-v12) ---
+const useCart = create<any>()(persist((set, get) => ({
   items: [],
-  addItem: (newItem) => set((state) => {
-    const ex = state.items.findIndex((i) => i.id === newItem.id && i.weight === newItem.weight);
+  addItem: (newItem: any) => set((state: any) => {
+    const ex = state.items.findIndex((i: any) => i.id === newItem.id && i.weight === newItem.weight);
     if (ex > -1) {
       const newItems = [...state.items];
       newItems[ex].quantity += 1;
@@ -20,10 +20,20 @@ const useCart = create()(persist((set, get) => ({
     }
     return { items: [...state.items, { ...newItem, quantity: 1 }] };
   }),
-  getTotal: () => get().items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  removeItem: (id: string, weight: string) => set((state: any) => ({
+    items: state.items.filter((i: any) => !(i.id === id && i.weight === weight))
+  })),
+  clearCart: () => set({ items: [] }),
+  getTotal: () => get().items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
 }), { name: "bnd-cart-v12" }));
 
-// --- HELPER: Стили только для цвета и иконок (без текстовых грейдов) ---
+const CONTACT_METHODS = [
+  { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, ph: "phone number" },
+  { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
+  { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
+];
+
 const getSubStyle = (subName = "") => {
   const name = subName.toLowerCase();
   if (name.includes("old school")) return { color: "#C1C1C1", icon: Percent };
@@ -33,29 +43,56 @@ const getSubStyle = (subName = "") => {
   return { color: "#FFF", icon: Zap };
 };
 
-const getInterpolatedPrice = (weight, prices) => {
+const getInterpolatedPrice = (weight: number, prices: any) => {
   if (!prices) return 0;
   const p1 = Number(prices[1]) || 0;
   const p5 = Number(prices[5]) || 0;
   const p10 = Number(prices[10]) || 0;
-
   if (weight <= 1) return p1 * weight;
   if (weight <= 5) return p1 + (p5 - p1) * ((weight - 1) / 4);
   if (weight <= 10) return p5 + (p10 - p5) * ((weight - 5) / 5);
   return (p10 / 10) * weight;
 };
 
-// --- COMPONENTS ---
-const BadgeIcon = ({ type }) => {
-  switch (type?.toUpperCase()) {
-    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30"><span className="text-[6px] font-black text-blue-400 leading-none">NEW</span></div>;
-    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30"><Flame size={10} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30"><Percent size={10} className="text-emerald-400" /></div>;
-    default: return null;
-  }
-};
+// --- MODALS ---
 
-function ProductModal({ product, style, onClose }) {
+function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
+  const [method, setMethod] = React.useState("telegram");
+  const [contact, setContact] = React.useState("");
+  const [isSending, setIsSending] = React.useState(false);
+  const clearCart = useCart(s => s.clearCart);
+
+  const handleSubmit = async () => {
+    if (!contact) return alert("Введите данные для связи");
+    setIsSending(true);
+    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity}`).join(", ");
+    try {
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
+      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
+      alert("Заказ успешно отправлен!"); clearCart(); onClose();
+    } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
+      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-6 space-y-5 shadow-2xl" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-6 right-6 p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={20} className="text-white"/></button>
+        <div className="text-center text-white"><h2 className="text-2xl font-black italic uppercase tracking-tighter">Оформление</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mt-1 italic">Сумма: {total}฿</p></div>
+        <div className="grid grid-cols-4 gap-2">
+          {CONTACT_METHODS.map(m => (
+            <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-4 rounded-2xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={18} /><span className="text-[8px] font-black uppercase">{m.label}</span></button>
+          ))}
+        </div>
+        <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/20 border border-white/10 rounded-2xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
+        <button onClick={handleSubmit} disabled={isSending} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-50 shadow-lg">
+          {isSending ? "Отправка..." : "Отправить заказ"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
   const [weight, setWeight] = React.useState(1);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart(s => s.addItem);
@@ -68,8 +105,8 @@ function ProductModal({ product, style, onClose }) {
   const tip = weight < 5 ? { next: 5, p: Math.round(p5/5) } : weight < 10 ? { next: 10, p: Math.round(p10/10) } : null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in zoom-in-95 duration-200" onClick={onClose}>
-      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
+      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
           {product.image ? (
@@ -82,18 +119,22 @@ function ProductModal({ product, style, onClose }) {
              <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white opacity-40">{product.subcategory}</p>
           </div>
         </div>
-        <div className="p-6 space-y-6 text-white">
+        <div className="p-8 pt-0 space-y-6 text-white">
+          <div className="grid grid-cols-2 gap-4 border-b border-white/5 pb-4">
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm || "Unknown"}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Microns</span></div><p className="text-[10px] font-bold italic truncate">{product.microns || "N/A"}</p></div>
+          </div>
           <div className="flex justify-between items-end">
              <div>
                <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
                <div className="text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1">Price per gram: {pricePerGram}฿</div>
              </div>
-             <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full mb-1">{weight}g</div>
+             <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
           </div>
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-2">
               {[1, 5, 10].map(v => (
-                <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
+                <button key={v} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
               ))}
             </div>
             <input type="range" min="1" max="10" step="1" value={weight} onChange={(e) => setWeight(parseInt(e.target.value))} className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
@@ -116,20 +157,29 @@ function ProductModal({ product, style, onClose }) {
   );
 }
 
+const BadgeIcon = ({ type }: { type: string }) => {
+  switch (type?.toUpperCase()) {
+    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400 leading-none">NEW</span></div>;
+    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
+    default: return null;
+  }
+};
+
 export default function ConcentratesPage() {
-  const [products, setProducts] = React.useState([]);
-  const [selected, setSelected] = React.useState(null);
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [selected, setSelected] = React.useState<any>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false); 
   const { items, getTotal } = useCart();
 
   React.useEffect(() => {
     getProducts().then(data => {
-      // Фильтруем всё, кроме шишек
-      const concs = data.filter(p => p.category?.toLowerCase() !== 'buds');
+      const concs = data.filter((p: any) => p.category?.toLowerCase() !== 'buds');
       setProducts(concs);
     });
   }, []);
 
-  const grouped = products.reduce((acc, p) => {
+  const grouped = products.reduce((acc: any, p: any) => {
     const key = p.subcategory || "Other";
     if (!acc[key]) acc[key] = [];
     acc[key].push(p);
@@ -144,13 +194,13 @@ export default function ConcentratesPage() {
         </Link>
         <div className="text-center">
           <h1 className="text-2xl font-black italic uppercase tracking-tighter">Concentrates</h1>
-          <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1 italic">Extraction Menu</p>
+          <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1 italic leading-none">Extraction Menu</p>
         </div>
         <div className="w-14"></div>
       </header>
 
       <div className="max-w-4xl mx-auto space-y-10">
-        {Object.entries(grouped).map(([subCat, items]) => {
+        {Object.entries(grouped).map(([subCat, items]: [string, any]) => {
           const style = getSubStyle(subCat);
           return (
             <div key={subCat} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-2xl">
@@ -161,21 +211,15 @@ export default function ConcentratesPage() {
                 </div>
               </div>
               <div className="divide-y divide-white/5">
-                {items.map((p) => {
-                  // Расчет цены "от" (цена за 1г при покупке 10г)
+                {items.map((p: any) => {
                   const priceFrom = p.prices?.[10] ? Math.round(Number(p.prices[10]) / 10) : 0;
-                  
                   return (
                     <div key={p.id} onClick={() => setSelected(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
                       <div className="col-span-8 flex items-center gap-4">
                         <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-                        <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">
-                          {p.name}
-                        </span>
+                        <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
                       </div>
-                      <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">
-                        от {priceFrom}฿
-                      </div>
+                      <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">от {priceFrom}฿</div>
                     </div>
                   );
                 })}
@@ -185,32 +229,26 @@ export default function ConcentratesPage() {
         })}
       </div>
 
-      {/* Floating Cart (Синхронизирована с общей корзиной) */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <Link href="/" className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] group active:scale-95 transition-all">
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] group active:scale-95 transition-all">
             <div className="flex items-center gap-4 text-left">
-              <ShoppingBag size={20}/>
+              <ShoppingBag size={22}/>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Checkout</p>
-                <p className="text-[16px] font-black italic">{getTotal()}฿ Total</p>
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p>
+                <p className="text-[16px] font-black italic mt-1">{getTotal()}฿ Total</p>
               </div>
             </div>
             <Send size={18}/>
-          </Link>
+          </button>
         </div>
       )}
 
-      {selected && (
-        <ProductModal 
-          product={selected} 
-          style={getSubStyle(selected.subcategory)} 
-          onClose={() => setSelected(null)} 
-        />
-      )}
+      {selected && <ProductModal product={selected} style={getSubStyle(selected.subcategory)} onClose={() => setSelected(null)} />}
+      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
 
-      <footer className="mt-20 pb-12 text-center">
-        <p className="text-[9px] font-black uppercase tracking-[0.5em] italic text-white/5">BND • PHUKET • 2022</p>
+      <footer className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/40">
+        <p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БОШКУНАДОРОЖКУ • PHUKET • 2022</p>
       </footer>
     </div>
   );
