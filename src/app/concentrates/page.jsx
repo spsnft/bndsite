@@ -2,13 +2,13 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, MapPin, Leaf, Wind, TrendingDown, Sparkles, Percent, Crown, Info, Gift
+  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, TrendingDown, Sparkles, Percent, Crown
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
-// --- STORE (Синхронизирован с главной) ---
+// --- STORE ---
 const useCart = create()(persist((set, get) => ({
   items: [],
   addItem: (newItem) => set((state) => {
@@ -23,20 +23,27 @@ const useCart = create()(persist((set, get) => ({
   getTotal: () => get().items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 }), { name: "bnd-cart-v12" }));
 
-// --- CONFIG & STYLES ---
-const SUB_STYLES = {
-  "Hash | Old School": { color: "#C1C1C1", icon: Percent, label: "SILVER GRADE" },
-  "Hash | Fresh Frozen": { color: "#FEC107", icon: Sparkles, label: "GOLDEN GRADE" },
-  "Hash | Fresh Frozen Premium": { color: "#34D399", icon: Flame, label: "PREMIUM GRADE" },
-  "Live Rosin": { color: "#A855F7", icon: Crown, label: "SELECTED GRADE" }
+// --- HELPER: Определение стиля на основе названия подкатегории ---
+const getSubStyle = (subName = "") => {
+  const name = subName.toLowerCase();
+  if (name.includes("old school")) 
+    return { color: "#C1C1C1", icon: Percent, label: "SILVER GRADE" };
+  if (name.includes("premium")) 
+    return { color: "#34D399", icon: Flame, label: "PREMIUM GRADE" };
+  if (name.includes("fresh frozen")) 
+    return { color: "#FEC107", icon: Sparkles, label: "GOLDEN GRADE" };
+  if (name.includes("rosin")) 
+    return { color: "#A855F7", icon: Crown, label: "SELECTED GRADE" };
+  
+  return { color: "#FFF", icon: Zap, label: "SPECIAL GRADE" };
 };
 
 const getInterpolatedPrice = (weight, prices) => {
   if (!prices) return 0;
-  if (weight <= 1) return prices[1] * weight;
-  if (weight <= 5) return prices[1] + (prices[5] - prices[1]) * ((weight - 1) / 4);
-  if (weight <= 10) return prices[5] + (prices[10] - prices[5]) * ((weight - 5) / 5);
-  return (prices[10] / 10) * weight;
+  if (weight <= 1) return (prices[1] || 0) * weight;
+  if (weight <= 5) return (prices[1] || 0) + ((prices[5] || 0) - (prices[1] || 0)) * ((weight - 1) / 4);
+  if (weight <= 10) return (prices[5] || 0) + ((prices[10] || 0) - (prices[5] || 0)) * ((weight - 5) / 5);
+  return ((prices[10] || 0) / 10) * weight;
 };
 
 // --- COMPONENTS ---
@@ -56,18 +63,17 @@ function ProductModal({ product, style, onClose }) {
   
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices));
   const pricePerGram = Math.round(currentPrice / weight);
-
-  const tip = weight < 5 ? { next: 5, p: Math.round(product.prices[5]/5) } : weight < 10 ? { next: 10, p: Math.round(product.prices[10]/10) } : null;
+  const tip = weight < 5 ? { next: 5, p: Math.round((product.prices?.[5] || 0)/5) } : weight < 10 ? { next: 10, p: Math.round((product.prices?.[10] || 0)/10) } : null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in zoom-in-95 duration-200" onClick={onClose}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in zoom-in-95" onClick={onClose}>
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
           {product.image ? (
-            <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
+             <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
           ) : (
-            <div className="w-full h-full flex items-center justify-center opacity-10"><Zap size={80}/></div>
+             <div className="w-full h-full flex items-center justify-center opacity-10"><Zap size={80}/></div>
           )}
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
              <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
@@ -92,12 +98,12 @@ function ProductModal({ product, style, onClose }) {
             {tip && (
               <div className="flex items-center gap-2 py-2 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10">
                 <TrendingDown size={12} className="text-emerald-400" />
-                <p className="text-[9px] font-bold text-emerald-400/80 uppercase">Add {tip.next - weight}g more for {tip.p}฿ per gram!</p>
+                <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tighter">Add {tip.next - weight}g more for {tip.p}฿ per gram!</p>
               </div>
             )}
             <button 
               onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }}
-              className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}
+              className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}
             >
               {isAdded ? "Added to Cart" : "Add to Order"}
             </button>
@@ -108,7 +114,6 @@ function ProductModal({ product, style, onClose }) {
   );
 }
 
-// --- MAIN PAGE ---
 export default function ConcentratesPage() {
   const [products, setProducts] = React.useState([]);
   const [selected, setSelected] = React.useState(null);
@@ -116,13 +121,14 @@ export default function ConcentratesPage() {
 
   React.useEffect(() => {
     getProducts().then(data => {
+      // Исключаем Buds
       const concs = data.filter(p => p.category?.toLowerCase() !== 'buds');
       setProducts(concs);
     });
   }, []);
 
   const grouped = products.reduce((acc, p) => {
-    const key = p.subcategory || "Hash | Old School";
+    const key = p.subcategory || "Other";
     if (!acc[key]) acc[key] = [];
     acc[key].push(p);
     return acc;
@@ -135,17 +141,17 @@ export default function ConcentratesPage() {
           <ArrowLeft size={20} />
         </Link>
         <div className="text-center">
-          <h1 className="text-2xl font-black italic uppercase tracking-tighter text-white">Concentrates</h1>
+          <h1 className="text-2xl font-black italic uppercase tracking-tighter">Concentrates</h1>
           <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1">Extraction Menu</p>
         </div>
         <div className="w-14"></div>
       </header>
 
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-10">
         {Object.entries(grouped).map(([subCat, items]) => {
-          const style = SUB_STYLES[subCat] || SUB_STYLES["Hash | Old School"];
+          const style = getSubStyle(subCat);
           return (
-            <div key={subCat} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
+            <div key={subCat} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-2xl">
               <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${style.color}10` }}>
                 <div>
                   <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{subCat}</h2>
@@ -162,7 +168,7 @@ export default function ConcentratesPage() {
                       <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white">{p.name}</span>
                     </div>
-                    <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic truncate">
+                    <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">
                       from {p.prices?.[10] || 0}฿
                     </div>
                   </div>
@@ -175,11 +181,11 @@ export default function ConcentratesPage() {
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <Link href="/" className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] group active:scale-95 transition-all">
+          <Link href="/" className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] active:scale-95 transition-all">
             <div className="flex items-center gap-4">
               <ShoppingBag size={20}/>
               <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest leading-none">In Order</p>
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Checkout</p>
                 <p className="text-[16px] font-black italic">{getTotal()}฿ Total</p>
               </div>
             </div>
@@ -188,7 +194,13 @@ export default function ConcentratesPage() {
         </div>
       )}
 
-      {selected && <ProductModal product={selected} style={SUB_STYLES[selected.subcategory] || SUB_STYLES["Hash | Old School"]} onClose={() => setSelected(null)} />}
+      {selected && (
+        <ProductModal 
+          product={selected} 
+          style={getSubStyle(selected.subcategory)} 
+          onClose={() => setSelected(null)} 
+        />
+      )}
     </div>
   );
 }
