@@ -2,7 +2,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, 
+  Sparkles, Flame, Percent, X, Crown, TrendingDown, 
   ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Gift, Info, Trash2 
 } from "lucide-react"
 import { useCart } from "@/store/store"
@@ -57,13 +57,22 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const { clearCart, removeItem, updateQuantity } = useCart();
 
   const handleSubmit = async () => {
-    if (!contact) return alert("Введите данные для связи");
+    if (!contact) return alert("Please enter contact details");
     setIsSending(true);
     const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
     try {
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
-      alert("Заказ успешно отправлен!"); clearCart(); onClose();
-    } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
+      await fetch(GOOGLE_SCRIPT_URL, { 
+        method: "POST", 
+        mode: "no-cors", 
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contact, method, orderText, total }) 
+      });
+      alert("Order sent successfully!"); clearCart(); onClose();
+    } catch (error) { 
+      alert("Error sending order. Please try again."); 
+    } finally { 
+      setIsSending(false); 
+    }
   };
 
   return (
@@ -79,8 +88,8 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
         <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
           {items.map((item) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5">
-              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0">
-                <img src={item.image} className="w-full h-full object-contain" alt="" />
+              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0 overflow-hidden">
+                <img src={item.image} className="w-full h-full object-cover" alt="" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-[11px] font-black uppercase italic truncate text-white">{item.name}</h3>
@@ -110,12 +119,12 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
               </button>
             ))}
           </div>
-          <input type="text" placeholder="Your contact details" value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] text-white" />
+          <input type="text" placeholder="Your contact details" value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] text-white focus:outline-none focus:border-emerald-400" />
           <div className="flex items-center justify-between">
              <span className="text-[10px] font-black uppercase opacity-40 text-white tracking-widest">Total</span>
              <span className="text-3xl font-black italic text-white tracking-tighter">{total}฿</span>
           </div>
-          <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] shadow-xl">
+          <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] shadow-xl active:scale-[0.98] transition-transform">
             {isSending ? "Sending..." : "Confirm Order"}
           </button>
         </div>
@@ -201,19 +210,32 @@ export default function LandingPage() {
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [activeStoryUrl, setActiveStoryUrl] = React.useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(true);
   const { items, getTotal } = useCart();
 
   React.useEffect(() => { 
-    getProducts().then(setProducts); 
-    getMedia().then(setMedia);
+    Promise.all([getProducts(), getMedia()]).then(([productsData, mediaData]) => {
+      setProducts(productsData);
+      setMedia(mediaData);
+      setLoading(false);
+    });
   }, []);
+
+  if (loading) return (
+    <div className="min-h-screen bg-[#193D2E] flex items-center justify-center">
+       <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="w-20 h-20 bg-white/5 rounded-full border border-white/10" />
+          <div className="h-2 w-24 bg-white/10 rounded" />
+       </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32">
       <header className="flex flex-col items-center mb-10 pt-4">
         <div className="relative w-24 h-24 mb-10 group">
           <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px]"></div>
-          <img src="/icon.png" className="w-full h-full object-contain relative z-10" />
+          <img src="/icon.png" className="w-full h-full object-contain relative z-10" alt="Logo" />
         </div>
 
         {/* Динамические сторисы */}
@@ -222,7 +244,7 @@ export default function LandingPage() {
             const url = media[s.id];
             if (!url) return null;
             return (
-              <button key={s.id} onClick={() => setActiveStoryUrl(url)} className="flex flex-col items-center gap-3 shrink-0">
+              <button key={s.id} onClick={() => setActiveStoryUrl(url)} className="flex flex-col items-center gap-3 shrink-0 active:scale-95 transition-transform">
                 <div className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center" style={{ borderColor: `${s.color}40` }}><s.icon size={22} style={{ color: s.color }} /></div>
                 <span className="text-[9px] font-black tracking-widest uppercase opacity-60 text-center leading-tight max-w-[65px]">{s.label}</span>
               </button>
@@ -231,8 +253,8 @@ export default function LandingPage() {
         </div>
 
         <div className="flex gap-3 w-full max-w-sm">
-          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] opacity-30 italic">Accessories</button>
-          <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] text-[#a855f7] italic flex items-center justify-center gap-2">
+          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] opacity-30 italic cursor-not-allowed">Accessories</button>
+          <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
             <Flame size={12} /> Concentrates
           </Link>
         </div>
@@ -250,7 +272,7 @@ export default function LandingPage() {
               </div>
               <div className="divide-y divide-white/5">
                 {gradeItems.map((p) => (
-                  <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 cursor-pointer">
+                  <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 cursor-pointer active:bg-white/10 transition-colors">
                     <div className="col-span-6 flex items-center gap-4">
                       <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                       <span className="text-[12px] font-black uppercase italic text-white/90 leading-tight">{p.name}</span>
@@ -267,7 +289,7 @@ export default function LandingPage() {
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E]">
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] active:scale-[0.98] transition-transform">
             <div className="flex items-center gap-4 text-left">
               <ShoppingBag size={22}/>
               <div>
