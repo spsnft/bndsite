@@ -1,7 +1,7 @@
-// ТВОЙ РЕАЛЬНЫЙ ID ТАБЛИЦЫ
 const SPREADSHEET_ID = "1cHn0Jh6Buf5seFFOq5nv1WSJwUGD9kOhrEy1HevUeFk"; 
 
 export async function getProducts() {
+  // Добавили параметр gid=0 на случай, если buds — это первый лист
   const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=buds`;
   
   try {
@@ -10,16 +10,25 @@ export async function getProducts() {
       cache: 'no-store' 
     });
     const text = await res.text();
-    // Фильтруем пустые строки, чтобы не было ошибок при отрисовке
-    const rows = text.split('\n').slice(1).filter(row => row.trim() !== "");
+    
+    // ЛОГ ДЛЯ ПРОВЕРКИ (увидишь в Vercel Logs)
+    console.log("Raw CSV data length:", text.length);
+
+    if (!text || text.includes("html")) {
+      console.error("Google returned HTML instead of CSV. Check sharing settings!");
+      return [];
+    }
+
+    const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== "");
 
     return rows.map(row => {
       const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
+      
       return {
-        id: cols[0],
-        category: cols[1]?.toLowerCase() || "", // buds или concentrates
-        subcategory: cols[2] || "", // silver, golden, и т.д.
-        name: cols[3] || "",
+        id: cols[0] || Math.random().toString(),
+        category: String(cols[1] || "").toLowerCase().trim(), // Принудительно в нижний регистр
+        subcategory: String(cols[2] || "").toLowerCase().trim(),
+        name: cols[3] || "Unnamed",
         type: cols[4] || "",
         farm: cols[5] || "",
         taste: cols[6] || "",
@@ -44,22 +53,18 @@ export async function getProducts() {
 export async function getMedia() {
   const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=media`;
   try {
-    const res = await fetch(url, { 
-      next: { revalidate: 0 }, 
-      cache: 'no-store'
-    });
+    const res = await fetch(url, { cache: 'no-store' });
     const text = await res.text();
-    const rows = text.split('\n').slice(1).filter(row => row.trim() !== "");
+    const rows = text.split(/\r?\n/).slice(1).filter(row => row.trim() !== "");
     
     return rows.reduce((acc: any, row: string) => {
-      const parts = row.split(',');
-      const id = parts[0]?.replace(/"/g, '').trim();
-      const link = parts[1]?.replace(/"/g, '').trim();
+      const parts = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g, '').trim());
+      const id = parts[0];
+      const link = parts[1];
       if (id && link) acc[id] = link;
       return acc;
     }, {});
   } catch (e) {
-    console.error("Error fetching media:", e);
     return {};
   }
 }
