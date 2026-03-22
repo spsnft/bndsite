@@ -9,7 +9,9 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
-// --- STORE (Ключ bnd-cart-v12 объединяет корзину с концентратами) ---
+const CLOUD_NAME = "dpjwbcgrq";
+
+// --- STORE ---
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
   addItem: (newItem: any) => set((state: any) => {
@@ -45,10 +47,11 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
 ];
 
+// Сюда вставляй Public ID из Cloudinary
 const STORIES = [
-  { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
-  { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
-  { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
+  { id: "Add_a_heading_-_2_a3i8eg", label: "Limited Offers", icon: Gift, color: "#FEC107" },
+  { id: "new_arrivals_id", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
+  { id: "info_id", label: "Service Info", icon: Info, color: "#A855F7" },
 ];
 
 const CONTACT_METHODS = [
@@ -70,15 +73,14 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   return (prices[20] / 20) * weight;
 };
 
-// --- MODALS ---
-
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
+  const imageUrl = `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto/${story.id}`;
   return (
     <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
       <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white transition-colors"><X size={32}/></button>
+        <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
         <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <img src={`/stories/${story.id}.webp`} className="w-full h-full object-cover" alt={story.label} />
+          <img src={imageUrl} className="w-full h-full object-cover" alt="" />
         </div>
       </div>
     </div>
@@ -170,7 +172,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
-      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10">
           <div>
             <h2 className="text-xl font-black italic uppercase tracking-tighter text-white">Your Basket</h2>
@@ -182,7 +184,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
         <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
           {items.map((item) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5">
-              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0">
+              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0 overflow-hidden">
                 <img src={item.image} className="w-full h-full object-contain" alt="" />
               </div>
               <div className="flex-1 min-w-0">
@@ -206,7 +208,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
           <div className="grid grid-cols-4 gap-2">
             {CONTACT_METHODS.map(m => (
-              <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
+              <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white shadow-lg" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
                 <m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span>
               </button>
             ))}
