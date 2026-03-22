@@ -8,7 +8,7 @@ import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
-// --- STORE ---
+// --- STORE (Ключ bnd-cart-v12 объединяет корзину с главной страницей) ---
 const useCart = create()(persist((set, get) => ({
   items: [],
   addItem: (newItem) => set((state) => {
@@ -23,33 +23,32 @@ const useCart = create()(persist((set, get) => ({
   getTotal: () => get().items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 }), { name: "bnd-cart-v12" }));
 
-// --- HELPER: Определение стиля на основе названия подкатегории ---
+// --- HELPER: Стили только для цвета и иконок (без текстовых грейдов) ---
 const getSubStyle = (subName = "") => {
   const name = subName.toLowerCase();
-  if (name.includes("old school")) 
-    return { color: "#C1C1C1", icon: Percent, label: "SILVER GRADE" };
-  if (name.includes("premium")) 
-    return { color: "#34D399", icon: Flame, label: "PREMIUM GRADE" };
-  if (name.includes("fresh frozen")) 
-    return { color: "#FEC107", icon: Sparkles, label: "GOLDEN GRADE" };
-  if (name.includes("rosin")) 
-    return { color: "#A855F7", icon: Crown, label: "SELECTED GRADE" };
-  
-  return { color: "#FFF", icon: Zap, label: "SPECIAL GRADE" };
+  if (name.includes("old school")) return { color: "#C1C1C1", icon: Percent };
+  if (name.includes("premium")) return { color: "#34D399", icon: Flame };
+  if (name.includes("fresh frozen")) return { color: "#FEC107", icon: Sparkles };
+  if (name.includes("rosin")) return { color: "#A855F7", icon: Crown };
+  return { color: "#FFF", icon: Zap };
 };
 
 const getInterpolatedPrice = (weight, prices) => {
   if (!prices) return 0;
-  if (weight <= 1) return (prices[1] || 0) * weight;
-  if (weight <= 5) return (prices[1] || 0) + ((prices[5] || 0) - (prices[1] || 0)) * ((weight - 1) / 4);
-  if (weight <= 10) return (prices[5] || 0) + ((prices[10] || 0) - (prices[5] || 0)) * ((weight - 5) / 5);
-  return ((prices[10] || 0) / 10) * weight;
+  const p1 = Number(prices[1]) || 0;
+  const p5 = Number(prices[5]) || 0;
+  const p10 = Number(prices[10]) || 0;
+
+  if (weight <= 1) return p1 * weight;
+  if (weight <= 5) return p1 + (p5 - p1) * ((weight - 1) / 4);
+  if (weight <= 10) return p5 + (p10 - p5) * ((weight - 5) / 5);
+  return (p10 / 10) * weight;
 };
 
 // --- COMPONENTS ---
 const BadgeIcon = ({ type }) => {
   switch (type?.toUpperCase()) {
-    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
+    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30"><span className="text-[6px] font-black text-blue-400 leading-none">NEW</span></div>;
     case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30"><Flame size={10} className="text-orange-400" /></div>;
     case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30"><Percent size={10} className="text-emerald-400" /></div>;
     default: return null;
@@ -63,21 +62,24 @@ function ProductModal({ product, style, onClose }) {
   
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices));
   const pricePerGram = Math.round(currentPrice / weight);
-  const tip = weight < 5 ? { next: 5, p: Math.round((product.prices?.[5] || 0)/5) } : weight < 10 ? { next: 10, p: Math.round((product.prices?.[10] || 0)/10) } : null;
+  const p5 = Number(product.prices?.[5]) || 0;
+  const p10 = Number(product.prices?.[10]) || 0;
+  
+  const tip = weight < 5 ? { next: 5, p: Math.round(p5/5) } : weight < 10 ? { next: 10, p: Math.round(p10/10) } : null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in zoom-in-95" onClick={onClose}>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in zoom-in-95 duration-200" onClick={onClose}>
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50"><X size={20}/></button>
+        <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
           {product.image ? (
-             <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
+            <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
           ) : (
-             <div className="w-full h-full flex items-center justify-center opacity-10"><Zap size={80}/></div>
+            <div className="w-full h-full flex items-center justify-center opacity-10"><Zap size={80}/></div>
           )}
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
              <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
-             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white opacity-60">{style.label}</p>
+             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white opacity-40">{product.subcategory}</p>
           </div>
         </div>
         <div className="p-6 space-y-6 text-white">
@@ -121,7 +123,7 @@ export default function ConcentratesPage() {
 
   React.useEffect(() => {
     getProducts().then(data => {
-      // Исключаем Buds
+      // Фильтруем всё, кроме шишек
       const concs = data.filter(p => p.category?.toLowerCase() !== 'buds');
       setProducts(concs);
     });
@@ -142,7 +144,7 @@ export default function ConcentratesPage() {
         </Link>
         <div className="text-center">
           <h1 className="text-2xl font-black italic uppercase tracking-tighter">Concentrates</h1>
-          <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1">Extraction Menu</p>
+          <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1 italic">Extraction Menu</p>
         </div>
         <div className="w-14"></div>
       </header>
@@ -153,38 +155,43 @@ export default function ConcentratesPage() {
           return (
             <div key={subCat} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-2xl">
               <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${style.color}10` }}>
-                <div>
-                  <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{subCat}</h2>
-                  <p className="text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest">{style.label}</p>
-                </div>
+                <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{subCat}</h2>
                 <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
                   <style.icon size={18} style={{ color: style.color }} />
                 </div>
               </div>
               <div className="divide-y divide-white/5">
-                {items.map((p) => (
-                  <div key={p.id} onClick={() => setSelected(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
-                    <div className="col-span-8 flex items-center gap-4">
-                      <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-                      <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white">{p.name}</span>
+                {items.map((p) => {
+                  // Расчет цены "от" (цена за 1г при покупке 10г)
+                  const priceFrom = p.prices?.[10] ? Math.round(Number(p.prices[10]) / 10) : 0;
+                  
+                  return (
+                    <div key={p.id} onClick={() => setSelected(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
+                      <div className="col-span-8 flex items-center gap-4">
+                        <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+                        <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">
+                          {p.name}
+                        </span>
+                      </div>
+                      <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">
+                        от {priceFrom}฿
+                      </div>
                     </div>
-                    <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">
-                      from {p.prices?.[10] || 0}฿
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           );
         })}
       </div>
 
+      {/* Floating Cart (Синхронизирована с общей корзиной) */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <Link href="/" className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] active:scale-95 transition-all">
-            <div className="flex items-center gap-4">
+          <Link href="/" className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] group active:scale-95 transition-all">
+            <div className="flex items-center gap-4 text-left">
               <ShoppingBag size={20}/>
-              <div className="text-left">
+              <div>
                 <p className="text-[10px] font-black uppercase tracking-widest leading-none">Checkout</p>
                 <p className="text-[16px] font-black italic">{getTotal()}฿ Total</p>
               </div>
@@ -201,6 +208,10 @@ export default function ConcentratesPage() {
           onClose={() => setSelected(null)} 
         />
       )}
+
+      <footer className="mt-20 pb-12 text-center">
+        <p className="text-[9px] font-black uppercase tracking-[0.5em] italic text-white/5">BND • PHUKET • 2022</p>
+      </footer>
     </div>
   );
 }
