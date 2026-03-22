@@ -1,342 +1,290 @@
-use client
-"import * as React from ""react"""
-"import Link from ""next/link"""
-import {
-Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Gift, Info, Clock3
-"} from ""lucide-react"""
-"import { create } from ""zustand"""
-"import { persist } from ""zustand/middleware"""
-"import { getProducts } from ""@/lib/product"""
+"use client"
+import * as React from "react"
+import Link from "next/link"
+import { 
+  Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Info
+} from "lucide-react"
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
+import { getProducts } from "@/lib/product"
 
 // --- CONFIG & STYLES ---
 const GRADES = [
-"{ id: ""silver"", title: ""SILVER GRADE"", prices: [ {w:1, p:150}, {w:5, p:700}, {w:10, p:1200}, {w:20, p:2000} ], color: ""#C1C1C1"", icon: Percent },"
-"{ id: ""golden"", title: ""GOLDEN GRADE"", prices: [ {w:1, p:250}, {w:5, p:1100}, {w:10, p:1700}, {w:20, p:3000} ], color: ""#FEC107"", icon: Sparkles },"
-"{ id: ""premium"", title: ""PREMIUM GRADE"", prices: [ {w:1, p:300}, {w:5, p:1300}, {w:10, p:2000}, {w:20, p:3500} ], color: ""#34D399"", icon: Flame },"
-"{ id: ""selected"", title: ""SELECTED GRADE"", prices: [ {w:1, p:350}, {w:5, p:1500}, {w:10, p:2500}, {w:20, p:4000} ], color: ""#A855F7"", icon: Crown }"
+  { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
+  { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Sparkles },
+  { id: "premium", title: "PREMIUM GRADE", color: "#34D399", icon: Flame },
+  { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
 ];
 
 const STORIES = [
-"{ id: ""new"", label: ""New Arrivals"", icon: Sparkles, color: ""#2DD4BF"" },"
-"{ id: ""sale"", label: ""Gifts & Promos"", icon: Gift, color: ""#FEC107"" },"
-"{ id: ""info"", label: ""Service Info"", icon: Info, color: ""#A855F7"" },"
+  { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
+  { id: "sale", label: "Gifts & Promos", icon: Percent, color: "#FEC107" },
+  { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
 ];
 
 const CONTACT_METHODS = [
-"{ id: ""telegram"", label: ""Telegram"", icon: SendHorizontal, ph: ""@username or phone number"" },"
-"{ id: ""whatsapp"", label: ""WhatsApp"", icon: MessageCircle, ph: ""phone number"" },"
-"{ id: ""line"", label: ""Line"", icon: MessageCircle, ph: ""phone number"" },"
-"{ id: ""instagram"", label: ""Instagram"", icon: Instagram, ph: ""@username or phone number"" },"
+  { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username" },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, ph: "phone number" },
+  { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
+  { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username" },
 ];
 
-"const TYPE_SHORT: Record<string, string> = { ""indica"": ""IND"", ""sativa"": ""SAT"", ""hybrid"": ""HYB"" };"
-"const TYPE_COLORS: Record<string, string> = { ""indica"": ""#A855F7"", ""sativa"": ""#FBBF24"", ""hybrid"": ""#2DD4BF"" };"
+const TYPE_SHORT = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
+const TYPE_COLORS = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
 
-// --- STORE ---
-const useCart = create<any>()(persist((set, get) => ({
-items: [],
-addItem: (newItem: any) => set((state: any) => {
-const ex = state.items.findIndex((i: any) => i.id === newItem.id && i.weight === newItem.weight);
-if (ex > -1) {
-const newItems = [...state.items];
-newItems[ex].quantity += 1;
-return { items: newItems };
-}
-return { items: [...state.items, { ...newItem, quantity: 1 }] };
-}),
-removeItem: (id: string, weight: string) => set((state: any) => ({
-items: state.items.filter((i: any) => !(i.id === id && i.weight === weight))
-})),
-clearCart: () => set({ items: [] }),
-getTotal: () => get().items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
-"}), { name: ""bnd-cart-v12"" }));"
+// --- STORE (v12.1 - Исправлен) ---
+const useCart = create()(persist((set, get) => ({
+  items: [],
+  addItem: (newItem) => set((state) => {
+    const ex = state.items.findIndex((i) => i.id === newItem.id && i.weight === newItem.weight);
+    if (ex > -1) {
+      const newItems = [...state.items];
+      newItems[ex].quantity += 1;
+      return { items: newItems };
+    }
+    return { items: [...state.items, { ...newItem, quantity: 1 }] };
+  }),
+  updateQuantity: (id, weight, delta) => set((state) => ({
+    items: state.items.map(i => 
+      (i.id === id && i.weight === weight) 
+        ? { ...i, quantity: Math.max(1, i.quantity + delta) } 
+        : i
+    )
+  })),
+  removeItem: (id, weight) => set((state) => ({
+    items: state.items.filter((i) => !(i.id === id && i.weight === weight))
+  })),
+  clearCart: () => set({ items: [] }),
+  getTotal: () => get().items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+}), { name: "bnd-cart-v12" }));
 
 // --- HELPERS ---
-const getInterpolatedPrice = (weight: number, prices: any) => {
-if (!prices) return 0;
-if (weight <= 1) return prices[1] * weight;
-if (weight <= 5) return prices[1] + (prices[5] - prices[1]) * ((weight - 1) / 4);
-if (weight <= 10) return prices[5] + (prices[10] - prices[5]) * ((weight - 5) / 5);
-if (weight <= 20) return prices[10] + (prices[20] - prices[10]) * ((weight - 10) / 10);
-return (prices[20] / 20) * weight;
+const getInterpolatedPrice = (weight, prices) => {
+  if (!prices) return 0;
+  const p1 = Number(prices[1]) || 0;
+  const p5 = Number(prices[5]) || 0;
+  const p10 = Number(prices[10]) || 0;
+  const p20 = Number(prices[20]) || 0;
+  if (weight <= 1) return p1 * weight;
+  if (weight <= 5) return p1 + (p5 - p1) * ((weight - 1) / 4);
+  if (weight <= 10) return p5 + (p10 - p5) * ((weight - 5) / 5);
+  if (weight <= 20) return p10 + (p20 - p10) * ((weight - 10) / 10);
+  return (p20 / 20) * weight;
 };
 
 // --- MODALS ---
-function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
-return (
-"<div className=""fixed inset-0 z-[250] flex items-center justify-center bg-black/95 backdrop-blur-2xl animate-in fade-in"" onClick={onClose}>"
-"<div className=""w-full max-w-sm h-[80vh] px-4 relative flex flex-col items-center justify-center"" onClick={e => e.stopPropagation()}>"
-"<button onClick={onClose} className=""absolute -top-12 right-4 p-2 text-white/50 hover:text-white""><X size={32}/></button>"
-"<div className=""w-full h-full rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl relative bg-black/20"">"
-"<img src={`/stories/${story.id}.webp`} className=""w-full h-full object-cover"" alt={story.label} />"
-</div>
-"<button onClick={onClose} className=""mt-8 px-12 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-black uppercase text-[10px] tracking-widest active:scale-95 transition-all"">"
-Close
-</button>
-</div>
-</div>
-);
+function StoryModal({ story, onClose }) {
+  return (
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/95 backdrop-blur-2xl animate-in fade-in" onClick={onClose}>
+      <div className="w-full max-w-sm h-[80vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute -top-12 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
+        <div className="w-full h-full rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl relative bg-black/20">
+          <img src={`/stories/${story.id}.webp`} className="w-full h-full object-cover" alt={story.label} />
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
-"const [method, setMethod] = React.useState(""telegram"");"
-"const [contact, setContact] = React.useState("""");"
-const [isSending, setIsSending] = React.useState(false);
-const clearCart = useCart(s => s.clearCart);
+function ProductModal({ product, style, onClose }) {
+  const [weight, setWeight] = React.useState(1);
+  const [isAdded, setIsAdded] = React.useState(false);
+  const addItem = useCart(s => s.addItem);
+  const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices));
+  const pricePerGram = Math.round(currentPrice / weight);
+  const typeColor = TYPE_COLORS[product.type?.toLowerCase()] || "#FFF";
 
-const handleSubmit = async () => {
-"if (!contact) return alert(""Введите данные для связи"");"
-setIsSending(true);
-"const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity}`).join("", "");"
-try {
-"const GOOGLE_SCRIPT_URL = ""https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec"";"
-await fetch(GOOGLE_SCRIPT_URL, {
-"method: ""POST"","
-"mode: ""no-cors"","
-body: JSON.stringify({ contact, method, orderText, total })
-});
-"alert(""Заказ успешно отправлен!"");"
-clearCart();
-onClose();
-} catch (error) {
-"alert(""Ошибка отправки. Попробуйте еще раз."");"
-} finally {
-setIsSending(false);
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in" onClick={onClose}>
+      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-6 right-6 z-20 p-2 bg-black/40 rounded-full text-white/70 hover:text-white transition-colors"><X size={24}/></button>
+        <div className="aspect-square w-full relative bg-black/20">
+          <img src={product.image} className="w-full h-full object-contain p-6" alt="" />
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
+             <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
+             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
+                <span style={{ color: typeColor }}>{product.type}</span>
+                <span className="mx-2 opacity-20">•</span>
+                <span style={{ color: style.color }}>{product.subcategory} Grade</span>
+             </p>
+          </div>
+        </div>
+        <div className="p-8 pt-0 space-y-5 text-white">
+          <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product.terpenes}</p></div>
+          </div>
+          <div className="space-y-4">
+            <div className="flex justify-between items-end">
+               <div>
+                 <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
+                 <div className="text-[9px] font-bold opacity-30 uppercase mt-1">Price per gram: {pricePerGram}฿</div>
+               </div>
+               <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 5, 10, 20].map(v => (
+                <button key={v} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
+              ))}
+            </div>
+            <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseInt(e.target.value))} className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
+              {isAdded ? "Added to Cart" : "Add to Order"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
+
+function CheckoutModal({ items, total, onClose }) {
+  const [method, setMethod] = React.useState("telegram");
+  const [contact, setContact] = React.useState("");
+  const [isSending, setIsSending] = React.useState(false);
+  const { updateQuantity, removeItem, clearCart } = useCart();
+
+  const handleSubmit = async () => {
+    if (!contact) return alert("Введите данные для связи");
+    setIsSending(true);
+    const orderDetails = items.map(i => `[${(i.subcategory || 'BUDS').toUpperCase()}] ${i.name} (${i.weight}) x${i.quantity} = ${i.price * i.quantity}฿`).join("\n");
+    const finalMessage = `${orderDetails}\n\nTOTAL: ${total}฿`;
+
+    try {
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
+      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: finalMessage, total }) });
+      alert("Заказ успешно отправлен!"); clearCart(); onClose();
+    } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-4 bg-black/90 backdrop-blur-xl" onClick={onClose}>
+      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden flex flex-col max-h-[85vh]" onClick={e => e.stopPropagation()}>
+        <div className="p-6 border-b border-white/5 flex justify-between items-center shrink-0">
+          <h2 className="text-xl font-black italic uppercase tracking-tighter text-white">Your Order</h2>
+          <button onClick={onClose} className="p-2 text-white/50"><X size={24}/></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 no-scrollbar">
+          {items.map((item) => (
+            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-black/20 p-4 rounded-2xl border border-white/5">
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-black uppercase opacity-30 leading-none mb-1">{item.subcategory}</p>
+                <p className="text-[12px] font-bold truncate text-white">{item.name}</p>
+                <p className="text-[11px] font-black text-emerald-400 mt-1">{item.price * item.quantity}฿ <span className="text-white/20 ml-1">({item.weight})</span></p>
+              </div>
+              <div className="flex items-center gap-2 bg-white/5 rounded-xl p-1 border border-white/5">
+                <button onClick={() => updateQuantity(item.id, item.weight, -1)} className="w-8 h-8 flex items-center justify-center text-white/40">-</button>
+                <span className="text-[12px] font-black text-white w-4 text-center">{item.quantity}</span>
+                <button onClick={() => updateQuantity(item.id, item.weight, 1)} className="w-8 h-8 flex items-center justify-center text-white/40">+</button>
+              </div>
+              <button onClick={() => removeItem(item.id, item.weight)} className="p-2 text-red-400/50"><X size={18}/></button>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4 shrink-0">
+          <div className="grid grid-cols-4 gap-2">
+            {CONTACT_METHODS.map(m => (
+              <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-2xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>
+            ))}
+          </div>
+          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-2xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white" />
+          <button onClick={handleSubmit} disabled={isSending} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 disabled:opacity-50">
+            {isSending ? "Sending..." : `Send Order • ${total}฿`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const BadgeIcon = ({ type }) => {
+  switch (type?.toUpperCase()) {
+    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
+    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
+    default: return null;
+  }
 };
 
-return (
-"<div className=""fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-2xl animate-in fade-in"" onClick={onClose}>"
-"<div className=""relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-6 space-y-5 shadow-2xl"" onClick={e => e.stopPropagation()}>"
-"<button onClick={onClose} className=""absolute top-6 right-6 p-2 opacity-20 hover:opacity-100 transition-opacity""><X size={20} className=""text-white""/></button>"
-"<div className=""text-center text-white"">"
-"<h2 className=""text-2xl font-black italic uppercase tracking-tighter"">Оформление</h2>"
-"<p className=""text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mt-1 italic"">Сумма: {total}฿</p>"
-</div>
-"<div className=""grid grid-cols-4 gap-2"">"
-{CONTACT_METHODS.map(m => (
-"<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-4 rounded-2xl border transition-all ${method === m.id ? ""bg-white text-black border-white"" : ""bg-white/5 border-white/10 opacity-30 text-white""}`}>"
-<m.icon size={18} />
-"<span className=""text-[8px] font-black uppercase"">{m.label}</span>"
-</button>
-))}
-</div>
-<input
-"type=""text"""
-"placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph || ""Контакт для связи""}"
-value={contact}
-onChange={(e) => setContact(e.target.value)}
-"className=""w-full bg-black/20 border border-white/10 rounded-2xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30"""
-/>
-"<button onClick={handleSubmit} disabled={isSending} className=""w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-50 shadow-lg"">"
-"{isSending ? ""Отправка..."" : ""Отправить заказ""}"
-</button>
-</div>
-</div>
-);
-}
-
-function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
-const [weight, setWeight] = React.useState(1);
-const [isAdded, setIsAdded] = React.useState(false);
-const addItem = useCart(s => s.addItem);
-const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices));
-const pricePerGram = Math.round(currentPrice / weight);
-"const typeColor = TYPE_COLORS[String(product.type || """").toLowerCase()] || ""#FFF"";"
-
-const tip = (() => {
-if (weight < 5) return { next: 5, p: Math.round(product.prices[5]/5) };
-if (weight < 10) return { next: 10, p: Math.round(product.prices[10]/10) };
-if (weight < 20) return { next: 20, p: Math.round(product.prices[20]/20) };
-return null;
-})();
-
-return (
-"<div className=""fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-in zoom-in-95 duration-200"" onClick={onClose}>"
-"<div className=""relative w-full max-w-lg bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl"" onClick={e => e.stopPropagation()}>"
-"<button onClick={onClose} className=""absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50""><X size={20}/></button>"
-"<div className=""aspect-square w-full relative bg-black/10"">"
-"<img src={product.image} className=""w-full h-full object-contain p-10"" alt="""" />"
-"<div className=""absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent"">"
-"<h2 className=""text-4xl font-black italic uppercase tracking-tighter"" style={{ color: style.color }}>{product.name}</h2>"
-"<p className=""text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white"">"
-<span style={{ color: typeColor }}>{product.type}</span>
-"<span className=""mx-2 opacity-20"">•</span>"
-<span style={{ color: style.color }}>{product.subcategory} Grade</span>
-</p>
-</div>
-</div>
-"<div className=""p-6 space-y-4 text-white"">"
-"<div className=""grid grid-cols-3 gap-4 border-b border-white/5 pb-4"">"
-"<div className=""space-y-1""><div className=""flex items-center gap-1.5 opacity-20""><MapPin size={10}/><span className=""text-[7px] font-black uppercase"">Farm</span></div><p className=""text-[10px] font-bold italic truncate"">{product.farm}</p></div>"
-"<div className=""space-y-1""><div className=""flex items-center gap-1.5 opacity-20""><Leaf size={10}/><span className=""text-[7px] font-black uppercase"">Taste</span></div><p className=""text-[10px] font-bold italic truncate"">{product.taste}</p></div>"
-"<div className=""space-y-1""><div className=""flex items-center gap-1.5 opacity-20""><Wind size={10}/><span className=""text-[7px] font-black uppercase"">Terps</span></div><p className=""text-[10px] font-bold italic truncate"">{product.terpenes}</p></div>"
-</div>
-"<div className=""space-y-4"">"
-"<div className=""flex justify-between items-end"">"
-<div>
-"<div className=""text-4xl font-black italic tracking-tighter text-white"">{currentPrice}฿</div>"
-"<div className=""text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1 text-white"">Price per gram: {pricePerGram}฿</div>"
-</div>
-"<div className=""text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full mb-1 text-white"">{weight}g</div>"
-</div>
-"<div className=""grid grid-cols-4 gap-2"">"
-{[1, 5, 10, 20].map(v => (
-"<button key={v} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${weight === v ? ""bg-white text-black border-white"" : ""border-white/10 text-white/40""}`}>{v}g</button>"
-))}
-</div>
-"<input type=""range"" min=""1"" max=""20"" step=""1"" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className=""w-full h-3 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"" />"
-{tip && (
-"<div className=""flex items-center gap-2 py-2 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10"">"
-"<TrendingDown size={12} className=""text-emerald-400"" />"
-"<p className=""text-[9px] font-bold text-emerald-400/80 uppercase tracking-tight"">Add {(tip.next - weight).toFixed(0)}g more for {tip.p}฿ per gram!</p>"
-</div>
-)}
-<button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
-"{isAdded ? ""Added to Cart"" : ""Add to Order""}"
-</button>
-</div>
-</div>
-</div>
-</div>
-);
-}
-
-const BadgeIcon = ({ type }: { type: string }) => {
-switch (type.toUpperCase()) {
-"case ""NEW"": return ("
-"<div className=""w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30"">"
-"<span className=""text-[6px] font-black text-blue-400 leading-none"">NEW</span>"
-</div>
-);
-"case ""HIT"": return <div className=""w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30""><Flame size={10} className=""text-orange-400"" /></div>;"
-"case ""SALE"": return <div className=""w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30""><Percent size={10} className=""text-emerald-400"" /></div>;"
-default: return null;
-}
-};
-
-// --- MAIN PAGE ---
 export default function LandingPage() {
-const [products, setProducts] = React.useState<any[]>([]);
-const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
-const [activeStory, setActiveStory] = React.useState<any>(null);
-const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
-const { items, getTotal } = useCart();
+  const [products, setProducts] = React.useState([]);
+  const [selectedProduct, setSelectedProduct] = React.useState(null);
+  const [activeStory, setActiveStory] = React.useState(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false); 
+  const { items, getTotal } = useCart();
+  const total = getTotal();
 
-React.useEffect(() => {
-getProducts().then(data => setProducts(data));
-}, []);
+  React.useEffect(() => { getProducts().then(data => setProducts(data)); }, []);
 
-return (
-"<div className=""min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32"">"
-"<header className=""flex flex-col items-center mb-10 pt-4"">"
-{/* LOGO */}
-"<div className=""relative w-24 h-24 mb-10 group"">"
-"<div className=""absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px] group-hover:bg-emerald-500/30 transition-all duration-1000""></div>"
-"<img src=""/icon.png"" alt=""BND Logo"" className=""w-full h-full object-contain relative z-10 drop-shadow-2xl"" />"
-</div>
+  return (
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
+      <header className="flex flex-col items-center mb-10 pt-4">
+        <div className="relative w-24 h-24 mb-10 group"><div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px]"></div><img src="/icon.png" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" /></div>
+        <div className="flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
+          {STORIES.map((s) => (
+            <button key={s.id} onClick={() => setActiveStory(s)} className="flex flex-col items-center gap-3 shrink-0 group">
+              <div className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" style={{ borderColor: `${s.color}40` }}><s.icon size={22} style={{ color: s.color }} /></div>
+              <span className="text-[9px] font-black tracking-widest uppercase opacity-60 text-center leading-tight max-w-[65px]">{s.label}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-3 w-full max-w-sm px-2">
+          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic">Accessories</button>
+          <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
+            <Flame size={12} /> Concentrates
+          </Link>
+        </div>
+      </header>
 
-{/* STORIES ROW */}
-"<div className=""flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center"">"
-{STORIES.map((s) => (
-"<button key={s.id} onClick={() => setActiveStory(s)} className=""flex flex-col items-center gap-3 shrink-0 group"">"
-<div
-"className=""w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90 shadow-inner"""
-style={{ borderColor: `${s.color}40` }}
->
-<s.icon size={22} style={{ color: s.color }} />
-</div>
-"<span className=""text-[9px] font-black tracking-widest uppercase opacity-60 group-hover:opacity-100 text-center leading-tight max-w-[65px]"">"
-{s.label}
-</span>
-</button>
-))}
-</div>
+      <div className="max-w-4xl mx-auto space-y-8">
+        {GRADES.map((grade) => {
+          const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds');
+          if (gradeItems.length === 0) return null;
+          return (
+            <div key={grade.id} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
+              <div className="p-6 flex justify-between items-center border-b border-white/5 shrink-0 min-h-[90px]" style={{ backgroundColor: `${grade.color}10` }}>
+                <h2 className="text-xl font-black italic uppercase tracking-tighter shrink-0" style={{ color: grade.color }}>{grade.title}</h2>
+                <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                  <grade.icon size={18} style={{ color: grade.color }} />
+                </div>
+              </div>
+              <div className="divide-y divide-white/5">
+                {gradeItems.map((p) => (
+                  <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
+                    <div className="col-span-6 flex items-center gap-4 relative">
+                      <BadgeIcon type={p.badge} />
+                      <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
+                    </div>
+                    <div className="col-span-2 text-center text-[10px] font-black uppercase shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</div>
+                    <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic truncate">{p.farm}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-{/* COMPACT CATEGORIES */}
-"<div className=""flex gap-3 w-full max-w-sm px-2"">"
-"<button className=""flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 cursor-not-allowed text-white italic"">"
-Accessories
-</button>
-"<Link href=""/concentrates"" className=""flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all"">"
-<Flame size={12} /> Concentrates
-</Link>
-</div>
-</header>
+      {items.length > 0 && (
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]">
+            <div className="flex items-center gap-4 text-left">
+              <ShoppingBag size={22}/>
+              <div><p className="text-[10px] font-black uppercase leading-none">Order Now</p><p className="text-[18px] font-black italic mt-1">{total}฿ Total</p></div>
+            </div>
+            <Send size={20}/>
+          </button>
+        </div>
+      )}
 
-{/* PRODUCT LIST */}
-"<div className=""max-w-4xl mx-auto space-y-8"">"
-{GRADES.map((grade) => {
-const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds');
-if (gradeItems.length === 0) return null;
-return (
-"<div key={grade.id} className=""rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl animate-in fade-in slide-in-from-bottom-4 duration-500"">"
-"<div className=""p-6 flex justify-between items-center border-b border-white/5"" style={{ backgroundColor: `${grade.color}10` }}>"
-<div>
-"<h2 className=""text-xl font-black italic uppercase tracking-tighter"" style={{ color: grade.color }}>{grade.title}</h2>"
-"<p className=""text-[9px] font-black opacity-30 mt-1 uppercase tracking-widest flex items-center gap-1.5 text-white"">"
-{grade.prices.map((item: any, idx: number) => (
-<React.Fragment key={idx}>
-<span>{item.w}g—{item.p}฿</span>
-"{idx !== grade.prices.length - 1 && <span className=""opacity-20 px-0.5"">/</span>}"
-</React.Fragment>
-))}
-</p>
-</div>
-"<div className=""w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner"">"
-<grade.icon size={18} style={{ color: grade.color }} />
-</div>
-</div>
-"<div className=""divide-y divide-white/5"">"
-{gradeItems.map((p) => (
-"<div key={p.id} onClick={() => setSelectedProduct(p)} className=""grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10 text-white"">"
-"<div className=""col-span-6 flex items-center gap-4 relative"">"
-"<div className=""w-5 flex justify-center shrink-0"">{p.badge && <BadgeIcon type={p.badge} />}</div>"
-"<span className=""text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight"">{p.name}</span>"
-</div>
-"<div className=""col-span-2 text-center text-[10px] font-black uppercase"" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>"
-{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
-</div>
-"<div className=""col-span-4 text-right text-[10px] font-bold opacity-30 italic truncate text-white"">{p.farm}</div>"
-</div>
-))}
-</div>
-</div>
-);
-})}
-</div>
-
-{/* FLOATING CART BUTTON */}
-{items.length > 0 && (
-"<div className=""fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4"">"
-"<button onClick={() => setIsCheckoutOpen(true)} className=""w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]"">"
-"<div className=""flex items-center gap-4"">"
-"<div className=""bg-black/10 p-2 rounded-xl""><ShoppingBag size={20}/></div>"
-"<div className=""text-left"">"
-"<p className=""text-[10px] font-black uppercase tracking-widest leading-none"">Order Now</p>"
-"<p className=""text-[16px] font-black italic"">{getTotal()}฿ Total</p>"
-</div>
-</div>
-"<div className=""bg-black/10 p-3 rounded-full group-hover:translate-x-1 transition-transform""><Send size={18}/></div>"
-</button>
-</div>
-)}
-
-{/* ALL MODALS */}
-{activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
-{selectedProduct && <ProductModal product={selectedProduct} style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }} onClose={() => setSelectedProduct(null)} />}
-{isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
-
-{/* FOOTER */}
-"<div className=""mt-20 pb-12 flex flex-col items-center gap-4 text-white/5"">"
-"<div className=""h-px w-12 bg-white/10""></div>"
-"<p className=""text-center text-[9px] font-black uppercase tracking-[0.5em] italic text-white/40"">БошкуНаДорожку • PHUKET • 2022</p>"
-</div>
-
-<style jsx global>{`
-.no-scrollbar::-webkit-scrollbar { display: none; }
-.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-`}</style>
-</div>
-);
+      {activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
+      {selectedProduct && <ProductModal product={selectedProduct} style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }} onClose={() => setSelectedProduct(null)} />}
+      {isCheckoutOpen && <CheckoutModal items={items} total={total} onClose={() => setIsCheckoutOpen(false)} />}
+      
+      <footer className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/40"><p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БошкуНаДорожку • PHUKET • 2026</p></footer>
+    </div>
+  );
 }
