@@ -2,45 +2,13 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  ArrowLeft, Flame, ShoppingBag, Send, X, MessageCircle, Instagram, SendHorizontal, Info, Zap
+  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, MessageCircle, Instagram, SendHorizontal
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { getProducts } from "@/lib/product"
 
-// --- ДАННЫЕ (из твоего скриншота) ---
-const CONCENTRATES_DATA = [
-  {
-    id: "hash-old-school",
-    title: "HASH | OLD SCHOOL",
-    color: "#795548",
-    items: [
-      { id: "wild-runtz-hash", name: "WILD RUNTZ", prices: { 1: 350, 5: 1500, 10: 2500 } }
-    ]
-  },
-  {
-    id: "hash-fresh-frozen-1",
-    title: "HASH | FRESH FROZEN",
-    color: "#4DB6AC",
-    items: [
-      { id: "papaya-90u", name: "PAPAYA 90U", prices: { 1: 900, 5: 4000, 10: 7000 }, badge: "NEW" },
-      { id: "apple-banana-zoap-90u", name: "APPLE BANANA ZOAP 90U", prices: { 1: 900, 5: 4000, 10: 7000 }, badge: "NEW" },
-      { id: "cherry-gelato-90u", name: "CHERRY GELATO 90U", prices: { 1: 900, 5: 4000, 10: 7000 }, badge: "NEW" }
-    ]
-  },
-  {
-    id: "hash-fresh-frozen-2",
-    title: "HASH | FRESH FROZEN",
-    color: "#455A64",
-    items: [
-      { id: "papaya-fs", name: "PAPAYA FS", prices: { 1: 700, 5: 3000, 10: 5500 }, badge: "NEW" },
-      { id: "apple-banana-z", name: "APPLE BANANA Z 73-140U", prices: { 1: 700, 5: 3000, 10: 5500 }, badge: "NEW" },
-      { id: "cherry-gelato-z", name: "CHERRY GELATO 73-140U", prices: { 1: 700, 5: 3000, 10: 5500 }, badge: "NEW" },
-      { id: "blueberry-cake-hash", name: "BLUEBERRY CAKE", prices: { 1: 700, 5: 3000, 10: 5500 } }
-    ]
-  }
-];
-
-// --- STORE (Синхронизирован с главной) ---
+// --- STORE (Тот же, что на главной, для синхронизации) ---
 const useCart = create()(persist((set, get) => ({
   items: [],
   addItem: (newItem) => set((state) => {
@@ -52,111 +20,147 @@ const useCart = create()(persist((set, get) => ({
     }
     return { items: [...state.items, { ...newItem, quantity: 1 }] };
   }),
+  removeItem: (id, weight) => set((state) => ({
+    items: state.items.filter((i) => !(i.id === id && i.weight === weight))
+  })),
   clearCart: () => set({ items: [] }),
   getTotal: () => get().items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 }), { name: "bnd-cart-v12" }));
 
-// --- MODAL COMPONENT ---
-function OrderModal({ product, onClose }) {
-  const [weight, setWeight] = React.useState(1);
-  const addItem = useCart(s => s.addItem);
-  const price = product.prices[weight] || (product.prices[10] / 10 * weight);
+// Стили подкатегорий (цвета из твоих скринов)
+const SUB_STYLES = {
+  "Hash | Old School": { color: "#795548", bg: "rgba(121, 85, 72, 0.1)" },
+  "Hash | Fresh Frozen Sale": { color: "#4DB6AC", bg: "rgba(77, 182, 172, 0.1)" },
+  "Hash | Fresh Frozen Premium": { color: "#455A64", bg: "rgba(69, 90, 100, 0.1)" },
+  "Live Rosin": { color: "#FFB300", bg: "rgba(255, 179, 0, 0.1)" }
+};
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl" onClick={onClose}>
-      <div className="w-full max-w-sm bg-[#1a2e26] border border-white/10 rounded-[2.5rem] p-8 space-y-6" onClick={e => e.stopPropagation()}>
-        <div className="text-center">
-          <h2 className="text-2xl font-black italic uppercase text-emerald-400">{product.name}</h2>
-          <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest mt-2">Select Weight</p>
-        </div>
-        
-        <div className="grid grid-cols-3 gap-3">
-          {[1, 5, 10].map(v => (
-            <button key={v} onClick={() => setWeight(v)} className={`py-4 rounded-2xl font-black transition-all border ${weight === v ? "bg-white text-black border-white" : "bg-white/5 text-white/40 border-white/10"}`}>
-              {v}g
-            </button>
-          ))}
-        </div>
-
-        <div className="text-center py-4">
-          <span className="text-4xl font-black italic">{price}฿</span>
-        </div>
-
-        <button 
-          onClick={() => { addItem({ ...product, price, weight: `${weight}g` }); onClose(); }}
-          className="w-full bg-emerald-400 text-black py-5 rounded-2xl font-black uppercase tracking-widest active:scale-95 transition-all"
-        >
-          Add to Order
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// --- MAIN PAGE ---
 export default function ConcentratesPage() {
+  const [products, setProducts] = React.useState([]);
   const [selected, setSelected] = React.useState(null);
-  const { items, getTotal } = useCart();
+  const { items, getTotal, addItem } = useCart();
+
+  // Грузим данные ровно так же, как на главной
+  React.useEffect(() => {
+    getProducts().then(data => {
+      // Фильтруем только то, что НЕ "buds"
+      const concs = data.filter(p => p.category?.toLowerCase() !== 'buds');
+      setProducts(concs);
+    });
+  }, []);
+
+  // Группируем по subcategory
+  const grouped = products.reduce((acc, p) => {
+    const key = p.subcategory || "Other";
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(p);
+    return acc;
+  }, {});
 
   return (
-    <div className="min-h-screen bg-[#0f1a15] text-white p-4 pb-32">
-      {/* HEADER */}
-      <header className="flex items-center justify-between mb-8 pt-4">
-        <Link href="/" className="p-3 bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all">
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
+      {/* Header */}
+      <header className="flex items-center justify-between mb-10 pt-4 max-w-4xl mx-auto">
+        <Link href="/" className="p-4 bg-white/5 rounded-[1.5rem] border border-white/10 active:scale-90 transition-all">
           <ArrowLeft size={20} />
         </Link>
         <div className="text-center">
-          <h1 className="text-xl font-black italic uppercase tracking-tighter">Concentrates</h1>
-          <p className="text-[8px] font-black opacity-30 uppercase tracking-[0.3em]">Premium Quality Only</p>
+          <h1 className="text-2xl font-black italic uppercase tracking-tighter">Concentrates</h1>
+          <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1">Premium Selection</p>
         </div>
-        <div className="w-11"></div> {/* Spacer */}
+        <div className="w-14"></div>
       </header>
 
-      {/* LIST */}
-      <div className="max-w-2xl mx-auto space-y-6">
-        {CONCENTRATES_DATA.map((group) => (
-          <div key={group.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-            <div className="px-6 py-4 flex items-center justify-between border-b border-white/5" style={{ backgroundColor: `${group.color}20` }}>
-              <h2 className="text-[12px] font-black italic uppercase tracking-widest" style={{ color: group.color }}>{group.title}</h2>
-              <Zap size={14} style={{ color: group.color }} />
-            </div>
-            <div className="divide-y divide-white/5">
-              {group.items.map((item) => (
-                <div key={item.id} onClick={() => setSelected(item)} className="p-6 flex justify-between items-center active:bg-white/5 transition-all cursor-pointer group">
-                  <div className="flex items-center gap-3">
-                    {item.badge && <span className="text-[7px] font-black bg-emerald-500 text-black px-1.5 py-0.5 rounded-sm">NEW</span>}
-                    <span className="font-bold text-[13px] group-hover:text-emerald-400 transition-colors uppercase italic">{item.name}</span>
+      {/* Product List */}
+      <div className="max-w-4xl mx-auto space-y-8">
+        {Object.entries(grouped).map(([subCat, items]) => {
+          const style = SUB_STYLES[subCat] || { color: "#FFF", bg: "rgba(255,255,255,0.05)" };
+          return (
+            <div key={subCat} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md">
+              <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: style.bg }}>
+                <h2 className="text-sm font-black italic uppercase tracking-widest" style={{ color: style.color }}>{subCat}</h2>
+                <Zap size={16} style={{ color: style.color }} />
+              </div>
+              <div className="divide-y divide-white/5">
+                {items.map((p) => (
+                  <div key={p.id} onClick={() => setSelected(p)} className="p-6 flex justify-between items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
+                    <div className="flex items-center gap-4">
+                      {/* Картинка из колонки I (photo) */}
+                      <div className="w-14 h-14 rounded-2xl bg-black/20 border border-white/5 overflow-hidden shadow-inner">
+                        {p.image ? (
+                          <img src={p.image} className="w-full h-full object-cover" alt="" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center opacity-10"><Flame size={20}/></div>
+                        )}
+                      </div>
+                      <div>
+                        <h3 className="text-[14px] font-black uppercase italic tracking-tight group-hover:text-emerald-400 transition-colors leading-none mb-1">
+                          {p.name}
+                        </h3>
+                        <p className="text-[10px] font-bold opacity-30 uppercase">from {p.prices?.[10] || 0}฿</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-emerald-500/50 transition-all">
+                          <Zap size={14} className="opacity-20 group-hover:opacity-100 group-hover:text-emerald-400 transition-all" />
+                       </div>
+                    </div>
                   </div>
-                  <div className="text-[11px] font-black opacity-40">
-                    from {item.prices[10]}฿
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* CART BUTTON (Copy-paste from main) */}
+      {/* Floating Cart (та же, что на главной) */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <Link href="/" className="w-full bg-emerald-400 text-black p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#0f1a15]">
+          <Link href="/" className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E]">
             <div className="flex items-center gap-4">
               <ShoppingBag size={20}/>
               <div className="text-left">
-                <p className="text-[10px] font-black uppercase leading-none">In Cart</p>
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Checkout</p>
                 <p className="text-[16px] font-black italic">{getTotal()}฿ Total</p>
               </div>
             </div>
-            <div className="bg-black/10 p-3 rounded-full flex items-center gap-2">
-               <span className="text-[10px] font-black">CHECKOUT</span>
-               <Send size={16}/>
-            </div>
+            <Send size={18}/>
           </Link>
         </div>
       )}
 
-      {selected && <OrderModal product={selected} onClose={() => setSelected(null)} />}
+      {/* Selection Modal */}
+      {selected && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/95 backdrop-blur-xl" onClick={() => setSelected(null)}>
+          <div className="relative w-full max-w-sm bg-[#193D2E] rounded-[3rem] border border-white/10 p-8 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <button onClick={() => setSelected(null)} className="absolute top-6 right-6 opacity-20 hover:opacity-100"><X size={20}/></button>
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-black italic uppercase tracking-tighter text-emerald-400">{selected.name}</h2>
+              <p className="text-[10px] font-black opacity-30 uppercase mt-1 tracking-widest">Select Quantity</p>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mb-8">
+              {[1, 5, 10].map(w => (
+                <button 
+                  key={w} 
+                  onClick={() => {
+                    addItem({ ...selected, weight: `${w}g`, price: selected.prices[w] });
+                    setSelected(null);
+                  }}
+                  className="flex flex-col items-center justify-center py-5 bg-white/5 border border-white/10 rounded-[1.5rem] hover:bg-white hover:text-black transition-all group"
+                >
+                  <span className="text-xl font-black italic">{w}g</span>
+                  <span className="text-[10px] font-bold opacity-40 group-hover:opacity-100">{selected.prices[w]}฿</span>
+                </button>
+              ))}
+            </div>
+            <button onClick={() => setSelected(null)} className="w-full py-4 text-[9px] font-black opacity-20 uppercase tracking-[0.4em]">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      <footer className="mt-20 pb-12 text-center">
+        <p className="text-[9px] font-black uppercase tracking-[0.5em] italic text-white/10">BND • PHUKET • 2022</p>
+      </footer>
     </div>
   );
 }
