@@ -2,7 +2,6 @@
 
 export async function getProducts() {
   try {
-    // Твой актуальный URL скрипта
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydASYY66CcKhk7m6JuBHBA4W3AaXQMIFDiqLyoXchpbYnuwOqofhdv7CXlhcXsvzLF/exec';
 
     const response = await fetch(SCRIPT_URL, {
@@ -14,19 +13,16 @@ export async function getProducts() {
     if (!response.ok) throw new Error("Ошибка сети");
 
     const data = await response.json();
-    
-    // Новая логика: скрипт теперь присылает { products: [], stories: [] }
-    const rawProducts = Array.isArray(data) ? data : (data.products || []);
-    const rawStories = data.stories || [];
+    const items = Array.isArray(data) ? data : (data.data || []);
 
-    const products = rawProducts.map((item: any) => ({
+    return items.map((item: any) => ({
       ...item,
       id: String(item.id || Math.random()),
       name: String(item.name || "Unnamed"),
       category: String(item.category || "").toLowerCase().trim(),
       subcategory: String(item.subcategory || "").toLowerCase().trim(),
       
-      // Если в таблице в поле photo ссылка — берем её
+      // Логика фото: если в таблице ссылка, берем её, иначе заглушка
       image: (item.photo && item.photo.startsWith('http')) 
         ? item.photo 
         : '/images/placeholder.webp',
@@ -44,13 +40,8 @@ export async function getProducts() {
       },
       price: Number(item.price_1g) || Number(item.price) || 0
     }));
-
-    return {
-      products,
-      stories: rawStories
-    };
   } catch (error) {
     console.error("❌ Ошибка загрузки:", error);
-    return { products: [], stories: [] };
+    return [];
   }
 }
