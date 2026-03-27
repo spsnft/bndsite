@@ -11,15 +11,6 @@ import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
 // --- STORE ---
-interface CartItem {
-  id: string;
-  name: string;
-  weight: string;
-  price: number;
-  quantity: number;
-  image?: string;
-}
-
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
   addItem: (newItem: any) => set((state: any) => {
@@ -55,12 +46,6 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
 ];
 
-const STORIES = [
-  { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
-  { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
-  { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
-];
-
 const CONTACT_METHODS = [
   { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
   { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, ph: "phone number" },
@@ -80,13 +65,15 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   return ((prices[20] || 0) / 20) * weight;
 };
 
+// МОДАЛКА СТОРИС: Теперь берет картинку из данных, если её нет — ищет локально
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
+  const imageUrl = story.image || `/stories/${story.id}.webp`;
   return (
     <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
       <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white transition-colors"><X size={32}/></button>
         <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <img src={`/stories/${story.id}.webp`} className="w-full h-full object-cover" alt={story.label} />
+          <img src={imageUrl} className="w-full h-full object-cover" alt={story.label} />
         </div>
       </div>
     </div>
@@ -241,12 +228,26 @@ const BadgeIcon = ({ type }: { type: string }) => {
 
 export default function LandingPage() {
   const [products, setProducts] = React.useState<any[]>([]);
+  const [stories, setStories] = React.useState<any[]>([]); // Состояние для сторис
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [activeStory, setActiveStory] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const { items, getTotal } = useCart();
 
-  React.useEffect(() => { getProducts().then(data => setProducts(data)); }, []);
+  // Загружаем данные: теперь getProducts возвращает объект {products, stories}
+  React.useEffect(() => { 
+    getProducts().then(data => {
+      setProducts(data.products || []);
+      setStories(data.stories || []);
+    }); 
+  }, []);
+
+  // Статические данные сторис (иконки и цвета), которые мы дополним ссылками из таблицы
+  const STORY_CONFIG = [
+    { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
+    { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
+    { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
+  ];
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
@@ -255,14 +256,29 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px]"></div>
           <img src="/icon.png" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" alt="Logo" />
         </div>
+        
+        {/* РЕНДЕР СТОРИС: Сопоставляем конфиг с данными из таблицы */}
         <div className="flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
-          {STORIES.map((s) => (
-            <button key={s.id} onClick={() => setActiveStory(s)} className="flex flex-col items-center gap-3 shrink-0 group">
-              <div className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" style={{ borderColor: `${s.color}40` }}><s.icon size={22} style={{ color: s.color }} /></div>
-              <span className="text-[9px] font-black tracking-widest uppercase opacity-60 text-center leading-tight max-w-[65px]">{s.label}</span>
-            </button>
-          ))}
+          {STORY_CONFIG.map((config) => {
+            const tableData = stories.find(s => s.id === config.id);
+            return (
+              <button 
+                key={config.id} 
+                onClick={() => setActiveStory({ ...config, image: tableData?.image })} 
+                className="flex flex-col items-center gap-3 shrink-0 group"
+              >
+                <div 
+                  className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" 
+                  style={{ borderColor: `${config.color}40` }}
+                >
+                  <config.icon size={22} style={{ color: config.color }} />
+                </div>
+                <span className="text-[9px] font-black tracking-widest uppercase opacity-60 text-center leading-tight max-w-[65px]">{config.label}</span>
+              </button>
+            );
+          })}
         </div>
+
         <div className="flex gap-3 w-full max-w-sm px-2">
           <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
           <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
