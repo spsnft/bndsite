@@ -11,6 +11,15 @@ import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
 // --- STORE ---
+interface CartItem {
+  id: string;
+  name: string;
+  weight: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
   addItem: (newItem: any) => set((state: any) => {
@@ -46,8 +55,7 @@ const GRADES = [
   { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
 ];
 
-// Эти данные — каркас. Картинки подтянутся из таблицы по id
-const STATIC_STORIES = [
+const STORIES = [
   { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
   { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
   { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
@@ -78,12 +86,7 @@ function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
       <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white transition-colors"><X size={32}/></button>
         <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          {/* Если есть живая ссылка — берем её, иначе локальный файл */}
-          <img 
-            src={story.imageUrl || `/stories/${story.id}.webp`} 
-            className="w-full h-full object-cover" 
-            alt={story.label} 
-          />
+          <img src={`/stories/${story.id}.webp`} className="w-full h-full object-cover" alt={story.label} />
         </div>
       </div>
     </div>
@@ -166,28 +169,12 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const handleSubmit = async () => {
     if (!contact) return alert("Введите данные для связи");
     setIsSending(true);
-    
-    // Форматируем список товаров для ТГ
-    const orderText = items.map(i => `• ${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
-    
+    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
     try {
-      // Тот же URL, что и в product.ts
-      const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydASYY66CcKhk7m6JuBHBA4W3AaXQMIFDiqLyoXchpbYnuwOqofhdv7CXlhcXsvzLF/exec";
-      
-      await fetch(SCRIPT_URL, { 
-        method: "POST", 
-        mode: "no-cors", 
-        body: JSON.stringify({ contact, method, orderText, total }) 
-      });
-      
-      alert("Order sent! Check your Telegram."); 
-      clearCart(); 
-      onClose();
-    } catch (error) { 
-      alert("Sending error. Try again."); 
-    } finally { 
-      setIsSending(false); 
-    }
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
+      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
+      alert("Заказ успешно отправлен!"); clearCart(); onClose();
+    } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
   };
 
   return (
@@ -254,26 +241,12 @@ const BadgeIcon = ({ type }: { type: string }) => {
 
 export default function LandingPage() {
   const [products, setProducts] = React.useState<any[]>([]);
-  const [stories, setStories] = React.useState<any[]>(STATIC_STORIES); // Изначально статичные
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [activeStory, setActiveStory] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const { items, getTotal } = useCart();
 
-  React.useEffect(() => { 
-    getProducts().then(data => {
-      setProducts(data.products);
-      
-      // Синхронизируем статичные данные сторис с ссылками из таблицы
-      if (data.stories && data.stories.length > 0) {
-        const liveStories = STATIC_STORIES.map(staticS => {
-          const liveS = data.stories.find((s: any) => s.id === staticS.id);
-          return liveS ? { ...staticS, imageUrl: liveS.image } : staticS;
-        });
-        setStories(liveStories);
-      }
-    }); 
-  }, []);
+  React.useEffect(() => { getProducts().then(data => setProducts(data)); }, []);
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
@@ -282,19 +255,14 @@ export default function LandingPage() {
           <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px]"></div>
           <img src="/icon.png" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" alt="Logo" />
         </div>
-        
-        {/* Рендерим сторис из стейта (уже с картинками из таблицы) */}
         <div className="flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
-          {stories.map((s) => (
+          {STORIES.map((s) => (
             <button key={s.id} onClick={() => setActiveStory(s)} className="flex flex-col items-center gap-3 shrink-0 group">
-              <div className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" style={{ borderColor: `${s.color}40` }}>
-                <s.icon size={22} style={{ color: s.color }} />
-              </div>
+              <div className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" style={{ borderColor: `${s.color}40` }}><s.icon size={22} style={{ color: s.color }} /></div>
               <span className="text-[9px] font-black tracking-widest uppercase opacity-60 text-center leading-tight max-w-[65px]">{s.label}</span>
             </button>
           ))}
         </div>
-
         <div className="flex gap-3 w-full max-w-sm px-2">
           <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
           <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
@@ -350,7 +318,7 @@ export default function LandingPage() {
       {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
 
       <footer className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/40">
-        <p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БОШКУНАДОРОЖКУ • PHUKET • 2026</p>
+        <p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БОШКУНАДОРОЖКУ • PHUKET • 2022</p>
       </footer>
     </div>
   );
