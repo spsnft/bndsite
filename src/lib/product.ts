@@ -1,5 +1,3 @@
-// src/lib/product.ts
-
 export async function getProducts() {
   try {
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbydASYY66CcKhk7m6JuBHBA4W3AaXQMIFDiqLyoXchpbYnuwOqofhdv7CXlhcXsvzLF/exec';
@@ -13,16 +11,18 @@ export async function getProducts() {
     if (!response.ok) throw new Error("Ошибка сети");
 
     const data = await response.json();
-    const items = Array.isArray(data) ? data : (data.data || []);
+    
+    // ВАЖНО: берем товары из data.products, а сторисы из data.stories
+    const items = data.products || [];
+    const stories = data.stories || [];
 
-    return items.map((item: any) => ({
+    const formattedProducts = items.map((item: any) => ({
       ...item,
       id: String(item.id || Math.random()),
       name: String(item.name || "Unnamed"),
       category: String(item.category || "").toLowerCase().trim(),
       subcategory: String(item.subcategory || "").toLowerCase().trim(),
       
-      // Логика фото: если в таблице ссылка, берем её, иначе заглушка
       image: (item.photo && item.photo.startsWith('http')) 
         ? item.photo 
         : '/images/placeholder.webp',
@@ -40,8 +40,11 @@ export async function getProducts() {
       },
       price: Number(item.price_1g) || Number(item.price) || 0
     }));
+
+    // Возвращаем объект, чтобы page.tsx мог взять и то, и другое
+    return { products: formattedProducts, stories: stories };
   } catch (error) {
     console.error("❌ Ошибка загрузки:", error);
-    return [];
+    return { products: [], stories: [] };
   }
 }
