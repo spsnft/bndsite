@@ -83,7 +83,6 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       
-      // Используем mode: 'no-cors' для работы с Google Scripts
       await fetch(GOOGLE_SCRIPT_URL, { 
         method: "POST", 
         mode: "no-cors",
@@ -238,7 +237,8 @@ export default function ConcentratesPage() {
 
   React.useEffect(() => {
     getProducts().then(data => {
-      const concs = data.filter((p: any) => p.category?.toLowerCase() !== 'buds');
+      // ИСПРАВЛЕННЫЙ ФИЛЬТР: только категория Concentrates
+      const concs = data.filter((p: any) => p.category?.toLowerCase() === 'concentrates');
       setProducts(concs);
     });
   }, []);
