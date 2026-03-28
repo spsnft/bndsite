@@ -77,12 +77,28 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const handleSubmit = async () => {
     if (!contact) return alert("Введите данные для связи");
     setIsSending(true);
-    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
+
+    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity}`).join("\n");
+    
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
-      alert("Заказ успешно отправлен!"); clearCart(); onClose();
-    } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
+      
+      // Используем mode: 'no-cors' для работы с Google Scripts
+      await fetch(GOOGLE_SCRIPT_URL, { 
+        method: "POST", 
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contact, method, orderText, total }) 
+      });
+
+      alert("Заказ успешно отправлен!"); 
+      clearCart(); 
+      onClose();
+    } catch (error) { 
+      alert("Ошибка отправки. Проверьте соединение."); 
+    } finally { 
+      setIsSending(false); 
+    }
   };
 
   return (
