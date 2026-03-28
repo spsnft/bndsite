@@ -19,9 +19,48 @@ import Instagram from "lucide-react/dist/esm/icons/instagram"
 import SendHorizontal from "lucide-react/dist/esm/icons/send-horizontal"
 import Trash2 from "lucide-react/dist/esm/icons/trash-2"
 
-// УДАЛЕНО ЛОКАЛЬНОЕ ОПРЕДЕЛЕНИЕ STORE
-import { useCart } from "@/lib/cart-store"
+import { create } from "zustand"
+import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
+
+// --- HELPERS & COMPONENTS ---
+const BadgeIcon = ({ type }: { type: string }) => {
+  switch (type.toUpperCase()) {
+    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
+    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
+    default: return null;
+  }
+};
+
+// --- STORE ---
+const useCart = create<any>()(persist((set, get) => ({
+  items: [],
+  addItem: (newItem: any) => set((state: any) => {
+    const ex = state.items.findIndex((i: any) => i.id === newItem.id && i.weight === newItem.weight);
+    if (ex > -1) {
+      const newItems = [...state.items];
+      newItems[ex].quantity += 1;
+      return { items: newItems };
+    }
+    return { items: [...state.items, { ...newItem, quantity: 1 }] };
+  }),
+  removeItem: (id: string, weight: string) => set((state: any) => ({
+    items: state.items.filter((i: any) => !(i.id === id && i.weight === weight))
+  })),
+  updateQuantity: (id: string, weight: string, delta: number) => set((state: any) => {
+    const newItems = state.items.map((i: any) => {
+      if (i.id === id && i.weight === weight) {
+        const newQty = Math.max(1, i.quantity + delta);
+        return { ...i, quantity: newQty };
+      }
+      return i;
+    });
+    return { items: newItems };
+  }),
+  clearCart: () => set({ items: [] }),
+  getTotal: () => get().items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
+}), { name: "bnd-cart-v12" }));
 
 const CONTACT_METHODS = [
   { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
@@ -209,6 +248,10 @@ export default function ConcentratesPage() {
                     return (
                       <div key={p.id} onClick={() => setSelected(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
                         <div className="col-span-8 flex items-center gap-4">
+                          {/* ДОБАВЛЕН ШИЛЬДИК */}
+                          <div className="w-5 flex justify-center shrink-0">
+                            {p.badge && <BadgeIcon type={p.badge} />}
+                          </div>
                           <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
                         </div>
                         <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">from {priceFrom}฿/g</div>
