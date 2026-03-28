@@ -3,14 +3,14 @@
 import * as React from "react"
 import Link from "next/link"
 import {
-  ArrowLeft, ShoppingBag, Zap, Flame, X, Sparkles, Crown, MapPin, Wind
+  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, TrendingDown, Sparkles,
+  Percent, Crown, MapPin, Wind, MessageCircle, Instagram, SendHorizontal, Trash2
 } from "lucide-react"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-// ИМПОРТИРУЕМ ТУ ЖЕ ФУНКЦИЮ, ЧТО И НА ГЛАВНОЙ
 import { getProducts } from "@/lib/product"
 
-// --- STORE (тот же самый) ---
+// --- STORE (Ключ bnd-cart-v12 для синхронизации корзины) ---
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
   addItem: (newItem: any) => set((state: any) => {
@@ -39,47 +39,145 @@ const useCart = create<any>()(persist((set, get) => ({
   getTotal: () => get().items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
 }), { name: "bnd-cart-v12" }));
 
-// --- HELPERS ---
+const CONTACT_METHODS = [
+  { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
+  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, ph: "phone number" },
+  { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
+  { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
+];
+
 const getSubStyle = (subName = "") => {
   const name = subName.toLowerCase();
-  if (name.includes("hash") || name.includes("frozen")) return { color: "#FEC107", icon: Sparkles };
+  if (name.includes("old school") || name.includes("hash")) return { color: "#C1C1C1", icon: Percent };
+  if (name.includes("premium")) return { color: "#34D399", icon: Flame };
+  if (name.includes("frozen")) return { color: "#FEC107", icon: Sparkles };
   if (name.includes("rosin")) return { color: "#A855F7", icon: Crown };
-  return { color: "#34D399", icon: Flame };
+  return { color: "#FFF", icon: Zap };
 };
 
 const getInterpolatedPrice = (weight: number, prices: any) => {
   if (!prices) return 0;
-  if (weight <= 1) return (prices[1] || 0) * weight;
-  if (weight <= 5) return (prices[1] || 0) + ((prices[5] || 0) - (prices[1] || 0)) * ((weight - 1) / 4);
-  if (weight <= 10) return (prices[5] || 0) + ((prices[10] || 0) - (prices[5] || 0)) * ((weight - 5) / 5);
-  return ((prices[10] || 0) / 10) * weight;
+  const p1 = Number(prices[1]) || 0;
+  const p5 = Number(prices[5]) || 0;
+  const p10 = Number(prices[10]) || 0;
+  if (weight <= 1) return p1 * weight;
+  if (weight <= 5) return p1 + (p5 - p1) * ((weight - 1) / 4);
+  if (weight <= 10) return p5 + (p10 - p5) * ((weight - 5) / 5);
+  return (p10 / 10) * weight;
 };
 
-// --- МОДАЛКИ (взяты с главной для совместимости данных) ---
+// --- MODALS ---
+
+function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
+  const [method, setMethod] = React.useState("telegram");
+  const [contact, setContact] = React.useState("");
+  const [isSending, setIsSending] = React.useState(false);
+  const { clearCart, removeItem, updateQuantity } = useCart();
+
+  const handleSubmit = async () => {
+    if (!contact) return alert("Введите данные для связи");
+    setIsSending(true);
+    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
+    try {
+      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
+      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
+      alert("Заказ успешно отправлен!"); clearCart(); onClose();
+    } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
+      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10">
+          <div className="text-white">
+            <h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2>
+            <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p>
+          </div>
+          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24} className="text-white"/></button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+          {items.map((item: any) => (
+            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
+              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0">
+                <img src={item.image} className="w-full h-full object-contain" alt="" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
+                <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center bg-black/20 rounded-xl border border-white/5">
+                  <button onClick={() => updateQuantity(item.id, item.weight, -1)} className="px-2 py-1 opacity-40 hover:opacity-100">-</button>
+                  <span className="text-[10px] font-black w-4 text-center">{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.id, item.weight, 1)} className="px-2 py-1 opacity-40 hover:opacity-100">+</button>
+                </div>
+                <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/40 hover:text-rose-500 transition-colors p-1"><Trash2 size={16} /></button>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
+          <div className="grid grid-cols-4 gap-2">
+            {CONTACT_METHODS.map(m => (
+              <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white shadow-lg" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
+                <m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span>
+              </button>
+            ))}
+          </div>
+          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
+          <div className="flex items-center justify-between pt-2 text-white">
+            <p className="text-[10px] font-black uppercase opacity-40 tracking-widest">Total cost</p>
+            <p className="text-3xl font-black italic tracking-tighter">{total}฿</p>
+          </div>
+          <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-20 shadow-lg">
+            {isSending ? "Processing..." : "Confirm & Send Order"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
   const [weight, setWeight] = React.useState(1);
+  const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
+
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices));
-  
+  const pricePerGram = Math.round(currentPrice / weight);
+  const p5 = Number(product.prices?.[5]) || 0;
+  const p10 = Number(product.prices?.[10]) || 0;
+
+  const tip = weight < 5 ? { next: 5, p: Math.round(p5/5) } : weight < 10 ? { next: 10, p: Math.round(p10/10) } : null;
+
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden text-white" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full"><X size={20}/></button>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
+      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
-          <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
+          {product.image ? (
+            <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center opacity-10 text-white"><Zap size={80}/></div>
+          )}
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
             <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">{product.subcategory}</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white opacity-40">{product.subcategory}</p>
           </div>
         </div>
-        <div className="p-8 pt-0 space-y-6">
-          <div className="grid grid-cols-2 gap-4 border-b border-white/5 pb-4 opacity-40 text-[9px] font-black uppercase italic tracking-widest">
-             <div className="flex items-center gap-2"><MapPin size={10}/> Farm: {product.farm}</div>
-             <div className="flex items-center gap-2"><Wind size={10}/> Microns: {product.microns || "N/A"}</div>
+        <div className="p-8 pt-0 space-y-6 text-white">
+          <div className="grid grid-cols-2 gap-4 border-b border-white/5 pb-4">
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm || "Unknown"}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Microns</span></div><p className="text-[10px] font-bold italic truncate">{product.microns || "N/A"}</p></div>
           </div>
           <div className="flex justify-between items-end">
-            <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
-            <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full">{weight}g</div>
+            <div>
+              <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
+              <div className="text-[9px] font-bold opacity-30 uppercase tracking-widest mt-1">Price per gram: {pricePerGram}฿</div>
+            </div>
+            <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
           </div>
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-2">
@@ -88,7 +186,18 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               ))}
             </div>
             <input type="range" min="1" max="10" step="1" value={weight} onChange={(e) => setWeight(parseInt(e.target.value))} className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); onClose(); }} className="w-full py-5 rounded-2xl font-black uppercase text-[12px] bg-white text-[#193D2E] active:scale-95 transition-all shadow-xl tracking-[0.2em]">Add to Order</button>
+            {tip && (
+              <div className="flex items-center gap-2 py-2 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10">
+                <TrendingDown size={12} className="text-emerald-400" />
+                <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tighter">Add {tip.next - weight}g more for {tip.p}฿ per gram!</p>
+              </div>
+            )}
+            <button
+              onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }}
+              className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}
+            >
+              {isAdded ? "Added to Cart" : "Add to Order"}
+            </button>
           </div>
         </div>
       </div>
@@ -96,21 +205,30 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   );
 }
 
+const BadgeIcon = ({ type }: { type: string }) => {
+  switch (type?.toUpperCase()) {
+    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400 leading-none">NEW</span></div>;
+    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
+    default: return null;
+  }
+};
+
 export default function ConcentratesPage() {
   const [products, setProducts] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [selected, setSelected] = React.useState<any>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const { items, getTotal } = useCart();
 
   React.useEffect(() => {
-    // ИСПОЛЬЗУЕМ ТУ ЖЕ ЛОГИКУ, ЧТО И НА ГЛАВНОЙ
     getProducts().then(data => {
       const allItems = data.products || [];
-      // Фильтруем по категории 'concentrates' (как они приходят из getProducts)
-      const filtered = allItems.filter((p: any) => 
+      // ФИЛЬТР: ТОЛЬКО КАТЕГОРИЯ CONCENTRATES
+      const concs = allItems.filter((p: any) => 
         String(p.category || "").toLowerCase() === 'concentrates'
       );
-      setProducts(filtered);
+      setProducts(concs);
       setLoading(false);
     });
   }, []);
@@ -125,17 +243,19 @@ export default function ConcentratesPage() {
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
       <header className="flex items-center justify-between mb-10 pt-4 max-w-4xl mx-auto">
-        <Link href="/" className="p-4 bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all"><ArrowLeft size={20} /></Link>
+        <Link href="/" className="p-4 bg-white/5 rounded-[1.5rem] border border-white/10 active:scale-90 transition-all">
+          <ArrowLeft size={20} />
+        </Link>
         <div className="text-center">
-          <h1 className="text-2xl font-black italic uppercase tracking-tighter text-[#a855f7]">Concentrates</h1>
-          <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1 italic text-white">Extraction Menu</p>
+          <h1 className="text-2xl font-black italic uppercase tracking-tighter">Concentrates</h1>
+          <p className="text-[9px] font-black opacity-30 uppercase tracking-[0.4em] mt-1 italic leading-none">Extraction Menu</p>
         </div>
         <div className="w-14"></div>
       </header>
 
       <div className="max-w-4xl mx-auto space-y-10">
         {loading ? (
-          <div className="text-center py-20 opacity-20 animate-pulse font-black uppercase text-xs tracking-widest">Loading...</div>
+           <div className="text-center py-20 opacity-20 animate-pulse font-black uppercase text-xs tracking-widest">Loading...</div>
         ) : products.length > 0 ? (
           Object.entries(grouped).map(([subCat, subItems]: [string, any]) => {
             const style = getSubStyle(subCat);
@@ -143,15 +263,23 @@ export default function ConcentratesPage() {
               <div key={subCat} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-2xl">
                 <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${style.color}10` }}>
                   <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{subCat}</h2>
-                  <style.icon size={18} style={{ color: style.color }} />
+                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner">
+                    <style.icon size={18} style={{ color: style.color }} />
+                  </div>
                 </div>
                 <div className="divide-y divide-white/5">
-                  {subItems.map((p: any) => (
-                    <div key={p.id} onClick={() => setSelected(p)} className="flex justify-between items-center px-6 py-5 hover:bg-white/5 cursor-pointer active:bg-white/10 transition-all">
-                      <span className="text-[12px] font-black uppercase italic tracking-tight">{p.name}</span>
-                      <span className="text-[10px] font-bold opacity-30 italic">from {p.prices?.[10] ? Math.round(p.prices[10]/10) : 0}฿/g</span>
-                    </div>
-                  ))}
+                  {subItems.map((p: any) => {
+                    const priceFrom = p.prices?.[10] ? Math.round(Number(p.prices[10]) / 10) : 0;
+                    return (
+                      <div key={p.id} onClick={() => setSelected(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
+                        <div className="col-span-8 flex items-center gap-4">
+                          <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+                          <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
+                        </div>
+                        <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic">from {priceFrom}฿/g</div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -165,14 +293,25 @@ export default function ConcentratesPage() {
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <Link href="/" className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] font-black uppercase italic active:scale-95 transition-all">
-            <div className="flex items-center gap-4"><ShoppingBag size={20}/> <span>Basket ({items.length})</span></div>
-            <span>{getTotal()}฿</span>
-          </Link>
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border-4 border-[#193D2E] group active:scale-95 transition-all">
+            <div className="flex items-center gap-4 text-left">
+              <ShoppingBag size={22}/>
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p>
+                <p className="text-[16px] font-black italic mt-1">{getTotal()}฿ Total</p>
+              </div>
+            </div>
+            <Send size={18}/>
+          </button>
         </div>
       )}
 
       {selected && <ProductModal product={selected} style={getSubStyle(selected.subcategory)} onClose={() => setSelected(null)} />}
+      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
+
+      <footer className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/40">
+        <p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БОШКУНАДОРОЖКУ • PHUKET • 2022</p>
+      </footer>
     </div>
   );
 }
