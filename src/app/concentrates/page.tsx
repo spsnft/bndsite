@@ -217,17 +217,21 @@ export default function ConcentratesPage() {
     const loadData = async () => {
       try {
         setLoading(true);
-        // Добавляем timestamp для обхода кэша (304 статус в Vercel)
-        const response = await fetch(`${GOOGLE_SCRIPT_URL}?t=${Date.now()}`, {
+        // Добавляем ?v=... для ПРИНУДИТЕЛЬНОГО обхода кэша Vercel и Google
+        const response = await fetch(`${GOOGLE_SCRIPT_URL}?v=${Date.now()}`, {
           cache: 'no-store',
-          headers: { 'Cache-Control': 'no-cache' }
+          headers: { 
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
         });
         const data = await response.json();
         
-        // Фильтр: только категория "Concentrates"
-        const filtered = data.filter((p: any) => 
-          (p.category || "").toLowerCase().trim() === 'concentrates'
-        );
+        // МЯГКИЙ ФИЛЬТР: чистим пробелы и регистр
+        const filtered = data.filter((p: any) => {
+          const cat = String(p.category || "").toLowerCase().trim();
+          return cat === 'concentrates';
+        });
         
         setProducts(filtered);
       } catch (e) {
@@ -261,7 +265,7 @@ export default function ConcentratesPage() {
 
       <div className="max-w-4xl mx-auto space-y-10">
         {loading ? (
-          <div className="text-center py-20 opacity-20 animate-pulse font-black uppercase tracking-widest text-xs">Loading fresh stock...</div>
+          <div className="text-center py-20 opacity-20 animate-pulse font-black uppercase tracking-widest text-xs">Syncing with Warehouse...</div>
         ) : Object.keys(grouped).length > 0 ? (
           Object.entries(grouped).map(([subCat, subItems]: [string, any]) => {
             const style = getSubStyle(subCat);
@@ -291,7 +295,12 @@ export default function ConcentratesPage() {
             );
           })
         ) : (
-          <div className="text-center py-20 opacity-30 font-bold uppercase text-[10px] tracking-widest">No concentrates found in sheet</div>
+          <div className="flex flex-col items-center justify-center py-32 text-center">
+            <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 opacity-20">
+              <Zap size={32} />
+            </div>
+            <p className="opacity-30 font-black uppercase text-[10px] tracking-[0.3em]">No items in stock yet</p>
+          </div>
         )}
       </div>
 
