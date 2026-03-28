@@ -2,10 +2,23 @@
 
 import * as React from "react"
 import Link from "next/link"
-import {
-  ArrowLeft, ShoppingBag, Send, Zap, Flame, X, TrendingDown, Sparkles,
-  Percent, Crown, MapPin, Wind, MessageCircle, Instagram, SendHorizontal, Trash2
-} from "lucide-react"
+import ArrowLeft from "lucide-react/dist/esm/icons/arrow-left"
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag"
+import Send from "lucide-react/dist/esm/icons/send"
+import Zap from "lucide-react/dist/esm/icons/zap"
+import Flame from "lucide-react/dist/esm/icons/flame"
+import X from "lucide-react/dist/esm/icons/x"
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down"
+import Sparkles from "lucide-react/dist/esm/icons/sparkles"
+import Percent from "lucide-react/dist/esm/icons/percent"
+import Crown from "lucide-react/dist/esm/icons/crown"
+import MapPin from "lucide-react/dist/esm/icons/map-pin"
+import Wind from "lucide-react/dist/esm/icons/wind"
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle"
+import Instagram from "lucide-react/dist/esm/icons/instagram"
+import SendHorizontal from "lucide-react/dist/esm/icons/send-horizontal"
+import Trash2 from "lucide-react/dist/esm/icons/trash-2"
+
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
@@ -57,6 +70,11 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   return (p10 / 10) * weight;
 };
 
+const getOptimizedImg = (url: string, w = 600) => {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  return url.replace('/upload/', `/upload/f_auto,q_auto,w_${w}/`);
+};
+
 // --- MODALS ---
 function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
   const [method, setMethod] = React.useState("telegram");
@@ -85,7 +103,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
         <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
           {items.map((item: any) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0"><img src={item.image} className="w-full h-full object-contain" alt="" /></div>
+              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
               <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center bg-black/20 rounded-xl border border-white/5"><button onClick={() => updateQuantity(item.id, item.weight, -1)} className="px-2 py-1 opacity-40 hover:opacity-100">-</button><span className="text-[10px] font-black w-4 text-center">{item.quantity}</span><button onClick={() => updateQuantity(item.id, item.weight, 1)} className="px-2 py-1 opacity-40 hover:opacity-100">+</button></div>
@@ -124,7 +142,7 @@ function ProductModal({ product, onClose }: { product: any, onClose: () => void 
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl text-white" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
-          <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
+          <img src={getOptimizedImg(product.image, 600)} className="w-full h-full object-contain p-10" alt="" />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
             <h2 className="text-4xl font-black italic uppercase tracking-tighter">{product.name}</h2>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 opacity-40">{product.subcategory}</p>
@@ -197,7 +215,6 @@ export default function ConcentratesPage() {
            <div className="text-center py-20 opacity-20 animate-pulse font-black uppercase text-xs tracking-widest">Loading...</div>
         ) : Object.keys(grouped).length > 0 ? (
           Object.entries(grouped).map(([subCat, subItems]: [string, any]) => {
-            // ОПРЕДЕЛЯЕМ ЦВЕТ И ИКОНКУ ПРЯМО ЗДЕСЬ (ЖЕСТКО)
             const name = subCat.toLowerCase();
             let color = "#FFF";
             let Icon = Zap;
