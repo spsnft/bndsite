@@ -249,13 +249,34 @@ export default function LandingPage() {
     { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
   ];
 
+  // --- КОНСТАНТА С ПАРАМЕТРАМИ Cloudinary ---
+  // w_192: режем ширину до 192px (Tailwind w-24, h-24)
+  // c_limit: вписываем, не искажая пропорции
+  // e_bgremoval: УБИРАЕМ БЕЛЫЙ ФОН ПРЯМО НА Cloudinary
+  // f_auto: Cloudinary сам отдаст WebP или AVIF
+  // q_auto: Cloudinary сам сожмет до идеального качества/веса
+  const CLOUDINARY_TRANSFORMATIONS = "w_192,c_limit,e_bgremoval,f_auto,q_auto";
+  const optimizedLogoUrl = `https://res.cloudinary.com/dpjwbcgrq/image/upload/${CLOUDINARY_TRANSFORMATIONS}/v1774704686/IMG_0036_t5cnic.png`;
+
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
       <header className="flex flex-col items-center mb-10 pt-4">
-        <div className="relative w-24 h-24 mb-10 group">
-          <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px]"></div>
-          <img src="/icon.png" className="w-full h-full object-contain relative z-10 drop-shadow-2xl" alt="Logo" />
+        {/* Контейнер для логотипа */}
+        <div className="relative w-24 h-24 mb-10 group flex items-center justify-center">
+          {/* Свечение */}
+          <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px] z-0"></div>
+          
+          {/* ОБНОВЛЕННЫЙ ТЕГ IMG */}
+          <img 
+            src={optimizedLogoUrl} 
+            className="w-full h-full object-contain relative z-10 drop-shadow-2xl" 
+            alt="БОШКУНАДОРОЖКУ Logo"
+            width={192} // Указываем точный размер Cloudinary
+            height={192}
+            priority={true} // Даем приоритет, это LCP ( Largest Contentful Paint)
+          />
         </div>
+
         
         {/* РЕНДЕР СТОРИС: Сопоставляем конфиг с данными из таблицы */}
         <div className="flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
