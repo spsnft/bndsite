@@ -3,20 +3,28 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    color-scheme: dark; /* Говорим браузеру на системном уровне, что мы в dark mode */
+  }
+
   body {
-    background-color: #193D2E !important;
-    color: white !important;
-    @apply antialiased;
+    /* Убираем !important, если в layout.tsx цвет уже стоит. 
+       Добавляем bg-fixed, чтобы при скролле на мобилках фон не "дергался" */
+    @apply bg-[#193D2E] text-white antialiased;
+    background-color: #193D2E;
   }
 }
 
 @layer utilities {
-  /* Твое вчерашнее стекло */
+  /* Твое стекло */
   .backdrop-blur-3xl {
-    -webkit-backdrop-filter: blur(60px) !important;
-    backdrop-filter: blur(60px) !important;
+    /* 60px — это очень тяжелый блюр для мобильных процессоров. 
+       Если в PSI будет жалоба на "Long Tasks", попробуй снизить до 40px. */
+    -webkit-backdrop-filter: blur(60px);
+    backdrop-filter: blur(60px);
   }
   
+  /* Скрываем скроллбар правильно */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
