@@ -2,15 +2,30 @@
 
 import * as React from "react"
 import Link from "next/link"
-import {
-  Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, TrendingDown,
-  ShoppingBag, Send, MessageCircle, Instagram, SendHorizontal, Gift, Info, Trash2
-} from "lucide-react"
+// Прямые импорты для tree-shaking (уменьшает JS бандл)
+import Sparkles from "lucide-react/dist/esm/icons/sparkles"
+import Flame from "lucide-react/dist/esm/icons/flame"
+import Percent from "lucide-react/dist/esm/icons/percent"
+import X from "lucide-react/dist/esm/icons/x"
+import MapPin from "lucide-react/dist/esm/icons/map-pin"
+import Leaf from "lucide-react/dist/esm/icons/leaf"
+import Wind from "lucide-react/dist/esm/icons/wind"
+import Crown from "lucide-react/dist/esm/icons/crown"
+import TrendingDown from "lucide-react/dist/esm/icons/trending-down"
+import ShoppingBag from "lucide-react/dist/esm/icons/shopping-bag"
+import Send from "lucide-react/dist/esm/icons/send"
+import MessageCircle from "lucide-react/dist/esm/icons/message-circle"
+import Instagram from "lucide-react/dist/esm/icons/instagram"
+import SendHorizontal from "lucide-react/dist/esm/icons/send-horizontal"
+import Gift from "lucide-react/dist/esm/icons/gift"
+import Info from "lucide-react/dist/esm/icons/info"
+import Trash2 from "lucide-react/dist/esm/icons/trash-2"
+
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getProducts } from "@/lib/product"
 
-// --- STORE ---
+// --- STORE (Без изменений) ---
 const useCart = create<any>()(persist((set, get) => ({
   items: [],
   addItem: (newItem: any) => set((state: any) => {
@@ -65,15 +80,21 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   return ((prices[20] || 0) / 20) * weight;
 };
 
-// МОДАЛКА СТОРИС: Теперь берет картинку из данных, если её нет — ищет локально
+// --- HELPERS ---
+const getOptimizedImg = (url: string, w = 800) => {
+  if (!url || !url.includes('cloudinary.com')) return url;
+  return url.replace('/upload/', `/upload/f_auto,q_auto,w_${w}/`);
+};
+
+// --- COMPONENTS ---
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
-  const imageUrl = story.image || `/stories/${story.id}.webp`;
+  const imageUrl = getOptimizedImg(story.image || `/stories/${story.id}.webp`, 600);
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white transition-colors"><X size={32}/></button>
+        <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
         <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <img src={imageUrl} className="w-full h-full object-cover" alt={story.label} />
+          <img src={imageUrl} className="w-full h-full object-cover" alt="" />
         </div>
       </div>
     </div>
@@ -97,11 +118,11 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   })();
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
-      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
+      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
-          <img src={product.image} className="w-full h-full object-contain p-10" alt="" />
+          <img src={getOptimizedImg(product.image, 600)} className="w-full h-full object-contain p-10" alt="" />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
             <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
@@ -165,25 +186,17 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   };
 
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-in fade-in duration-300" onClick={onClose}>
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div>
-            <h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2>
-            <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} positions</p>
-          </div>
+          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} positions</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
-          {items.map((item) => (
+          {items.map((item: any) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0">
-                <img src={item.image} className="w-full h-full object-contain" alt="" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
-                <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
-              </div>
+              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
+              <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
               <div className="flex items-center gap-2">
                 <div className="flex items-center bg-black/20 rounded-xl border border-white/5">
                   <button onClick={() => updateQuantity(item.id, item.weight, -1)} className="px-2 py-1 opacity-40 hover:opacity-100">-</button>
@@ -204,10 +217,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
             ))}
           </div>
           <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white">
-            <p className="text-[10px] font-black uppercase opacity-40 tracking-widest">Total Amount</p>
-            <p className="text-3xl font-black italic tracking-tighter">{total}฿</p>
-          </div>
+          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40 tracking-widest">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
           <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-20 shadow-lg">
             {isSending ? "Sending..." : "Confirm Order"}
           </button>
@@ -226,15 +236,15 @@ const BadgeIcon = ({ type }: { type: string }) => {
   }
 };
 
+// --- MAIN PAGE ---
 export default function LandingPage() {
   const [products, setProducts] = React.useState<any[]>([]);
-  const [stories, setStories] = React.useState<any[]>([]); // Состояние для сторис
+  const [stories, setStories] = React.useState<any[]>([]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [activeStory, setActiveStory] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const { items, getTotal } = useCart();
 
-  // Загружаем данные: теперь getProducts возвращает объект {products, stories}
   React.useEffect(() => { 
     getProducts().then(data => {
       setProducts(data.products || []);
@@ -242,56 +252,36 @@ export default function LandingPage() {
     }); 
   }, []);
 
-  // Статические данные сторис (иконки и цвета), которые мы дополним ссылками из таблицы
   const STORY_CONFIG = [
     { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
     { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
     { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
   ];
 
-  // --- КОНСТАНТА С ПАРАМЕТРАМИ Cloudinary ---
-  // w_192: режем ширину до 192px (Tailwind w-24, h-24)
-  // c_limit: вписываем, не искажая пропорции
-  // e_bgremoval: УБИРАЕМ БЕЛЫЙ ФОН ПРЯМО НА Cloudinary
-  // f_auto: Cloudinary сам отдаст WebP или AVIF
-  // q_auto: Cloudinary сам сожмет до идеального качества/веса
-  const CLOUDINARY_TRANSFORMATIONS = "w_192,c_limit,e_bgremoval,f_auto,q_auto";
-  const optimizedLogoUrl = `https://res.cloudinary.com/dpjwbcgrq/image/upload/${CLOUDINARY_TRANSFORMATIONS}/v1774704686/IMG_0036_t5cnic.png`;
+  const optimizedLogoUrl = `https://res.cloudinary.com/dpjwbcgrq/image/upload/w_192,c_limit,e_bgremoval,f_auto,q_auto/v1774704686/IMG_0036_t5cnic.png`;
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
       <header className="flex flex-col items-center mb-10 pt-4">
-        {/* Контейнер для логотипа */}
-        <div className="relative w-24 h-24 mb-10 group flex items-center justify-center">
-          {/* Свечение */}
+        <div className="relative w-24 h-24 mb-10 flex items-center justify-center">
           <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px] z-0"></div>
-          
-          {/* ОБНОВЛЕННЫЙ ТЕГ IMG */}
           <img 
             src={optimizedLogoUrl} 
             className="w-full h-full object-contain relative z-10 drop-shadow-2xl" 
-            alt="БОШКУНАДОРОЖКУ Logo"
-            width={192} // Указываем точный размер Cloudinary
+            alt="Logo"
+            width={192}
             height={192}
-            priority={true} // Даем приоритет, это LCP ( Largest Contentful Paint)
+            // @ts-ignore
+            fetchpriority="high"
           />
         </div>
 
-        
-        {/* РЕНДЕР СТОРИС: Сопоставляем конфиг с данными из таблицы */}
         <div className="flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
           {STORY_CONFIG.map((config) => {
             const tableData = stories.find(s => s.id === config.id);
             return (
-              <button 
-                key={config.id} 
-                onClick={() => setActiveStory({ ...config, image: tableData?.image })} 
-                className="flex flex-col items-center gap-3 shrink-0 group"
-              >
-                <div 
-                  className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" 
-                  style={{ borderColor: `${config.color}40` }}
-                >
+              <button key={config.id} onClick={() => setActiveStory({ ...config, image: tableData?.image })} className="flex flex-col items-center gap-3 shrink-0 group">
+                <div className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" style={{ borderColor: `${config.color}40` }}>
                   <config.icon size={22} style={{ color: config.color }} />
                 </div>
                 <span className="text-[9px] font-black tracking-widest uppercase opacity-60 text-center leading-tight max-w-[65px]">{config.label}</span>
@@ -319,7 +309,7 @@ export default function LandingPage() {
                 <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner"><grade.icon size={18} style={{ color: grade.color }} /></div>
               </div>
               <div className="divide-y divide-white/5">
-                {gradeItems.map((p) => (
+                {gradeItems.map((p: any) => (
                   <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
                     <div className="col-span-6 flex items-center gap-4 relative">
                       <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
@@ -353,10 +343,6 @@ export default function LandingPage() {
       {activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
       {selectedProduct && <ProductModal product={selectedProduct} style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }} onClose={() => setSelectedProduct(null)} />}
       {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
-
-      <footer className="mt-20 pb-12 flex flex-col items-center gap-4 text-white/40">
-        <p className="text-center text-[9px] font-black uppercase tracking-[0.5em] italic">БОШКУНАДОРОЖКУ • PHUKET • 2022</p>
-      </footer>
     </div>
   );
 }
