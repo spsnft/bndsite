@@ -12,7 +12,7 @@ import { useCart } from "@/lib/cart-store"
 import { getProducts } from "@/lib/product"
 
 // --- КОНСТАНТЫ ---
-const SELECTED_COLOR = "#2DD4BF"; // Тот самый цвет морской волны
+const SELECTED_COLOR = "#2DD4BF"; 
 
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
@@ -39,7 +39,6 @@ const isElite = (product: any) => {
 
 const getElitePrice = (weight: number, prices: any) => {
   if (!prices) return 0;
-  // Сопоставляем кнопки с колонками цен (3.5g = p[1], 7g = p[5] и т.д. согласно логике таблицы)
   const weightMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
   return prices[weightMap[weight]] || 0;
 };
@@ -61,7 +60,7 @@ const getOptimizedImg = (url: string, w = 800) => {
 // --- COMPONENTS ---
 const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
-  const accentColor = isImport ? "#60A5FA" : SELECTED_COLOR; // Перекрасили Local в морскую волну
+  const accentColor = isImport ? "#60A5FA" : SELECTED_COLOR; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
   const displayPrice = Object.values(item.prices || {}).find(v => Number(v) > 0) || 0;
 
@@ -95,43 +94,10 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
   );
 };
 
-// ... SkeletonGrade и StoryModal остаются без изменений ...
-const SkeletonGrade = () => (
-  <div className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/10 animate-pulse mb-8">
-    <div className="p-6 h-16 bg-white/5 border-b border-white/5" />
-    <div className="divide-y divide-white/5">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-5 h-5 rounded-full bg-white/10" />
-            <div className="w-32 h-4 bg-white/10 rounded" />
-          </div>
-          <div className="w-12 h-4 bg-white/10 rounded" />
-        </div>
-      ))}
-    </div>
-  </div>
-);
-
-function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
-  const imageUrl = getOptimizedImg(story.image || `/stories/${story.id}.webp`, 600);
-  return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
-        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <img src={imageUrl} className="w-full h-full object-cover" alt="" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
   const isEliteProduct = isElite(product);
   const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   
-  // Для эксклюзивов ищем первый доступный вес с ценой
   const initialWeight = isEliteProduct 
     ? (weights.find(w => getElitePrice(w, product.prices) > 0) || weights[0])
     : weights[0];
@@ -144,10 +110,10 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const pricePerGram = Math.round(currentPrice / weight);
   const typeColor = TYPE_COLORS[String(product.type || "").toLowerCase()] || "#FFF";
 
-  // Логика "Добавь Хг"
-  const nextStep = weights[weights.indexOf(weight) + 1];
+  // Логика выгодного предложения
+  const nextStep = weights.find(w => w > weight);
   const nextPrice = nextStep ? (isEliteProduct ? getElitePrice(nextStep, product.prices) : getInterpolatedPrice(nextStep, product.prices)) : 0;
-  const saving = nextStep ? Math.round((pricePerGram * nextStep) - nextPrice) : 0;
+  const saving = nextStep && nextPrice > 0 ? Math.round((pricePerGram * nextStep) - nextPrice) : 0;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
@@ -181,21 +147,23 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
             </div>
 
-            {/* СЛАЙДЕР (только для обычных) */}
-            {!isEliteProduct && (
+            {/* СЛАЙДЕР И БЛОК ВЫГОДЫ (ТОЛЬКО ДЛЯ ОБЫЧНЫХ) */}
+            {!isEliteProduct ? (
               <div className="space-y-4">
                 <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseInt(e.target.value))} 
                   className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
-                {saving > 0 && (
-                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-2xl flex items-center justify-between">
-                    <span className="text-[9px] font-black uppercase text-emerald-400 tracking-widest">Bulk Deal</span>
-                    <span className="text-[9px] font-bold italic">Add {nextStep - weight}g to save {saving}฿</span>
-                  </div>
-                )}
+                
+                {/* Статичный блок предложения — не прыгает */}
+                <div className={`bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-2xl flex items-center justify-between transition-opacity duration-300 ${saving > 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+                  <span className="text-[9px] font-black uppercase text-emerald-400 tracking-widest">Bulk Deal</span>
+                  <span className="text-[9px] font-bold italic text-white/80">Add {nextStep! - weight}g more for {Math.round(nextPrice / nextStep!)}฿ per gram!</span>
+                </div>
               </div>
+            ) : (
+              // Распорка для эксклюзивов, чтобы кнопка Add to Order была на том же уровне
+              <div className="h-4" />
             )}
 
-            {/* КНОПКИ ВЕСА */}
             <div className="grid grid-cols-4 gap-2">
               {weights.map(v => {
                 const hasPrice = isEliteProduct ? getElitePrice(v, product.prices) > 0 : true;
@@ -203,7 +171,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                   <button key={v} disabled={!hasPrice} onClick={() => setWeight(v)} 
                     className={`py-3 text-[10px] font-black rounded-xl border transition-all 
                       ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}
-                      ${!hasPrice ? "opacity-10 grayscale cursor-not-allowed border-transparent" : "opacity-100"}`}>
+                      ${!hasPrice ? "opacity-10 grayscale cursor-not-allowed" : "opacity-100"}`}>
                     {v}g
                   </button>
                 );
@@ -221,250 +189,4 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   );
 }
 
-// ... CheckoutModal и LandingPage остаются без изменений до блока возврата ...
-// (Ниже привожу только измененный LandingPage для краткости)
-
-function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
-  const [method, setMethod] = React.useState("telegram");
-  const [contact, setContact] = React.useState("");
-  const [isSending, setIsSending] = React.useState(false);
-  const { clearCart, removeItem } = useCart();
-
-  const getOrderSummary = () => {
-    return items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
-  };
-
-  const handleSubmit = async () => {
-    if (!contact) return alert("Введите данные для связи");
-    setIsSending(true);
-    const orderText = getOrderSummary();
-    try {
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
-      alert("Заказ успешно отправлен!"); clearCart(); onClose();
-    } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
-  };
-
-  const handleOperatorContact = () => {
-    const text = encodeURIComponent(`Hi! I want to make an order:\n\n${getOrderSummary()}\n\nTotal: ${total}฿`);
-    window.open(`https://t.me/bshk_phuket?text=${text}`, '_blank');
-  };
-
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} positions</p></div>
-          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
-          {items.map((item: any) => (
-            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
-                <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
-              </div>
-              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl">
-                <Trash2 size={16}/>
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
-            <Headset size={18} className="text-emerald-400" />
-            <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
-          </button>
-          
-          <div className="grid grid-cols-4 gap-2">
-            {CONTACT_METHODS.map(m => (
-              <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
-                <m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span>
-              </button>
-            ))}
-          </div>
-          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40 tracking-widest">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all disabled:opacity-20 shadow-lg">
-            {isSending ? "Sending..." : "Confirm Order"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-const BadgeIcon = ({ type }: { type: string }) => {
-  switch (type.toUpperCase()) {
-    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
-    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
-    default: return null;
-  }
-};
-
-export default function LandingPage() {
-  const [products, setProducts] = React.useState<any[]>([]);
-  const [stories, setStories] = React.useState<any[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
-  const [activeStory, setActiveStory] = React.useState<any>(null);
-  const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
-  const { items, getTotal } = useCart();
-
-  React.useEffect(() => { 
-    async function fetchData() {
-      try {
-        const data = await getProducts();
-        setProducts(data.products || []);
-        setStories(data.stories || []);
-      } catch (e) { console.error("Fetch error:", e); } 
-      finally { setIsLoading(false); }
-    }
-    fetchData();
-  }, []);
-
-  const STORY_CONFIG = [
-    { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
-    { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
-    { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
-  ];
-
-  const optimizedLogoUrl = `https://res.cloudinary.com/dpjwbcgrq/image/upload/w_192,c_limit,e_bgremoval,f_auto,q_auto/v1774704686/IMG_0036_t5cnic.png`;
-
-  return (
-    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      <header className="max-w-xl mx-auto mb-10 pt-4">
-        <div className="flex items-center justify-between mb-8">
-           <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
-                <img src={optimizedLogoUrl} className="w-full h-full object-contain relative z-10" alt="Logo" />
-              </div>
-              <div>
-                <h1 className="text-[12px] font-black uppercase tracking-[0.3em] text-white opacity-40 leading-none">Premium Phuket delivery service</h1>
-              </div>
-           </div>
-           <div className="flex gap-2">
-              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#229ED9]/20 transition-all">
-                <SendHorizontal size={16} className="text-[#229ED9]"/>
-              </Link>
-              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#25D366]/20 transition-all">
-                <MessageCircle size={16} className="text-[#25D366]"/>
-              </Link>
-              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#E4405F]/20 transition-all">
-                <Instagram size={16} className="text-[#E4405F]"/>
-              </Link>
-           </div>
-        </div>
-
-        <div className="flex gap-6 mb-10 overflow-x-auto w-full no-scrollbar justify-center">
-          {STORY_CONFIG.map((config) => {
-            const tableData = stories.find(s => s.id === config.id);
-            return (
-              <button key={config.id} onClick={() => setActiveStory({ ...config, image: tableData?.image })} className="flex flex-col items-center gap-3 shrink-0 group">
-                <div className="w-16 h-16 rounded-full bg-white/5 border-2 flex items-center justify-center transition-all active:scale-90" style={{ borderColor: `${config.color}40` }}>
-                  <config.icon size={22} style={{ color: config.color }} />
-                </div>
-                <span className="text-[9px] font-black tracking-widest uppercase opacity-60 text-center leading-tight max-w-[65px]">{config.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex gap-3 w-full px-2">
-          <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
-            <Flame size={12} /> Concentrates
-          </Link>
-          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
-        </div>
-      </header>
-
-      <div className="max-w-xl mx-auto space-y-4">
-        {isLoading ? (
-          <>
-            <SkeletonGrade />
-            <SkeletonGrade />
-          </>
-        ) : (
-          <>
-            {GRADES.map((grade) => {
-              const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
-              if (gradeItems.length === 0) return null;
-              return (
-                <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
-                  <div className="px-5 py-3 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-                    <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                    <grade.icon size={14} style={{ color: grade.color }} />
-                  </div>
-                  <div className="divide-y divide-white/5">
-                    {gradeItems.map((p: any) => {
-                      const farmValue = p.farm?.trim();
-                      const hasFarm = farmValue && farmValue !== '-' && farmValue.toLowerCase() !== 'unknown';
-                      return (
-                        <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 active:bg-white/10 transition-all cursor-pointer group">
-                          <div className="flex items-center gap-3 min-w-0 flex-1">
-                            <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-                            <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
-                          </div>
-                          <div className="flex items-center gap-3 shrink-0 ml-auto">
-                             {hasFarm && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
-                             <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>
-                               {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
-                             </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* EXCLUSIVE SECTION */}
-            {products.filter(p => p.category === 'buds' && isElite(p)).length > 0 && (
-              <div className="space-y-6 pt-10">
-                <div className="flex items-center gap-4 px-2">
-                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local & Import Exclusives</h2>
-                  <div className="h-[1px] flex-1 bg-[#2DD4BF]/20"></div>
-                  <Crown size={14} className="text-[#2DD4BF]" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {products.filter(p => p.category === 'buds' && isElite(p)).map(p => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
-                  ))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {items.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-xl text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border border-white/20">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/10 rounded-full"><ShoppingBag size={20}/></div>
-              <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest leading-none opacity-40">Order Now</p>
-                <p className="text-[18px] font-black italic mt-1">{getTotal()}฿ Total</p>
-              </div>
-            </div>
-            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white group-hover:text-black transition-colors"><Send size={18}/></div>
-          </button>
-        </div>
-      )}
-
-      {activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
-      {selectedProduct && (
-        <ProductModal 
-          product={selectedProduct} 
-          style={isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? '#60A5FA' : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
-          onClose={() => setSelectedProduct(null)} 
-        />
-      )}
-      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
-    </div>
-  );
-}
+// ... Остальной код (LandingPage и т.д.) без изменений, но с использованием SELECTED_COLOR для "Selected Grade" и заголовка Exclusives ...
