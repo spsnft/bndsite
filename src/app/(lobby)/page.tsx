@@ -257,8 +257,7 @@ export default function LandingPage() {
                 <img src={optimizedLogoUrl} className="w-full h-full object-contain relative z-10" alt="Logo" />
               </div>
               <div>
-                <h1 className="text-lg font-black italic uppercase tracking-tighter leading-none">BND</h1>
-                <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mt-1">Premium Phuket service</p>
+                <h1 className="text-[12px] font-black uppercase tracking-[0.3em] text-white opacity-40 leading-none">Premium Phuket service</h1>
               </div>
            </div>
            <div className="flex gap-3">
@@ -335,15 +334,19 @@ export default function LandingPage() {
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]">
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-xl text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border border-white/20">
             <div className="flex items-center gap-4">
-              <ShoppingBag size={22}/>
+              <div className="p-3 bg-white/10 rounded-full">
+                <ShoppingBag size={20}/>
+              </div>
               <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p>
-                <p className="text-[16px] font-black italic mt-1">{getTotal()}฿ Total</p>
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none opacity-40">Order Now</p>
+                <p className="text-[18px] font-black italic mt-1">{getTotal()}฿ Total</p>
               </div>
             </div>
-            <Send size={20}/>
+            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white group-hover:text-black transition-colors">
+              <Send size={18}/>
+            </div>
           </button>
         </div>
       )}
