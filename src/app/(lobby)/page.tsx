@@ -4,8 +4,8 @@ import * as React from "react"
 import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
-  TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2, Globe, Headset
+  ShoppingBag, Send, MessageCircle, Instagram, 
+  SendHorizontal, Gift, Info, Trash2, Headset
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -43,6 +43,24 @@ const getOptimizedImg = (url: string, w = 800) => {
   if (!url || !url.includes('cloudinary.com')) return url;
   return url.replace('/upload/', `/upload/f_auto,q_auto,w_${w}/`);
 };
+
+// --- СКЕЛЕТОН (Тот самый, который потерялся) ---
+const SkeletonGrade = () => (
+  <div className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/10 animate-pulse mb-8">
+    <div className="p-6 h-16 bg-white/5 border-b border-white/5" />
+    <div className="divide-y divide-white/5">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-5 h-5 rounded-full bg-white/10" />
+            <div className="w-32 h-4 bg-white/10 rounded" />
+          </div>
+          <div className="w-12 h-4 bg-white/10 rounded" />
+        </div>
+      ))}
+    </div>
+  </div>
+);
 
 // --- COMPONENTS ---
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
@@ -176,9 +194,10 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <button onClick={handleOperatorContact} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
-            <Headset size={16} className="text-emerald-400" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-white/60 group-hover:text-white">Talk to Operator</span>
+          {/* Кнопка оператора */}
+          <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
+            <Headset size={18} className="text-emerald-400" />
+            <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
           </button>
           
           <div className="grid grid-cols-4 gap-2">
