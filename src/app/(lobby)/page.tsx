@@ -4,11 +4,10 @@ import * as React from "react"
 import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
-  TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2 
+  ShoppingBag, Send, MessageCircle, Instagram, 
+  SendHorizontal, Gift, Info, Trash2, Headset
 } from "lucide-react"
 
-// УДАЛЕНО ЛОКАЛЬНОЕ ОПРЕДЕЛЕНИЕ STORE
 import { useCart } from "@/lib/cart-store"
 import { getProducts } from "@/lib/product"
 
@@ -131,7 +130,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
             {tip && (
               <div className="flex items-center gap-2 py-2 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10">
-                <TrendingDown size={12} className="text-emerald-400" />
+                <Flame size={12} className="text-emerald-400" />
                 <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tight">Add {(tip.next - weight).toFixed(0)}g more for {tip.p}฿ per gram!</p>
               </div>
             )}
@@ -149,17 +148,26 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
-  const { clearCart, removeItem, updateQuantity } = useCart();
+  const { clearCart, removeItem } = useCart();
+
+  const getOrderSummary = () => {
+    return items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
+  };
 
   const handleSubmit = async () => {
     if (!contact) return alert("Введите данные для связи");
     setIsSending(true);
-    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
+    const orderText = getOrderSummary();
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
       alert("Заказ успешно отправлен!"); clearCart(); onClose();
     } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
+  };
+
+  const handleOperatorContact = () => {
+    const text = encodeURIComponent(`Hi! I want to make an order:\n\n${getOrderSummary()}\n\nTotal: ${total}฿`);
+    window.open(`https://t.me/bshk_phuket?text=${text}`, '_blank');
   };
 
   return (
@@ -169,23 +177,26 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} positions</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
           {items.map((item: any) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
-              <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center bg-black/20 rounded-xl border border-white/5">
-                  <button onClick={() => updateQuantity(item.id, item.weight, -1)} className="px-2 py-1 opacity-40 hover:opacity-100">-</button>
-                  <span className="text-[10px] font-black w-4 text-center">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.weight, 1)} className="px-2 py-1 opacity-40 hover:opacity-100">+</button>
-                </div>
-                <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/40 hover:text-rose-500 transition-colors p-1"><Trash2 size={16}/></button>
+              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
+                <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
               </div>
+              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl">
+                <Trash2 size={16}/>
+              </button>
             </div>
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
+          <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
+            <Headset size={18} className="text-emerald-400" />
+            <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
+          </button>
+          
           <div className="grid grid-cols-4 gap-2">
             {CONTACT_METHODS.map(m => (
               <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
@@ -229,11 +240,8 @@ export default function LandingPage() {
         const data = await getProducts();
         setProducts(data.products || []);
         setStories(data.stories || []);
-      } catch (e) {
-        console.error("Fetch error:", e);
-      } finally {
-        setIsLoading(false);
-      }
+      } catch (e) { console.error("Fetch error:", e); } 
+      finally { setIsLoading(false); }
     }
     fetchData();
   }, []);
@@ -248,19 +256,32 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      <header className="flex flex-col items-center mb-10 pt-4">
-        <div className="relative w-24 h-24 mb-10 flex items-center justify-center">
-          <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px] z-0"></div>
-          <img 
-            src={optimizedLogoUrl} 
-            className="w-full h-full object-contain relative z-10 drop-shadow-2xl" 
-            alt="Logo"
-            width={192}
-            height={192}
-          />
+      <header className="max-w-xl mx-auto mb-10 pt-4">
+        <div className="flex items-center justify-between mb-8">
+           <div className="flex items-center gap-4">
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
+                <img src={optimizedLogoUrl} className="w-full h-full object-contain relative z-10" alt="Logo" />
+              </div>
+              <div>
+                <h1 className="text-[12px] font-black uppercase tracking-[0.3em] text-white opacity-40 leading-none">Premium Phuket delivery service</h1>
+              </div>
+           </div>
+           {/* ПРИГЛУШЕННЫЕ СОЦСЕТИ */}
+           <div className="flex gap-2">
+              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#229ED9]/20 transition-all">
+                <SendHorizontal size={16} className="text-[#229ED9]"/>
+              </Link>
+              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#25D366]/20 transition-all">
+                <MessageCircle size={16} className="text-[#25D366]"/>
+              </Link>
+              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#E4405F]/20 transition-all">
+                <Instagram size={16} className="text-[#E4405F]"/>
+              </Link>
+           </div>
         </div>
 
-        <div className="flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
+        <div className="flex gap-6 mb-10 overflow-x-auto w-full no-scrollbar justify-center">
           {STORY_CONFIG.map((config) => {
             const tableData = stories.find(s => s.id === config.id);
             return (
@@ -274,15 +295,15 @@ export default function LandingPage() {
           })}
         </div>
 
-        <div className="flex gap-3 w-full max-w-sm px-2">
-          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
+        <div className="flex gap-3 w-full px-2">
           <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
             <Flame size={12} /> Concentrates
           </Link>
+          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
         </div>
       </header>
 
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-xl mx-auto space-y-4">
         {isLoading ? (
           <>
             <SkeletonGrade />
@@ -293,22 +314,31 @@ export default function LandingPage() {
             const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds');
             if (gradeItems.length === 0) return null;
             return (
-              <div key={grade.id} className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
-                <div className="p-6 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-                  <h2 className="text-xl font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                  <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shadow-inner"><grade.icon size={18} style={{ color: grade.color }} /></div>
+              <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
+                <div className="px-5 py-3 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
+                  <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                  <grade.icon size={14} style={{ color: grade.color }} />
                 </div>
                 <div className="divide-y divide-white/5">
-                  {gradeItems.map((p: any) => (
-                    <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-12 gap-2 px-6 py-5 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
-                      <div className="col-span-6 flex items-center gap-4 relative">
-                        <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-                        <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 group-hover:text-white leading-tight">{p.name}</span>
+                  {gradeItems.map((p: any) => {
+                    const farmValue = p.farm?.trim();
+                    const hasFarm = farmValue && farmValue !== '-' && farmValue.toLowerCase() !== 'unknown';
+                    return (
+                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 active:bg-white/10 transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+                          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 shrink-0 ml-auto">
+                           {hasFarm && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
+                           <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>
+                             {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
+                           </span>
+                        </div>
                       </div>
-                      <div className="col-span-2 text-center text-[10px] font-black uppercase shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</div>
-                      <div className="col-span-4 text-right text-[10px] font-bold opacity-30 italic truncate">{p.farm}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -318,15 +348,19 @@ export default function LandingPage() {
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border-4 border-[#193D2E]">
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-xl text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border border-white/20">
             <div className="flex items-center gap-4">
-              <ShoppingBag size={22}/>
+              <div className="p-3 bg-white/10 rounded-full">
+                <ShoppingBag size={20}/>
+              </div>
               <div className="text-left">
-                <p className="text-[10px] font-black uppercase tracking-widest leading-none">Order Now</p>
-                <p className="text-[16px] font-black italic mt-1">{getTotal()}฿ Total</p>
+                <p className="text-[10px] font-black uppercase tracking-widest leading-none opacity-40">Order Now</p>
+                <p className="text-[18px] font-black italic mt-1">{getTotal()}฿ Total</p>
               </div>
             </div>
-            <Send size={20}/>
+            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white group-hover:text-black transition-colors">
+              <Send size={18}/>
+            </div>
           </button>
         </div>
       )}
