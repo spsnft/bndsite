@@ -46,7 +46,6 @@ const getOptimizedImg = (url: string, w = 800) => {
   return url.replace('/upload/', `/upload/f_auto,q_auto,w_${w}/`);
 };
 
-// --- КОМПОНЕНТЫ ШИЛЬДИКОВ (УЖЕ ПОЧИНЕННЫЕ) ---
 const BadgeIcon = ({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
     case "NEW": return <div className="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[5px] font-black text-blue-400 uppercase">NEW</span></div>;
@@ -56,14 +55,14 @@ const BadgeIcon = ({ type }: { type: string }) => {
   }
 };
 
-// --- МОДАЛКИ (БЕЗ ИЗМЕНЕНИЙ ФУНКЦИОНАЛА) ---
+// --- МОДАЛКИ (ВЕРНУЛИ ФУНКЦИОНАЛ) ---
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
   return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl" onClick={onClose}>
+    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-xl" onClick={onClose}>
       <div className="w-full max-w-sm h-[80vh] px-4 relative" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute -top-12 right-4 p-2 text-white/50"><X size={32}/></button>
-        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <img src={getOptimizedImg(story.image, 600)} className="w-full h-full object-cover" alt="" />
+        <button onClick={onClose} className="absolute -top-12 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
+        <div className="w-full h-full rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
+          <img src={getOptimizedImg(story.image, 800)} className="w-full h-full object-cover" alt="" />
         </div>
       </div>
     </div>
@@ -83,18 +82,18 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
           <img src={getOptimizedImg(product.image, 600)} className="w-full h-full object-contain p-10" alt="" />
-          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent text-white">
             <h2 className="text-3xl font-black italic uppercase tracking-tighter" style={{ color: style.color }}>{product.name}</h2>
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-1 text-white">
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-1">
               <span style={{ color: typeColor }}>{product.type}</span> • {product.subcategory} Grade
             </p>
           </div>
         </div>
         <div className="p-8 pt-0 space-y-6 text-white">
           <div className="grid grid-cols-3 gap-2 border-b border-white/5 pb-4">
-             <div className="space-y-1 text-center"><span className="text-[7px] opacity-20 uppercase tracking-widest block">Farm</span><p className="text-[9px] font-bold italic truncate">{product.farm}</p></div>
-             <div className="space-y-1 text-center"><span className="text-[7px] opacity-20 uppercase tracking-widest block">Taste</span><p className="text-[9px] font-bold italic truncate">{product.taste}</p></div>
-             <div className="space-y-1 text-center"><span className="text-[7px] opacity-20 uppercase tracking-widest block">Terps</span><p className="text-[9px] font-bold italic truncate">{product.terpenes}</p></div>
+             <div className="space-y-1 text-center"><span className="text-[7px] opacity-20 uppercase tracking-widest block">Farm</span><p className="text-[9px] font-bold italic truncate">{product.farm || "—"}</p></div>
+             <div className="space-y-1 text-center"><span className="text-[7px] opacity-20 uppercase tracking-widest block">Taste</span><p className="text-[9px] font-bold italic truncate">{product.taste || "—"}</p></div>
+             <div className="space-y-1 text-center"><span className="text-[7px] opacity-20 uppercase tracking-widest block">Terps</span><p className="text-[9px] font-bold italic truncate">{product.terpenes || "—"}</p></div>
           </div>
           <div className="flex justify-between items-end">
             <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
@@ -106,8 +105,8 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                 <button key={v} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black" : "border-white/10 text-white/40"}`}>{v}g</button>
               ))}
             </div>
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest transition-all ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
-              {isAdded ? "Added" : "Add to Order"}
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest transition-all shadow-xl ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
+              {isAdded ? "Added to Cart" : "Add to Order"}
             </button>
           </div>
         </div>
@@ -143,12 +142,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32">
       <header className="flex flex-col items-center mb-6 pt-2">
-        <img 
-          src="https://res.cloudinary.com/dpjwbcgrq/image/upload/w_160,f_auto,q_auto/v1774704686/IMG_0036_t5cnic.png" 
-          className="w-20 h-20 object-contain mb-6 drop-shadow-2xl" 
-          alt="Logo"
-        />
-
+        <img src="https://res.cloudinary.com/dpjwbcgrq/image/upload/w_160,f_auto,q_auto/v1774704686/IMG_0036_t5cnic.png" className="w-20 h-20 object-contain mb-6 drop-shadow-2xl" alt="Logo" />
         <div className="flex gap-4 mb-8 overflow-x-auto w-full max-w-sm px-4 no-scrollbar justify-center">
           {STORY_CONFIG.map((config) => {
             const tableData = stories.find(s => s.id === config.id);
@@ -162,12 +156,9 @@ export default function LandingPage() {
             );
           })}
         </div>
-
         <div className="flex gap-2 w-full max-w-sm">
           <button className="flex-1 py-3 rounded-xl bg-white/5 border border-white/5 font-black uppercase text-[8px] tracking-widest opacity-20 italic">Accessories</button>
-          <Link href="/concentrates" className="flex-1 py-3 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[8px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
-            <Flame size={10} /> Concentrates
-          </Link>
+          <Link href="/concentrates" className="flex-1 py-3 rounded-xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[8px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all"><Flame size={10} /> Concentrates</Link>
         </div>
       </header>
 
@@ -185,18 +176,26 @@ export default function LandingPage() {
                   <grade.icon size={14} style={{ color: grade.color }} />
                 </div>
                 <div className="divide-y divide-white/5">
-                  {gradeItems.map((p: any) => (
-                    <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center justify-between gap-3 px-5 py-3 hover:bg-white/5 active:bg-white/10 transition-all cursor-pointer group">
-                      <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="w-4 shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-                        <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate">{p.name}</span>
-                        <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#FFF' }}>
-                          {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
-                        </span>
+                  {gradeItems.map((p: any) => {
+                    const farmText = p.farm && p.farm.toLowerCase() !== 'unknown' ? p.farm : "";
+                    return (
+                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-3 gap-2 px-5 py-3 hover:bg-white/5 active:bg-white/10 transition-all cursor-pointer group items-center">
+                        {/* Слева: Шильдик и Название */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-4 shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+                          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate">{p.name}</span>
+                        </div>
+                        {/* Центр: Ферма (если есть) */}
+                        <div className="text-center text-[9px] font-bold opacity-20 italic truncate px-2">{farmText}</div>
+                        {/* Справа: Тип */}
+                        <div className="flex justify-end">
+                          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#FFF' }}>
+                            {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -207,18 +206,15 @@ export default function LandingPage() {
       {items.length > 0 && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs">
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-emerald-400 text-[#193D2E] p-4 rounded-2xl shadow-2xl flex justify-between items-center active:scale-95 transition-all border-4 border-[#193D2E]">
-            <div className="flex items-center gap-3">
-              <ShoppingBag size={18}/>
-              <div className="text-left leading-none">
-                <p className="text-[12px] font-black italic">{getTotal()}฿ Total</p>
-              </div>
-            </div>
+            <div className="flex items-center gap-3"><ShoppingBag size={18}/><div className="text-left leading-none"><p className="text-[12px] font-black italic">{getTotal()}฿ Total</p></div></div>
             <Send size={16}/>
           </button>
         </div>
       )}
-      
-      {/* Остальные модалки (Checkout и т.д.) оставить как были в твоем коде выше */}
+
+      {activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
+      {selectedProduct && <ProductModal product={selectedProduct} style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }} onClose={() => setSelectedProduct(null)} />}
+      {/* Здесь должна быть твоя CheckoutModal, если она в отдельном файле или была в коде выше */}
     </div>
   );
 }
