@@ -5,10 +5,9 @@ import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2, Globe
+  SendHorizontal, Gift, Info, Trash2, Globe, Headset
 } from "lucide-react"
 
-// УДАЛЕНО ЛОКАЛЬНОЕ ОПРЕДЕЛЕНИЕ STORE
 import { useCart } from "@/lib/cart-store"
 import { getProducts } from "@/lib/product"
 
@@ -44,24 +43,6 @@ const getOptimizedImg = (url: string, w = 800) => {
   if (!url || !url.includes('cloudinary.com')) return url;
   return url.replace('/upload/', `/upload/f_auto,q_auto,w_${w}/`);
 };
-
-// --- СКЕЛЕТОН ---
-const SkeletonGrade = () => (
-  <div className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/10 animate-pulse mb-8">
-    <div className="p-6 h-16 bg-white/5 border-b border-white/5" />
-    <div className="divide-y divide-white/5">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-5 h-5 rounded-full bg-white/10" />
-            <div className="w-32 h-4 bg-white/10 rounded" />
-          </div>
-          <div className="w-12 h-4 bg-white/10 rounded" />
-        </div>
-      ))}
-    </div>
-  </div>
-);
 
 // --- COMPONENTS ---
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
@@ -151,15 +132,24 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem, updateQuantity } = useCart();
 
+  const getOrderSummary = () => {
+    return items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
+  };
+
   const handleSubmit = async () => {
     if (!contact) return alert("Введите данные для связи");
     setIsSending(true);
-    const orderText = items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
+    const orderText = getOrderSummary();
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText, total }) });
       alert("Заказ успешно отправлен!"); clearCart(); onClose();
     } catch (error) { alert("Ошибка отправки."); } finally { setIsSending(false); }
+  };
+
+  const handleOperatorContact = () => {
+    const text = encodeURIComponent(`Hi! I want to make an order:\n\n${getOrderSummary()}\n\nTotal: ${total}฿`);
+    window.open(`https://t.me/bshk_phuket?text=${text}`, '_blank');
   };
 
   return (
@@ -186,6 +176,11 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
+          <button onClick={handleOperatorContact} className="w-full py-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
+            <Headset size={16} className="text-emerald-400" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/60 group-hover:text-white">Talk to Operator</span>
+          </button>
+          
           <div className="grid grid-cols-4 gap-2">
             {CONTACT_METHODS.map(m => (
               <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
@@ -248,7 +243,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      {/* HEADER UPDATED */}
       <header className="max-w-xl mx-auto mb-10 pt-4">
         <div className="flex items-center justify-between mb-8">
            <div className="flex items-center gap-4">
@@ -261,9 +255,15 @@ export default function LandingPage() {
               </div>
            </div>
            <div className="flex gap-3">
-              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-white/10 transition-colors"><SendHorizontal size={18} className="text-white/60"/></Link>
-              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-white/10 transition-colors"><MessageCircle size={18} className="text-white/60"/></Link>
-              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-white/10 transition-colors"><Instagram size={18} className="text-white/60"/></Link>
+              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-[#229ED9]/20 transition-all">
+                <SendHorizontal size={18} className="text-[#229ED9]"/>
+              </Link>
+              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-[#25D366]/20 transition-all">
+                <MessageCircle size={18} className="text-[#25D366]"/>
+              </Link>
+              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-[#E4405F]/20 transition-all">
+                <Instagram size={18} className="text-[#E4405F]"/>
+              </Link>
            </div>
         </div>
 
