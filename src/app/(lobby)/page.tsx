@@ -131,7 +131,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
             {tip && (
               <div className="flex items-center gap-2 py-2 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10">
-                <TrendingDown size={12} className="text-emerald-400" />
+                <strong size={12} className="text-emerald-400" />
                 <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tight">Add {(tip.next - weight).toFixed(0)}g more for {tip.p}฿ per gram!</p>
               </div>
             )}
@@ -302,18 +302,16 @@ export default function LandingPage() {
                   {gradeItems.map((p: any) => {
                     const farmText = p.farm && p.farm.toLowerCase() !== 'unknown' ? p.farm : "";
                     return (
-                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="grid grid-cols-3 gap-2 px-5 py-3 items-center hover:bg-white/5 transition-all group cursor-pointer active:bg-white/10">
-                        {/* ЛЕВО: Шильдик + Название */}
-                        <div className="flex items-center gap-3 min-w-0">
+                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 active:bg-white/10 transition-all cursor-pointer group">
+                        {/* ЛЕВО: Название и шильдик (занимают всё доступное место) */}
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                           <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
                         </div>
                         
-                        {/* ЦЕНТР: Ферма */}
-                        <div className="text-center text-[9px] font-bold opacity-20 italic truncate px-2">{farmText}</div>
-                        
-                        {/* ПРАВО: Тип */}
-                        <div className="flex justify-end">
+                        {/* ПРАВО: Ферма + Тип (прижаты друг к другу справа) */}
+                        <div className="flex items-center gap-3 shrink-0 ml-auto">
+                           <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{farmText}</div>
                            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>
                              {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
                            </span>
