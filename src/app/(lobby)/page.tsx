@@ -44,7 +44,7 @@ const getOptimizedImg = (url: string, w = 800) => {
   return url.replace('/upload/', `/upload/f_auto,q_auto,w_${w}/`);
 };
 
-// --- СКЕЛЕТОН (Тот самый, который потерялся) ---
+// --- СКЕЛЕТОН ---
 const SkeletonGrade = () => (
   <div className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/10 animate-pulse mb-8">
     <div className="p-6 h-16 bg-white/5 border-b border-white/5" />
@@ -148,7 +148,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
-  const { clearCart, removeItem, updateQuantity } = useCart();
+  const { clearCart, removeItem } = useCart();
 
   const getOrderSummary = () => {
     return items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
@@ -177,24 +177,21 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} positions</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 no-scrollbar">
+        <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
           {items.map((item: any) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-12 h-12 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
-              <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center bg-black/20 rounded-xl border border-white/5">
-                  <button onClick={() => updateQuantity(item.id, item.weight, -1)} className="px-2 py-1 opacity-40 hover:opacity-100">-</button>
-                  <span className="text-[10px] font-black w-4 text-center">{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.weight, 1)} className="px-2 py-1 opacity-40 hover:opacity-100">+</button>
-                </div>
-                <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/40 hover:text-rose-500 transition-colors p-1"><Trash2 size={16}/></button>
+              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
+                <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
               </div>
+              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl">
+                <Trash2 size={16}/>
+              </button>
             </div>
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          {/* Кнопка оператора */}
           <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
             <Headset size={18} className="text-emerald-400" />
             <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
@@ -243,11 +240,8 @@ export default function LandingPage() {
         const data = await getProducts();
         setProducts(data.products || []);
         setStories(data.stories || []);
-      } catch (e) {
-        console.error("Fetch error:", e);
-      } finally {
-        setIsLoading(false);
-      }
+      } catch (e) { console.error("Fetch error:", e); } 
+      finally { setIsLoading(false); }
     }
     fetchData();
   }, []);
@@ -273,15 +267,16 @@ export default function LandingPage() {
                 <h1 className="text-[12px] font-black uppercase tracking-[0.3em] text-white opacity-40 leading-none">Premium Phuket delivery service</h1>
               </div>
            </div>
-           <div className="flex gap-3">
-              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-[#229ED9]/20 transition-all">
-                <SendHorizontal size={18} className="text-[#229ED9]"/>
+           {/* ПРИГЛУШЕННЫЕ СОЦСЕТИ */}
+           <div className="flex gap-2">
+              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#229ED9]/20 transition-all">
+                <SendHorizontal size={16} className="text-[#229ED9]"/>
               </Link>
-              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-[#25D366]/20 transition-all">
-                <MessageCircle size={18} className="text-[#25D366]"/>
+              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#25D366]/20 transition-all">
+                <MessageCircle size={16} className="text-[#25D366]"/>
               </Link>
-              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-[#E4405F]/20 transition-all">
-                <Instagram size={18} className="text-[#E4405F]"/>
+              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#E4405F]/20 transition-all">
+                <Instagram size={16} className="text-[#E4405F]"/>
               </Link>
            </div>
         </div>
