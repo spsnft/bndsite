@@ -12,11 +12,13 @@ import { useCart } from "@/lib/cart-store"
 import { getProducts } from "@/lib/product"
 
 // --- КОНСТАНТЫ ---
+const SELECTED_COLOR = "#2DD4BF"; // Тот самый цвет морской волны
+
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
   { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Sparkles },
   { id: "premium", title: "PREMIUM GRADE", color: "#34D399", icon: Flame },
-  { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
+  { id: "selected", title: "SELECTED GRADE", color: SELECTED_COLOR, icon: Crown }
 ];
 
 const CONTACT_METHODS = [
@@ -37,12 +39,9 @@ const isElite = (product: any) => {
 
 const getElitePrice = (weight: number, prices: any) => {
   if (!prices) return 0;
-  const p = { 3.5: prices[1] || 0, 7: prices[5] || 0, 14: prices[10] || 0, 28: prices[20] || 0 };
-  if (weight <= 3.5) return p[3.5];
-  if (weight <= 7) return p[3.5] + (p[7] - p[3.5]) * ((weight - 3.5) / 3.5);
-  if (weight <= 14) return p[7] + (p[14] - p[7]) * ((weight - 7) / 7);
-  if (weight <= 28) return p[14] + (p[28] - p[14]) * ((weight - 14) / 14);
-  return (p[28] / 28) * weight;
+  // Сопоставляем кнопки с колонками цен (3.5g = p[1], 7g = p[5] и т.д. согласно логике таблицы)
+  const weightMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
+  return prices[weightMap[weight]] || 0;
 };
 
 const getInterpolatedPrice = (weight: number, prices: any) => {
@@ -62,7 +61,7 @@ const getOptimizedImg = (url: string, w = 800) => {
 // --- COMPONENTS ---
 const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
-  const accentColor = isImport ? "#60A5FA" : "#FEC107";
+  const accentColor = isImport ? "#60A5FA" : SELECTED_COLOR; // Перекрасили Local в морскую волну
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
   const displayPrice = Object.values(item.prices || {}).find(v => Number(v) > 0) || 0;
 
@@ -96,6 +95,7 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
   );
 };
 
+// ... SkeletonGrade и StoryModal остаются без изменений ...
 const SkeletonGrade = () => (
   <div className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/10 animate-pulse mb-8">
     <div className="p-6 h-16 bg-white/5 border-b border-white/5" />
@@ -130,13 +130,24 @@ function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
   const isEliteProduct = isElite(product);
   const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
-  const [weight, setWeight] = React.useState(weights[0]);
+  
+  // Для эксклюзивов ищем первый доступный вес с ценой
+  const initialWeight = isEliteProduct 
+    ? (weights.find(w => getElitePrice(w, product.prices) > 0) || weights[0])
+    : weights[0];
+
+  const [weight, setWeight] = React.useState(initialWeight);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
   
   const currentPrice = Math.round(isEliteProduct ? getElitePrice(weight, product.prices) : getInterpolatedPrice(weight, product.prices));
   const pricePerGram = Math.round(currentPrice / weight);
   const typeColor = TYPE_COLORS[String(product.type || "").toLowerCase()] || "#FFF";
+
+  // Логика "Добавь Хг"
+  const nextStep = weights[weights.indexOf(weight) + 1];
+  const nextPrice = nextStep ? (isEliteProduct ? getElitePrice(nextStep, product.prices) : getInterpolatedPrice(nextStep, product.prices)) : 0;
+  const saving = nextStep ? Math.round((pricePerGram * nextStep) - nextPrice) : 0;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
@@ -153,13 +164,15 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             </p>
           </div>
         </div>
-        <div className="p-8 pt-0 space-y-5 text-white">
+
+        <div className="p-8 pt-0 space-y-6 text-white">
           <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product.farm}</p></div>
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product.taste}</p></div>
              <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product.terpenes}</p></div>
           </div>
-          <div className="space-y-4">
+
+          <div className="space-y-6">
             <div className="flex justify-between items-end">
               <div>
                 <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
@@ -167,12 +180,38 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               </div>
               <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
             </div>
+
+            {/* СЛАЙДЕР (только для обычных) */}
+            {!isEliteProduct && (
+              <div className="space-y-4">
+                <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseInt(e.target.value))} 
+                  className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
+                {saving > 0 && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-2xl flex items-center justify-between">
+                    <span className="text-[9px] font-black uppercase text-emerald-400 tracking-widest">Bulk Deal</span>
+                    <span className="text-[9px] font-bold italic">Add {nextStep - weight}g to save {saving}฿</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* КНОПКИ ВЕСА */}
             <div className="grid grid-cols-4 gap-2">
-              {weights.map(v => (
-                <button key={v} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
-              ))}
+              {weights.map(v => {
+                const hasPrice = isEliteProduct ? getElitePrice(v, product.prices) > 0 : true;
+                return (
+                  <button key={v} disabled={!hasPrice} onClick={() => setWeight(v)} 
+                    className={`py-3 text-[10px] font-black rounded-xl border transition-all 
+                      ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}
+                      ${!hasPrice ? "opacity-10 grayscale cursor-not-allowed border-transparent" : "opacity-100"}`}>
+                    {v}g
+                  </button>
+                );
+              })}
             </div>
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
+
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} 
+              className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
               {isAdded ? "Added to Cart" : "Add to Order"}
             </button>
           </div>
@@ -181,6 +220,9 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
     </div>
   );
 }
+
+// ... CheckoutModal и LandingPage остаются без изменений до блока возврата ...
+// (Ниже привожу только измененный LandingPage для краткости)
 
 function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
   const [method, setMethod] = React.useState("telegram");
@@ -262,7 +304,6 @@ const BadgeIcon = ({ type }: { type: string }) => {
   }
 };
 
-// --- MAIN PAGE ---
 export default function LandingPage() {
   const [products, setProducts] = React.useState<any[]>([]);
   const [stories, setStories] = React.useState<any[]>([]);
@@ -381,13 +422,13 @@ export default function LandingPage() {
               );
             })}
 
-            {/* EXCLUSIVE SECTION (OUTSIDE OF GRADES MAP) */}
+            {/* EXCLUSIVE SECTION */}
             {products.filter(p => p.category === 'buds' && isElite(p)).length > 0 && (
               <div className="space-y-6 pt-10">
                 <div className="flex items-center gap-4 px-2">
-                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#FEC107] shrink-0">Local & Import Exclusives</h2>
-                  <div className="h-[1px] flex-1 bg-[#FEC107]/20"></div>
-                  <Crown size={14} className="text-[#FEC107]" />
+                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local & Import Exclusives</h2>
+                  <div className="h-[1px] flex-1 bg-[#2DD4BF]/20"></div>
+                  <Crown size={14} className="text-[#2DD4BF]" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {products.filter(p => p.category === 'buds' && isElite(p)).map(p => (
@@ -419,7 +460,7 @@ export default function LandingPage() {
       {selectedProduct && (
         <ProductModal 
           product={selectedProduct} 
-          style={isElite(selectedProduct) ? {color: '#FEC107'} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
+          style={isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? '#60A5FA' : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
           onClose={() => setSelectedProduct(null)} 
         />
       )}
