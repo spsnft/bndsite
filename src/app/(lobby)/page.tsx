@@ -257,7 +257,7 @@ export default function LandingPage() {
                 <img src={optimizedLogoUrl} className="w-full h-full object-contain relative z-10" alt="Logo" />
               </div>
               <div>
-                <h1 className="text-[12px] font-black uppercase tracking-[0.3em] text-white opacity-40 leading-none">Premium Phuket service</h1>
+                <h1 className="text-[12px] font-black uppercase tracking-[0.3em] text-white opacity-40 leading-none">Premium Phuket delivery service</h1>
               </div>
            </div>
            <div className="flex gap-3">
@@ -282,10 +282,10 @@ export default function LandingPage() {
         </div>
 
         <div className="flex gap-3 w-full px-2">
-          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
           <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
             <Flame size={12} /> Concentrates
           </Link>
+          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
         </div>
       </header>
 
