@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   TrendingDown, ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2 
+  SendHorizontal, Gift, Info, Trash2, Globe
 } from "lucide-react"
 
 // УДАЛЕНО ЛОКАЛЬНОЕ ОПРЕДЕЛЕНИЕ STORE
@@ -131,7 +131,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             <input type="range" min="1" max="20" step="1" value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
             {tip && (
               <div className="flex items-center gap-2 py-2 px-4 bg-emerald-400/5 rounded-xl border border-emerald-400/10">
-                <strong size={12} className="text-emerald-400" />
+                <Flame size={12} className="text-emerald-400" />
                 <p className="text-[9px] font-bold text-emerald-400/80 uppercase tracking-tight">Add {(tip.next - weight).toFixed(0)}g more for {tip.p}฿ per gram!</p>
               </div>
             )}
@@ -248,19 +248,27 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      <header className="flex flex-col items-center mb-10 pt-4">
-        <div className="relative w-24 h-24 mb-10 flex items-center justify-center">
-          <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[40px] z-0"></div>
-          <img 
-            src={optimizedLogoUrl} 
-            className="w-full h-full object-contain relative z-10 drop-shadow-2xl" 
-            alt="Logo"
-            width={192}
-            height={192}
-          />
+      {/* HEADER UPDATED */}
+      <header className="max-w-xl mx-auto mb-10 pt-4">
+        <div className="flex items-center justify-between mb-8">
+           <div className="flex items-center gap-4">
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
+                <img src={optimizedLogoUrl} className="w-full h-full object-contain relative z-10" alt="Logo" />
+              </div>
+              <div>
+                <h1 className="text-lg font-black italic uppercase tracking-tighter leading-none">BND</h1>
+                <p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em] mt-1">Premium Phuket service</p>
+              </div>
+           </div>
+           <div className="flex gap-3">
+              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-white/10 transition-colors"><SendHorizontal size={18} className="text-white/60"/></Link>
+              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-white/10 transition-colors"><MessageCircle size={18} className="text-white/60"/></Link>
+              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 hover:bg-white/10 transition-colors"><Instagram size={18} className="text-white/60"/></Link>
+           </div>
         </div>
 
-        <div className="flex gap-6 mb-10 overflow-x-auto w-full max-w-md px-4 no-scrollbar justify-center">
+        <div className="flex gap-6 mb-10 overflow-x-auto w-full no-scrollbar justify-center">
           {STORY_CONFIG.map((config) => {
             const tableData = stories.find(s => s.id === config.id);
             return (
@@ -274,7 +282,7 @@ export default function LandingPage() {
           })}
         </div>
 
-        <div className="flex gap-3 w-full max-w-sm px-2">
+        <div className="flex gap-3 w-full px-2">
           <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
           <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
             <Flame size={12} /> Concentrates
@@ -300,18 +308,17 @@ export default function LandingPage() {
                 </div>
                 <div className="divide-y divide-white/5">
                   {gradeItems.map((p: any) => {
-                    const farmText = p.farm && p.farm.toLowerCase() !== 'unknown' ? p.farm : "";
+                    const farmValue = p.farm?.trim();
+                    const hasFarm = farmValue && farmValue !== '-' && farmValue.toLowerCase() !== 'unknown';
                     return (
                       <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 active:bg-white/10 transition-all cursor-pointer group">
-                        {/* ЛЕВО: Название и шильдик (занимают всё доступное место) */}
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
                           <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
                         </div>
                         
-                        {/* ПРАВО: Ферма + Тип (прижаты друг к другу справа) */}
                         <div className="flex items-center gap-3 shrink-0 ml-auto">
-                           <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{farmText}</div>
+                           {hasFarm && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
                            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>
                              {TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}
                            </span>
