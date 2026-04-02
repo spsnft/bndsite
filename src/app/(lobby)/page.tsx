@@ -374,57 +374,66 @@ export default function LandingPage() {
           </>
         ) : (
           <>
-            {GRADES.map((grade) => {
-              const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
-              if (gradeItems.length === 0) return null;
+            // ... (весь предыдущий код остается без изменений до момента рендеринга GRADES.map)
 
-              const priceRef = gradeItems.find(p => p.badge?.toUpperCase() !== 'SALE') || gradeItems[0];
-              const headerWeights = [1, 5, 10, 20];
+{GRADES.map((grade) => {
+  const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
+  if (gradeItems.length === 0) return null;
 
-              return (
-                <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
-                  <div className="px-5 py-3 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                        <grade.icon size={12} style={{ color: grade.color }} />
-                      </div>
-                    </div>
+  const priceRef = gradeItems.find(p => p.badge?.toUpperCase() !== 'SALE') || gradeItems[0];
+  const headerWeights = [1, 5, 10, 20];
 
-                    <div className="flex items-center gap-3 ml-auto mr-4">
-                      {headerWeights.map(w => {
-                        const price = Math.round(getInterpolatedPrice(w, priceRef.prices));
-                        return (
-                          <div key={w} className="flex flex-col items-center min-w-[32px]">
-                            <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
-                            <span className="text-[11px] font-black italic tracking-tighter text-white">{price}฿</span>
-                          </div>
-                        );
-                      })}
-                    </div>
+  return (
+    <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
+      <div className="px-5 py-3 flex items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
+        
+        {/* 1. ИКОНКА ПЕРЕНЕСЕНА В САМОЕ НАЧАЛО */}
+        <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
 
-                    <grade.icon size={14} style={{ color: grade.color }} className="opacity-20 shrink-0" />
-                  </div>
-                  <div className="divide-y divide-white/5">
-                    {gradeItems.map((p: any) => (
-                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
-                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                          {/* КОНТЕЙНЕР ДЛЯ ИКОНКИ: Теперь в самом начале */}
-                          <div className="w-5 flex justify-center shrink-0">
-                            {p.badge && <BadgeIcon type={p.badge} />}
-                          </div>
-                          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
-                        </div>
-                        <div className="flex items-center gap-3 shrink-0 ml-auto">
-                           {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
-                           <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
+        <div className="flex flex-col">
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+            {/* Здесь иконка удалена, так как она теперь в начале */}
+          </div>
+        </div>
+
+        {/* СЕТКА ЦЕН */}
+        <div className="flex items-center gap-3 ml-auto mr-1">
+          {headerWeights.map(w => {
+            const price = Math.round(getInterpolatedPrice(w, priceRef.prices));
+            return (
+              <div key={w} className="flex flex-col items-center min-w-[32px]">
+                <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
+                <span className="text-[11px] font-black italic tracking-tighter text-white">{price}฿</span>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 2. ПРАВАЯ ДУБЛИРУЮЩАЯ ИКОНКА УДАЛЕНА ОТСЮДА */}
+      </div>
+
+      <div className="divide-y divide-white/5">
+        {gradeItems.map((p: any) => (
+          <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div className="w-5 flex justify-center shrink-0">
+                {p.badge && <BadgeIcon type={p.badge} />}
+              </div>
+              <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+            </div>
+            <div className="flex items-center gap-3 shrink-0 ml-auto">
+               {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
+               <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+})}
+
+// ... (остальная часть кода без изменений)
 
             {/* LOCAL EXCLUSIVES SECTION */}
             {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')).length > 0 && (
