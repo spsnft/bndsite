@@ -13,6 +13,7 @@ import { getProducts } from "@/lib/product"
 
 // --- КОНСТАНТЫ ---
 const SELECTED_COLOR = "#2DD4BF"; 
+const IMPORT_COLOR = "#60A5FA";
 
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
@@ -39,7 +40,6 @@ const isElite = (product: any) => {
 
 const getElitePrice = (weight: number, prices: any) => {
   if (!prices) return 0;
-  // Маппинг для элитных товаров: 3.5г берет цену 1г, 7г -> 5г и т.д.
   const weightMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
   return prices[weightMap[weight]] || 0;
 };
@@ -71,27 +71,31 @@ const BadgeIcon = ({ type }: { type: string }) => {
 
 const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
-  const accentColor = isImport ? "#60A5FA" : SELECTED_COLOR; 
+  const accentColor = isImport ? IMPORT_COLOR : SELECTED_COLOR; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
   const displayPrice = Object.values(item.prices || {}).find(v => Number(v) > 0) || 0;
 
   return (
-    <div onClick={onClick} className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 backdrop-blur-md p-4 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full">
-      <div className="absolute -top-12 -right-12 w-32 h-32 opacity-30" style={{ background: `radial-gradient(circle, ${accentColor} 0%, transparent 70%)`, borderRadius: '50%' }}></div>
+    <div onClick={onClick} className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 backdrop-blur-md p-4 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20">
+      {/* Яркая подсветка (Glow) */}
+      <div className="absolute -top-10 -right-10 w-32 h-32 opacity-50 blur-[40px] transition-opacity group-hover:opacity-80" style={{ background: accentColor, borderRadius: '50%' }}></div>
+      
       <div className="relative z-10 space-y-3">
         <div className="flex justify-between items-start gap-2">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 mb-1 opacity-40">
+            <div className="flex items-center gap-1.5 mb-1 opacity-60">
               <Star size={9} style={{ color: accentColor }} fill={accentColor} />
               <span className="text-[8px] font-black uppercase tracking-[0.2em] truncate">{item.subcategory}</span>
             </div>
             <h3 className="text-[16px] font-black italic uppercase tracking-tighter leading-tight">{item.name}</h3>
             <p className="text-[9px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
           </div>
-          <div className="bg-white/5 border border-white/10 p-2 rounded-xl shrink-0 mt-1"><Crown size={14} style={{ color: accentColor }} /></div>
+          <div className="bg-white/5 border border-white/10 p-2 rounded-xl shrink-0 mt-1">
+            {isImport ? <Crown size={14} style={{ color: accentColor }} /> : <Flame size={14} style={{ color: accentColor }} />}
+          </div>
         </div>
-        <div className="aspect-[1/1] w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5">
-            <img src={getOptimizedImg(item.image, 300)} className="h-[90%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)] group-hover:scale-110 transition-transform duration-700" alt="" />
+        <div className="aspect-[1/1] w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
+            <img src={getOptimizedImg(item.image, 300)} className="h-[90%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-700" alt="" />
         </div>
       </div>
       <div className="relative z-10 flex justify-between items-end mt-4">
@@ -405,16 +409,32 @@ export default function LandingPage() {
               );
             })}
 
-            {/* EXCLUSIVES SECTION */}
-            {products.filter(p => p.category === 'buds' && isElite(p)).length > 0 && (
+            {/* LOCAL EXCLUSIVES SECTION */}
+            {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')).length > 0 && (
               <div className="space-y-6 pt-10">
                 <div className="flex items-center gap-4 px-2">
-                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local & Import Exclusives</h2>
+                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local Exclusives</h2>
                   <div className="h-[1px] flex-1 bg-[#2DD4BF]/20"></div>
-                  <Crown size={14} className="text-[#2DD4BF]" />
+                  <Flame size={14} className="text-[#2DD4BF]" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {products.filter(p => p.category === 'buds' && isElite(p)).map(p => (
+                  {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')).map(p => (
+                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* IMPORT EXCLUSIVES SECTION */}
+            {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')).length > 0 && (
+              <div className="space-y-6 pt-10">
+                <div className="flex items-center gap-4 px-2">
+                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#60A5FA] shrink-0">Import Exclusives</h2>
+                  <div className="h-[1px] flex-1 bg-[#60A5FA]/20"></div>
+                  <Crown size={14} className="text-[#60A5FA]" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')).map(p => (
                     <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
                   ))}
                 </div>
@@ -440,7 +460,7 @@ export default function LandingPage() {
       {selectedProduct && (
         <ProductModal 
           product={selectedProduct} 
-          style={isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? '#60A5FA' : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
+          style={isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
           onClose={() => setSelectedProduct(null)} 
         />
       )}
