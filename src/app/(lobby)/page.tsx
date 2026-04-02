@@ -100,7 +100,6 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
       <div className="relative z-10 space-y-3 p-4">
         <div className="flex justify-between items-start gap-2">
           <div className="min-w-0">
-            {/* ПРАВКА: Строка с item.subcategory удалена отсюда */}
             <h3 className="text-[16px] font-black italic uppercase tracking-tighter leading-tight">{item.name}</h3>
             <p className="text-[9px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
           </div>
@@ -256,7 +255,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
+          <button handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
             <Headset size={18} className="text-emerald-400" />
             <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
           </button>
@@ -378,11 +377,35 @@ export default function LandingPage() {
             {GRADES.map((grade) => {
               const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
               if (gradeItems.length === 0) return null;
+
+              // ПРАВКА: Находим первый товар без бейджа SALE для заголовка
+              const priceRef = gradeItems.find(p => p.badge?.toUpperCase() !== 'SALE') || gradeItems[0];
+              const headerWeights = [1, 5, 10, 20];
+
               return (
                 <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
                   <div className="px-5 py-3 flex justify-between items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-                    <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                    <grade.icon size={14} style={{ color: grade.color }} />
+                    <div className="flex flex-col">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                        <grade.icon size={12} style={{ color: grade.color }} />
+                      </div>
+                    </div>
+
+                    {/* ПРАВКА: Сетка цен в заголовке */}
+                    <div className="flex items-center gap-3 ml-auto mr-4">
+                      {headerWeights.map(w => {
+                        const price = Math.round(getInterpolatedPrice(w, priceRef.prices));
+                        return (
+                          <div key={w} className="flex flex-col items-center min-w-[32px]">
+                            <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
+                            <span className="text-[10px] font-black italic tracking-tighter text-white/90">{price}฿</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <grade.icon size={14} style={{ color: grade.color }} className="opacity-20 shrink-0" />
                   </div>
                   <div className="divide-y divide-white/5">
                     {gradeItems.map((p: any) => (
