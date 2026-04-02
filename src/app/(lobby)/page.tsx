@@ -76,39 +76,49 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
   const displayPrice = Object.values(item.prices || {}).find(v => Number(v) > 0) || 0;
 
   return (
-    <div onClick={onClick} className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 backdrop-blur-md p-4 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20">
-      {/* Подсветка (Glow): градиент сверху и снизу, рассеивание к центру */}
-      <div className="absolute inset-x-0 top-0 h-1/4 opacity-40 blur-[30px] transition-opacity group-hover:opacity-70" style={{ background: `linear-gradient(to bottom, ${accentColor}, transparent)` }}></div>
-      <div className="absolute inset-x-0 bottom-0 h-1/4 opacity-40 blur-[30px] transition-opacity group-hover:opacity-70" style={{ background: `linear-gradient(to top, ${accentColor}, transparent)` }}></div>
+    // РОДИТЕЛЬ: Вернули overflow-hidden и rounded, чтобы обрезать всё лишнее
+    <div onClick={onClick} className="relative rounded-[2rem] overflow-hidden border border-white/10 bg-black/40 backdrop-blur-md active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20 hover:bg-black/50">
       
-      <div className="relative z-10 space-y-3">
-        <div className="flex justify-between items-start gap-2">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1.5 mb-1 opacity-60">
-              <Star size={9} style={{ color: accentColor }} fill={accentColor} />
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] truncate">{item.subcategory}</span>
+      {/* ИСПРАВЛЕННЫЙ GLOW: Теперь градиенты сдвинуты внутрь (inset-2) и не касаются краев */}
+      <div className="absolute inset-x-2 top-2 h-1/2 opacity-60 blur-[40px] transition-opacity group-hover:opacity-90" style={{ background: `linear-gradient(to bottom, ${accentColor}, transparent)` }}></div>
+      <div className="absolute inset-x-2 bottom-2 h-1/2 opacity-60 blur-[40px] transition-opacity group-hover:opacity-90" style={{ background: `linear-gradient(to top, ${accentColor}, transparent)` }}></div>
+      
+      {/* КОНСТАНТА: Без overflow-hidden, без padding */}
+      <div className="relative z-10 space-y-3 p-4 flex-1 flex flex-col justify-between transition-colors">
+        
+        <div className="space-y-3">
+          <div className="flex justify-between items-start gap-2">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 mb-1 opacity-60">
+                <Star size={9} style={{ color: accentColor }} fill={accentColor} />
+                <span className="text-[8px] font-black uppercase tracking-[0.2em] truncate">{item.subcategory}</span>
+              </div>
+              <h3 className="text-[16px] font-black italic uppercase tracking-tighter leading-tight">{item.name}</h3>
+              <p className="text-[9px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
             </div>
-            <h3 className="text-[16px] font-black italic uppercase tracking-tighter leading-tight">{item.name}</h3>
-            <p className="text-[9px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
+            <div className="bg-white/5 border border-white/10 p-2 rounded-xl shrink-0 mt-1">
+              {isImport ? <Crown size={14} style={{ color: accentColor }} /> : <Flame size={14} style={{ color: accentColor }} />}
+            </div>
           </div>
-          <div className="bg-white/5 border border-white/10 p-2 rounded-xl shrink-0 mt-1">
-            {isImport ? <Crown size={14} style={{ color: accentColor }} /> : <Flame size={14} style={{ color: accentColor }} />}
+          
+          <div className="aspect-[1/1] w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
+              <img src={getOptimizedImg(item.image, 300)} className="h-[90%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)] group-hover:scale-110 transition-transform duration-700" alt="" />
           </div>
         </div>
-        <div className="aspect-[1/1] w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
-            <img src={getOptimizedImg(item.image, 300)} className="h-[90%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-700" alt="" />
-        </div>
-      </div>
-      <div className="relative z-10 flex justify-between items-end mt-4">
-        <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[8px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
-        <div className="text-right ml-2">
-           <p className="text-[8px] font-black uppercase opacity-20 leading-none mb-0.5">Starting at</p>
-           <p className="text-[20px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
+
+        <div className="flex justify-between items-end mt-4">
+          <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[8px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
+          <div className="text-right ml-2">
+             <p className="text-[8px] font-black uppercase opacity-20 leading-none mb-0.5">Starting at</p>
+             <p className="text-[20px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
+          </div>
         </div>
       </div>
     </div>
   );
 };
+
+// ... StoryModal, ProductModal, CheckoutModal, SkeletonGrade остаются без изменений ...
 
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
   const imageUrl = getOptimizedImg(story.image || `/stories/${story.id}.webp`, 600);
@@ -299,6 +309,8 @@ const SkeletonGrade = () => (
     </div>
   </div>
 );
+
+// --- MAIN PAGE ---
 
 export default function LandingPage() {
   const [products, setProducts] = React.useState<any[]>([]);
