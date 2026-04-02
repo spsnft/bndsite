@@ -90,7 +90,7 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
         <div className="flex justify-between items-start gap-2">
           {/* FIX: Добавлен tracking-tighter и гибкий контейнер */}
           <div className="min-w-0 flex-1">
-            <h3 className="text-[15px] font-black italic uppercase tracking-tighter leading-[1.1] break-words">{item.name}</h3>
+            <h3 className="text-[15px] font-black uppercase tracking-tighter leading-[1.1] break-words">{item.name}</h3>
             <p className="text-[9px] font-bold mt-1 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
           </div>
           <div className="bg-white/5 border border-white/10 p-2 rounded-xl shrink-0 mt-1">
@@ -113,7 +113,7 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
         <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[8px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
         <div className="text-right ml-2">
            <p className="text-[8px] font-black uppercase opacity-20 leading-none mb-0.5">Starting at</p>
-           <p className="text-[20px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
+           <p className="text-[20px] font-black tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
         </div>
       </div>
     </div>
@@ -130,7 +130,7 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
         <div className="w-5 flex justify-center shrink-0">
           {p.badge && <BadgeIcon type={p.badge} />}
         </div>
-        <span className="text-[11px] font-black uppercase italic tracking-tighter text-white/90 truncate leading-tight flex-1">
+        <span className="text-[11px] font-black uppercase tracking-tighter text-white/90 truncate leading-tight flex-1">
           {p.name}
         </span>
       </div>
@@ -138,11 +138,11 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
       <div className="flex items-center gap-3 shrink-0 ml-2">
          {isSale && priceRef && (
            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-             <span className="text-[9px] font-black italic line-through opacity-20 text-white">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿</span>
-             <span className="text-[10px] font-black italic text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
+             <span className="text-[9px] font-black line-through opacity-20 text-white">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿</span>
+             <span className="text-[10px] font-black text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
            </div>
          )}
-         {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[70px]">{p.farm}</div>}
+         {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 truncate max-w-[70px]">{p.farm}</div>}
          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       </div>
     </div>
@@ -203,7 +203,7 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
           <img src={getOptimizedImg(product?.image, 600)} width="500" height="500" className="w-full h-full object-contain p-10" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
             {/* FIX: Добавлен tracking-tighter */}
-            <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style?.color || '#FFF' }}>{product?.name}</h2>
+            <h2 className="text-4xl font-black uppercase tracking-tighter" style={{ color: style?.color || '#FFF' }}>{product?.name}</h2>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
               <span style={{ color: typeColor }}>{product?.type}</span>
               <span className="mx-2 opacity-20">•</span>
@@ -214,9 +214,9 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
 
         <div className="p-8 pt-0 space-y-6 text-white">
           <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product?.farm || '-'}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product?.taste || '-'}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product?.terpenes || '-'}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bol truncate">{product?.farm || '-'}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Taste</span></div><p className="text-[10px] font-bold truncate">{product?.taste || '-'}</p></div>
+             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Terps</span></div><p className="text-[10px] font-bold truncate">{product?.terpenes || '-'}</p></div>
           </div>
 
           <div className="space-y-6">
@@ -224,9 +224,9 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
               <div>
                 <div className="flex items-baseline gap-2">
                    {isSale && basePriceForWeight && basePriceForWeight > currentPrice && (
-                     <span className="text-xl font-black italic tracking-tighter line-through opacity-30">{basePriceForWeight}฿</span>
+                     <span className="text-xl font-black tracking-tighter line-through opacity-30">{basePriceForWeight}฿</span>
                    )}
-                   <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
+                   <div className="text-4xl font-black tracking-tighter">{currentPrice}฿</div>
                 </div>
                 <div className="text-[9px] font-bold opacity-30 uppercase mt-1">Price per gram: {pricePerGram}฿</div>
               </div>
@@ -298,7 +298,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
+          <div><h2 className="text-xl font-black uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
@@ -308,7 +308,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
                 <img src={getOptimizedImg(item.image, 100)} width="40" height="40" className="w-full h-full object-contain" alt="" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-[11px] font-black uppercase italic truncate tracking-tighter">{item.name}</h3>
+                <h3 className="text-[11px] font-black uppercase truncate tracking-tighter">{item.name}</h3>
                 <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
               </div>
               <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
@@ -329,7 +329,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
             ))}
           </div>
           <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
+          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
           <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">
             {isSending ? "Sending..." : "Confirm Order"}
           </button>
@@ -438,10 +438,10 @@ export default function LandingPage() {
         </div>
 
         <div className="flex gap-3 w-full px-2">
-          <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7 flex items-center justify-center gap-2 active:scale-95 transition-all">
             <Flame size={12} /> Concentrates
           </Link>
-          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
+          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 cursor-not-allowed">Accessories</button>
         </div>
       </header>
 
@@ -458,13 +458,13 @@ export default function LandingPage() {
                 <div className="px-5 py-3 flex items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
                   <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
                   <div className="flex flex-col">
-                    <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                    <h2 className="text-sm font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
                   </div>
                   <div className="flex items-center gap-3 ml-auto mr-1">
                     {[1, 5, 10, 20].map(w => (
                       <div key={w} className="flex flex-col items-center min-w-[32px]">
                         <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
-                        <span className="text-[11px] font-black italic tracking-tighter text-white">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+                        <span className="text-[11px] font-black tracking-tighter text-white">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
                       </div>
                     ))}
                   </div>
@@ -480,7 +480,7 @@ export default function LandingPage() {
             {eliteLocal.length > 0 && (
               <div className="space-y-6 pt-10">
                 <div className="flex items-center gap-4 px-2">
-                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local Exclusives</h2>
+                  <h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#2DD4BF] shrink-0">Local Exclusives</h2>
                   <div className="h-[1px] flex-1 bg-[#2DD4BF]/20"></div>
                   <Flame size={14} className="text-[#2DD4BF]" />
                 </div>
@@ -495,7 +495,7 @@ export default function LandingPage() {
             {eliteImport.length > 0 && (
               <div className="space-y-6 pt-10">
                 <div className="flex items-center gap-4 px-2">
-                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#60A5FA] shrink-0">Import Exclusives</h2>
+                  <h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-[#60A5FA] shrink-0">Import Exclusives</h2>
                   <div className="h-[1px] flex-1 bg-[#60A5FA]/20"></div>
                   <Crown size={14} className="text-[#60A5FA]" />
                 </div>
@@ -515,7 +515,7 @@ export default function LandingPage() {
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-xl text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border border-white/20">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-white/10 rounded-full"><ShoppingBag size={20}/></div>
-              <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest leading-none opacity-40">Order Now</p><p className="text-[18px] font-black italic mt-1">{getTotal()}฿ Total</p></div>
+              <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest leading-none opacity-40">Order Now</p><p className="text-[18px] font-black mt-1">{getTotal()}฿ Total</p></div>
             </div>
             <div className="p-3 bg-white/10 rounded-full group-hover:bg-white group-hover:text-black transition-colors"><Send size={18}/></div>
           </button>
