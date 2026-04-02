@@ -80,21 +80,18 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
       onClick={onClick} 
       className="relative rounded-[2rem] border border-white/10 bg-black/40 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20"
       style={{ 
-        isolation: 'isolate', // Создает новый контекст наложения
-        overflow: 'hidden',    // Стандартная обрезка
-        WebkitMaskImage: '-webkit-radial-gradient(white, black)' // Хак для обрезки блюра в Safari/Chrome
+        isolation: 'isolate',
+        overflow: 'hidden',
+        WebkitMaskImage: '-webkit-radial-gradient(white, black)' 
       }}
     >
-      {/* Слой размытия фона */}
       <div className="absolute inset-0 backdrop-blur-md z-0 pointer-events-none" />
 
-      {/* Мягкая радиальная подсветка сверху */}
       <div 
         className="absolute inset-x-0 top-0 h-3/4 opacity-30 blur-[45px] transition-opacity group-hover:opacity-60 pointer-events-none z-0" 
         style={{ background: `radial-gradient(circle at center top, ${accentColor}, transparent)` }}
       />
       
-      {/* Мягкая радиальная подсветка снизу */}
       <div 
         className="absolute inset-x-0 bottom-0 h-1/3 opacity-20 blur-[35px] transition-opacity group-hover:opacity-40 pointer-events-none z-0" 
         style={{ background: `radial-gradient(circle at center bottom, ${accentColor}, transparent)` }}
@@ -103,10 +100,7 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
       <div className="relative z-10 space-y-3 p-4">
         <div className="flex justify-between items-start gap-2">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 mb-1 opacity-60">
-              <Star size={9} style={{ color: accentColor }} fill={accentColor} />
-              <span className="text-[8px] font-black uppercase tracking-[0.2em] truncate">{item.subcategory}</span>
-            </div>
+            {/* ПРАВКА: Строка с item.subcategory удалена отсюда */}
             <h3 className="text-[16px] font-black italic uppercase tracking-tighter leading-tight">{item.name}</h3>
             <p className="text-[9px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
           </div>
