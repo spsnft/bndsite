@@ -88,15 +88,15 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
       
       <div className="relative z-10 space-y-3 p-4">
         <div className="flex justify-between items-start gap-2">
-          <div className="min-w-0">
-            <h3 className="text-[16px] font-black italic uppercase tracking-tighter leading-tight">{item.name}</h3>
-            <p className="text-[9px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
+          {/* FIX: Добавлен tracking-tighter и гибкий контейнер */}
+          <div className="min-w-0 flex-1">
+            <h3 className="text-[15px] font-black italic uppercase tracking-tighter leading-[1.1] break-words">{item.name}</h3>
+            <p className="text-[9px] font-bold mt-1 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
           </div>
           <div className="bg-white/5 border border-white/10 p-2 rounded-xl shrink-0 mt-1">
             {isImport ? <Crown size={14} style={{ color: accentColor }} /> : <Flame size={14} style={{ color: accentColor }} />}
           </div>
         </div>
-        {/* Оптимизация размеров контейнера изображения */}
         <div className="aspect-square w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
             <img 
               src={getOptimizedImg(item.image, 300)} 
@@ -125,21 +125,24 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
   const isSale = p.badge?.toUpperCase() === 'SALE';
   return (
     <div onClick={onClick} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
+      {/* FIX: Улучшена работа с пространством для названия */}
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="w-5 flex justify-center shrink-0">
           {p.badge && <BadgeIcon type={p.badge} />}
         </div>
-        <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+        <span className="text-[11px] font-black uppercase italic tracking-tighter text-white/90 truncate leading-tight flex-1">
+          {p.name}
+        </span>
       </div>
       
-      <div className="flex items-center gap-3 shrink-0 ml-auto">
+      <div className="flex items-center gap-3 shrink-0 ml-2">
          {isSale && priceRef && (
            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
              <span className="text-[9px] font-black italic line-through opacity-20 text-white">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿</span>
              <span className="text-[10px] font-black italic text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
            </div>
          )}
-         {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
+         {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[70px]">{p.farm}</div>}
          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       </div>
     </div>
@@ -147,7 +150,7 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
 });
 ProductRow.displayName = "ProductRow";
 
-// --- MODALS (без изменений, но с оптимизацией img) ---
+// --- MODALS ---
 
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
   const imageUrl = getOptimizedImg(story.image || `/stories/${story.id}.webp`, 600);
@@ -199,6 +202,7 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
         <div className="aspect-square w-full relative bg-black/10">
           <img src={getOptimizedImg(product?.image, 600)} width="500" height="500" className="w-full h-full object-contain p-10" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
+            {/* FIX: Добавлен tracking-tighter */}
             <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style?.color || '#FFF' }}>{product?.name}</h2>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
               <span style={{ color: typeColor }}>{product?.type}</span>
@@ -304,7 +308,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
                 <img src={getOptimizedImg(item.image, 100)} width="40" height="40" className="w-full h-full object-contain" alt="" />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
+                <h3 className="text-[11px] font-black uppercase italic truncate tracking-tighter">{item.name}</h3>
                 <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
               </div>
               <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
@@ -401,7 +405,6 @@ export default function LandingPage() {
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
-                {/* Оптимизированный логотип с явными размерами */}
                 <img 
                   src={logoUrl} 
                   width="64" 
