@@ -96,11 +96,14 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
             {isImport ? <Crown size={14} style={{ color: accentColor }} /> : <Flame size={14} style={{ color: accentColor }} />}
           </div>
         </div>
+        {/* Оптимизация размеров контейнера изображения */}
         <div className="aspect-square w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
             <img 
               src={getOptimizedImg(item.image, 300)} 
+              width="300"
+              height="300"
               loading={priority ? "eager" : "lazy"}
-              className="h-[90%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-500" 
+              className="h-[90%] w-auto object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-500" 
               alt={item.name} 
             />
         </div>
@@ -144,7 +147,7 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
 });
 ProductRow.displayName = "ProductRow";
 
-// --- MODALS ---
+// --- MODALS (без изменений, но с оптимизацией img) ---
 
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
   const imageUrl = getOptimizedImg(story.image || `/stories/${story.id}.webp`, 600);
@@ -153,7 +156,7 @@ function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
       <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
         <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <img src={imageUrl} className="w-full h-full object-cover" alt="" />
+          <img src={imageUrl} width="400" height="700" className="w-full h-full object-cover" alt="" />
         </div>
       </div>
     </div>
@@ -185,10 +188,7 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
     if (!nextWeight) return null;
     const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product?.prices));
     const nextPpg = Math.round(nextPrice / nextWeight);
-    return {
-      diff: (nextWeight - weight).toFixed(0),
-      nextPpg
-    };
+    return { diff: (nextWeight - weight).toFixed(0), nextPpg };
   };
   const promo = getPromoTip();
 
@@ -197,7 +197,7 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
-          <img src={getOptimizedImg(product?.image, 600)} className="w-full h-full object-contain p-10" alt={product?.name} />
+          <img src={getOptimizedImg(product?.image, 600)} width="500" height="500" className="w-full h-full object-contain p-10" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
             <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style?.color || '#FFF' }}>{product?.name}</h2>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
@@ -230,15 +230,7 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
             </div>
 
             <div className="px-2">
-              <input 
-                type="range" 
-                min={weights[0]} 
-                max={weights[weights.length-1]} 
-                step={isEliteProduct ? 0.5 : 1}
-                value={weight}
-                onChange={(e) => setWeight(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
-              />
+              <input type="range" min={weights[0]} max={weights[weights.length-1]} step={isEliteProduct ? 0.5 : 1} value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
             </div>
 
             <div className="grid grid-cols-4 gap-2">
@@ -308,7 +300,9 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
         <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
           {items.map((item: any) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0"><img src={getOptimizedImg(item.image, 100)} className="w-full h-full object-contain" alt="" /></div>
+              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0">
+                <img src={getOptimizedImg(item.image, 100)} width="40" height="40" className="w-full h-full object-contain" alt="" />
+              </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
                 <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
@@ -381,7 +375,6 @@ export default function LandingPage() {
     fetchData();
   }, []);
 
-  // Мемоизируем группы товаров для предотвращения лишних расчетов
   const gradeSections = React.useMemo(() => {
     return GRADES.map(grade => {
       const items = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
@@ -399,7 +392,7 @@ export default function LandingPage() {
     { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
   ];
 
-  const logoUrl = `https://res.cloudinary.com/dpjwbcgrq/image/upload/w_192,c_limit,e_bgremoval,f_auto,q_auto/v1774704686/IMG_0036_t5cnic.png`;
+  const logoUrl = `https://res.cloudinary.com/dpjwbcgrq/image/upload/w_128,c_limit,e_bgremoval,f_auto,q_auto/v1774704686/IMG_0036_t5cnic.png`;
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
@@ -408,7 +401,15 @@ export default function LandingPage() {
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
-                <img src={logoUrl} loading="eager" className="w-full h-full object-contain relative z-10" alt="Logo" />
+                {/* Оптимизированный логотип с явными размерами */}
+                <img 
+                  src={logoUrl} 
+                  width="64" 
+                  height="64" 
+                  loading="eager" 
+                  className="w-16 h-16 object-contain relative z-10" 
+                  alt="BND Logo" 
+                />
               </div>
               <h1 className="text-[12px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Premium Phuket delivery service</h1>
            </div>
