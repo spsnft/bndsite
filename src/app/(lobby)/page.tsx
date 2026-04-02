@@ -77,8 +77,9 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
 
   return (
     <div onClick={onClick} className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-black/40 backdrop-blur-md p-4 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20">
-      {/* Яркая подсветка (Glow) */}
-      <div className="absolute -top-10 -right-10 w-32 h-32 opacity-50 blur-[40px] transition-opacity group-hover:opacity-80" style={{ background: accentColor, borderRadius: '50%' }}></div>
+      {/* Подсветка (Glow): градиент сверху и снизу, рассеивание к центру */}
+      <div className="absolute inset-x-0 top-0 h-1/4 opacity-40 blur-[30px] transition-opacity group-hover:opacity-70" style={{ background: `linear-gradient(to bottom, ${accentColor}, transparent)` }}></div>
+      <div className="absolute inset-x-0 bottom-0 h-1/4 opacity-40 blur-[30px] transition-opacity group-hover:opacity-70" style={{ background: `linear-gradient(to top, ${accentColor}, transparent)` }}></div>
       
       <div className="relative z-10 space-y-3">
         <div className="flex justify-between items-start gap-2">
@@ -271,8 +272,8 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
               </button>
             ))}
           </div>
-          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
+          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
+          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
           <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">
             {isSending ? "Sending..." : "Confirm Order"}
           </button>
@@ -340,15 +341,9 @@ export default function LandingPage() {
               <h1 className="text-[12px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Premium Phuket delivery service</h1>
            </div>
            <div className="flex gap-2">
-              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#229ED9]/20 transition-all">
-                <SendHorizontal size={16} className="text-[#229ED9]"/>
-              </Link>
-              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#25D366]/20 transition-all">
-                <MessageCircle size={16} className="text-[#25D366]"/>
-              </Link>
-              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#E4405F]/20 transition-all">
-                <Instagram size={16} className="text-[#E4405F]"/>
-              </Link>
+              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#229ED9]/20 transition-all"><SendHorizontal size={16} className="text-[#229ED9]"/></Link>
+              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#25D366]/20 transition-all"><MessageCircle size={16} className="text-[#25D366]"/></Link>
+              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#E4405F]/20 transition-all"><Instagram size={16} className="text-[#E4405F]"/></Link>
            </div>
         </div>
 
