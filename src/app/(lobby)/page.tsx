@@ -255,7 +255,8 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <button handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
+          {/* ИСПРАВЛЕНО: Добавлен onClick */}
+          <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
             <Headset size={18} className="text-emerald-400" />
             <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
           </button>
