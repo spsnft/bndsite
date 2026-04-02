@@ -139,7 +139,7 @@ function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
   );
 }
 
-function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
+function ProductModal({ product, style, onClose, categoryBasePrices }: { product: any, style: any, onClose: () => void, categoryBasePrices?: any }) {
   const isEliteProduct = isElite(product);
   const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   
@@ -155,7 +155,9 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
   const typeColor = TYPE_COLORS[String(product?.type || "").toLowerCase()] || "#FFF";
 
-  // Логика для плашки скидки
+  const isSale = product?.badge?.toUpperCase() === 'SALE';
+  const basePriceForWeight = !isEliteProduct && categoryBasePrices ? Math.round(getInterpolatedPrice(weight, categoryBasePrices)) : null;
+
   const getPromoTip = () => {
     if (isEliteProduct) return null;
     const nextWeight = weights.find(w => w > weight);
@@ -195,13 +197,17 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           <div className="space-y-6">
             <div className="flex justify-between items-end">
               <div>
-                <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
+                <div className="flex items-baseline gap-2">
+                   {isSale && basePriceForWeight && basePriceForWeight > currentPrice && (
+                     <span className="text-xl font-black italic tracking-tighter line-through opacity-30">{basePriceForWeight}฿</span>
+                   )}
+                   <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
+                </div>
                 <div className="text-[9px] font-bold opacity-30 uppercase mt-1">Price per gram: {pricePerGram}฿</div>
               </div>
               <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
             </div>
 
-            {/* Слайдер выбора граммовки */}
             <div className="px-2">
               <input 
                 type="range" 
@@ -209,11 +215,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                 max={weights[weights.length-1]} 
                 step={isEliteProduct ? 0.5 : 1}
                 value={weight}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value);
-                  // Находим ближайшее доступное значение, если нужно ограничить шаг
-                  setWeight(val);
-                }}
+                onChange={(e) => setWeight(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
               />
             </div>
@@ -232,7 +234,6 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               })}
             </div>
 
-            {/* Плашка «Добавьте Х для скидки» */}
             {promo && (
               <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-3 animate-pulse">
                 <Flame size={14} className="text-emerald-400" />
@@ -449,20 +450,30 @@ export default function LandingPage() {
       </div>
 
       <div className="divide-y divide-white/5">
-        {gradeItems.map((p: any) => (
-          <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
-              <div className="w-5 flex justify-center shrink-0">
-                {p.badge && <BadgeIcon type={p.badge} />}
+        {gradeItems.map((p: any) => {
+          const isSale = p.badge?.toUpperCase() === 'SALE';
+          return (
+            <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className="w-5 flex justify-center shrink-0">
+                  {p.badge && <BadgeIcon type={p.badge} />}
+                </div>
+                <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
               </div>
-              <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+              
+              <div className="flex items-center gap-3 shrink-0 ml-auto">
+                 {isSale && (
+                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                     <span className="text-[9px] font-black italic line-through opacity-20 text-white">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿</span>
+                     <span className="text-[10px] font-black italic text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
+                   </div>
+                 )}
+                 {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
+                 <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-3 shrink-0 ml-auto">
-               {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
-               <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -520,6 +531,7 @@ export default function LandingPage() {
         <ProductModal 
           product={selectedProduct} 
           style={isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
+          categoryBasePrices={!isElite(selectedProduct) ? products.find(p => p.subcategory === selectedProduct.subcategory && p.category === 'buds' && p.badge?.toUpperCase() !== 'SALE')?.prices : null}
           onClose={() => setSelectedProduct(null)} 
         />
       )}
