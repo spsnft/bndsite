@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2, Headset, Star
+  SendHorizontal, Gift, Info, Trash2, Headset
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -53,23 +53,24 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   return ((prices[20] || 0) / 20) * weight;
 };
 
-const getOptimizedImg = (url: string, w = 800) => {
+const getOptimizedImg = (url: string, w = 400) => {
   if (!url || !url.includes('cloudinary.com')) return url;
   return url.replace('/upload/', `/upload/f_auto,q_auto,w_${w}/`);
 };
 
-// --- COMPONENTS ---
+// --- OPTIMIZED COMPONENTS ---
 
-const BadgeIcon = ({ type }: { type: string }) => {
+const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
     case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
     case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
     case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
     default: return null;
   }
-};
+});
+BadgeIcon.displayName = "BadgeIcon";
 
-const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) => {
+const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onClick: () => void, priority?: boolean }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
   const accentColor = isImport ? IMPORT_COLOR : SELECTED_COLOR; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
@@ -78,23 +79,11 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
   return (
     <div 
       onClick={onClick} 
-      className="relative rounded-[2rem] border border-white/10 bg-black/40 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20"
-      style={{ 
-        isolation: 'isolate',
-        overflow: 'hidden',
-        WebkitMaskImage: '-webkit-radial-gradient(white, black)' 
-      }}
+      className="relative rounded-[2rem] border border-white/10 bg-black/40 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20 overflow-hidden"
     >
-      <div className="absolute inset-0 backdrop-blur-md z-0 pointer-events-none" />
-
       <div 
-        className="absolute inset-x-0 top-0 h-3/4 opacity-30 blur-[45px] transition-opacity group-hover:opacity-60 pointer-events-none z-0" 
+        className="absolute inset-x-0 top-0 h-3/4 opacity-20 blur-[40px] pointer-events-none z-0" 
         style={{ background: `radial-gradient(circle at center top, ${accentColor}, transparent)` }}
-      />
-      
-      <div 
-        className="absolute inset-x-0 bottom-0 h-1/3 opacity-20 blur-[35px] transition-opacity group-hover:opacity-40 pointer-events-none z-0" 
-        style={{ background: `radial-gradient(circle at center bottom, ${accentColor}, transparent)` }}
       />
       
       <div className="relative z-10 space-y-3 p-4">
@@ -107,8 +96,13 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
             {isImport ? <Crown size={14} style={{ color: accentColor }} /> : <Flame size={14} style={{ color: accentColor }} />}
           </div>
         </div>
-        <div className="aspect-[1/1] w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
-            <img src={getOptimizedImg(item.image, 300)} className="h-[90%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-700" alt="" />
+        <div className="aspect-square w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
+            <img 
+              src={getOptimizedImg(item.image, 300)} 
+              loading={priority ? "eager" : "lazy"}
+              className="h-[90%] object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-500" 
+              alt={item.name} 
+            />
         </div>
       </div>
 
@@ -121,7 +115,34 @@ const ExclusiveCard = ({ item, onClick }: { item: any, onClick: () => void }) =>
       </div>
     </div>
   );
-};
+});
+ExclusiveCard.displayName = "ExclusiveCard";
+
+const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () => void, priceRef: any }) => {
+  const isSale = p.badge?.toUpperCase() === 'SALE';
+  return (
+    <div onClick={onClick} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="w-5 flex justify-center shrink-0">
+          {p.badge && <BadgeIcon type={p.badge} />}
+        </div>
+        <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+      </div>
+      
+      <div className="flex items-center gap-3 shrink-0 ml-auto">
+         {isSale && priceRef && (
+           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+             <span className="text-[9px] font-black italic line-through opacity-20 text-white">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿</span>
+             <span className="text-[10px] font-black italic text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
+           </div>
+         )}
+         {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
+         <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+      </div>
+    </div>
+  );
+});
+ProductRow.displayName = "ProductRow";
 
 // --- MODALS ---
 
@@ -176,7 +197,7 @@ function ProductModal({ product, style, onClose, categoryBasePrices }: { product
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
         <div className="aspect-square w-full relative bg-black/10">
-          <img src={getOptimizedImg(product?.image, 600)} className="w-full h-full object-contain p-10" alt="" />
+          <img src={getOptimizedImg(product?.image, 600)} className="w-full h-full object-contain p-10" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
             <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style?.color || '#FFF' }}>{product?.name}</h2>
             <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
@@ -360,6 +381,18 @@ export default function LandingPage() {
     fetchData();
   }, []);
 
+  // Мемоизируем группы товаров для предотвращения лишних расчетов
+  const gradeSections = React.useMemo(() => {
+    return GRADES.map(grade => {
+      const items = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
+      const priceRef = items.find(p => p.badge?.toUpperCase() !== 'SALE') || items[0];
+      return { grade, items, priceRef };
+    }).filter(g => g.items.length > 0);
+  }, [products]);
+
+  const eliteLocal = React.useMemo(() => products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), [products]);
+  const eliteImport = React.useMemo(() => products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), [products]);
+
   const STORY_CONFIG = [
     { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
     { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
@@ -375,7 +408,7 @@ export default function LandingPage() {
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
-                <img src={logoUrl} className="w-full h-full object-contain relative z-10" alt="Logo" />
+                <img src={logoUrl} loading="eager" className="w-full h-full object-contain relative z-10" alt="Logo" />
               </div>
               <h1 className="text-[12px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Premium Phuket delivery service</h1>
            </div>
@@ -416,71 +449,31 @@ export default function LandingPage() {
           </>
         ) : (
           <>
-
-{GRADES.map((grade) => {
-  const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
-  if (gradeItems.length === 0) return null;
-
-  const priceRef = gradeItems.find(p => p.badge?.toUpperCase() !== 'SALE') || gradeItems[0];
-  const headerWeights = [1, 5, 10, 20];
-
-  return (
-    <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
-      <div className="px-5 py-3 flex items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-        
-        <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
-
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2">
-            <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 ml-auto mr-1">
-          {headerWeights.map(w => {
-            const price = Math.round(getInterpolatedPrice(w, priceRef.prices));
-            return (
-              <div key={w} className="flex flex-col items-center min-w-[32px]">
-                <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
-                <span className="text-[11px] font-black italic tracking-tighter text-white">{price}฿</span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="divide-y divide-white/5">
-        {gradeItems.map((p: any) => {
-          const isSale = p.badge?.toUpperCase() === 'SALE';
-          return (
-            <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="w-5 flex justify-center shrink-0">
-                  {p.badge && <BadgeIcon type={p.badge} />}
+            {gradeSections.map(({ grade, items, priceRef }) => (
+              <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 shadow-xl">
+                <div className="px-5 py-3 flex items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
+                  <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
+                  <div className="flex flex-col">
+                    <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                  </div>
+                  <div className="flex items-center gap-3 ml-auto mr-1">
+                    {[1, 5, 10, 20].map(w => (
+                      <div key={w} className="flex flex-col items-center min-w-[32px]">
+                        <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
+                        <span className="text-[11px] font-black italic tracking-tighter text-white">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+                <div className="divide-y divide-white/5">
+                  {items.map((p: any) => (
+                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={priceRef} />
+                  ))}
+                </div>
               </div>
-              
-              <div className="flex items-center gap-3 shrink-0 ml-auto">
-                 {isSale && (
-                   <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-                     <span className="text-[9px] font-black italic line-through opacity-20 text-white">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿</span>
-                     <span className="text-[10px] font-black italic text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
-                   </div>
-                 )}
-                 {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
-                 <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-})}
+            ))}
 
-            {/* LOCAL EXCLUSIVES SECTION */}
-            {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')).length > 0 && (
+            {eliteLocal.length > 0 && (
               <div className="space-y-6 pt-10">
                 <div className="flex items-center gap-4 px-2">
                   <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local Exclusives</h2>
@@ -488,15 +481,14 @@ export default function LandingPage() {
                   <Flame size={14} className="text-[#2DD4BF]" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')).map(p => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
+                  {eliteLocal.map((p, idx) => (
+                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 2} />
                   ))}
                 </div>
               </div>
             )}
 
-            {/* IMPORT EXCLUSIVES SECTION */}
-            {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')).length > 0 && (
+            {eliteImport.length > 0 && (
               <div className="space-y-6 pt-10">
                 <div className="flex items-center gap-4 px-2">
                   <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#60A5FA] shrink-0">Import Exclusives</h2>
@@ -504,7 +496,7 @@ export default function LandingPage() {
                   <Crown size={14} className="text-[#60A5FA]" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')).map(p => (
+                  {eliteImport.map(p => (
                     <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
                   ))}
                 </div>
