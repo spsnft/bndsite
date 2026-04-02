@@ -237,7 +237,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
           <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
@@ -395,8 +395,8 @@ export default function LandingPage() {
                       {headerWeights.map(w => {
                         const price = Math.round(getInterpolatedPrice(w, priceRef.prices));
                         return (
-                          <div key={w} className="flex flex-col items-center min-w-[34px]">
-                            <span className="text-[7px] font-black opacity-30 uppercase tracking-tighter">{w}g</span>
+                          <div key={w} className="flex flex-col items-center min-w-[32px]">
+                            <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
                             <span className="text-[11px] font-black italic tracking-tighter text-white">{price}฿</span>
                           </div>
                         );
@@ -407,9 +407,9 @@ export default function LandingPage() {
                   </div>
                   <div className="divide-y divide-white/5">
                     {gradeItems.map((p: any) => (
-                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-4 hover:bg-white/5 transition-all cursor-pointer group">
+                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
-                          {/* КОНТЕЙНЕР ДЛЯ ИКОНКИ: Выравнивает названия */}
+                          {/* КОНТЕЙНЕР ДЛЯ ИКОНКИ: Теперь в самом начале */}
                           <div className="w-5 flex justify-center shrink-0">
                             {p.badge && <BadgeIcon type={p.badge} />}
                           </div>
