@@ -18,7 +18,7 @@ const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
   { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Sparkles },
   { id: "premium", title: "PREMIUM GRADE", color: "#34D399", icon: Flame },
-  { id: "selected", title: "SELECTED GRADE", color: SELECTED_COLOR, icon: Crown }
+  { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
 ];
 
 const CONTACT_METHODS = [
@@ -39,6 +39,7 @@ const isElite = (product: any) => {
 
 const getElitePrice = (weight: number, prices: any) => {
   if (!prices) return 0;
+  // Маппинг для элитных товаров: 3.5г берет цену 1г, 7г -> 5г и т.д.
   const weightMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
   return prices[weightMap[weight]] || 0;
 };
@@ -229,6 +230,11 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
     } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
   };
 
+  const handleOperatorContact = () => {
+    const text = encodeURIComponent(`Hi! I want to make an order:\n\n${getOrderSummary()}\n\nTotal: ${total}฿`);
+    window.open(`https://t.me/bshk_phuket?text=${text}`, '_blank');
+  };
+
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -249,6 +255,11 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
+          <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
+            <Headset size={18} className="text-emerald-400" />
+            <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
+          </button>
+          
           <div className="grid grid-cols-4 gap-2">
             {CONTACT_METHODS.map(m => (
               <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
@@ -318,12 +329,22 @@ export default function LandingPage() {
       <header className="max-w-xl mx-auto mb-10 pt-4">
         <div className="flex items-center justify-between mb-8">
            <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16"><img src={logoUrl} className="w-full h-full object-contain" alt="Logo" /></div>
-              <h1 className="text-[12px] font-black uppercase tracking-[0.3em] opacity-40">Premium Phuket delivery</h1>
+              <div className="relative w-16 h-16 flex items-center justify-center">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
+                <img src={logoUrl} className="w-full h-full object-contain relative z-10" alt="Logo" />
+              </div>
+              <h1 className="text-[12px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Premium Phuket delivery service</h1>
            </div>
            <div className="flex gap-2">
-              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all"><SendHorizontal size={16}/></Link>
-              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all"><Instagram size={16}/></Link>
+              <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#229ED9]/20 transition-all">
+                <SendHorizontal size={16} className="text-[#229ED9]"/>
+              </Link>
+              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#25D366]/20 transition-all">
+                <MessageCircle size={16} className="text-[#25D366]"/>
+              </Link>
+              <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 hover:bg-[#E4405F]/20 transition-all">
+                <Instagram size={16} className="text-[#E4405F]"/>
+              </Link>
            </div>
         </div>
 
@@ -339,6 +360,13 @@ export default function LandingPage() {
               </button>
             );
           })}
+        </div>
+
+        <div className="flex gap-3 w-full px-2">
+          <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
+            <Flame size={12} /> Concentrates
+          </Link>
+          <button className="flex-1 py-4 rounded-2xl bg-white/5 border border-white/5 font-black uppercase text-[9px] tracking-widest opacity-30 italic cursor-not-allowed">Accessories</button>
         </div>
       </header>
 
@@ -364,9 +392,12 @@ export default function LandingPage() {
                       <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-                          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate">{p.name}</span>
+                          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
                         </div>
-                        <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+                        <div className="flex items-center gap-3 shrink-0 ml-auto">
+                           {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px]">{p.farm}</div>}
+                           <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -374,6 +405,7 @@ export default function LandingPage() {
               );
             })}
 
+            {/* EXCLUSIVES SECTION */}
             {products.filter(p => p.category === 'buds' && isElite(p)).length > 0 && (
               <div className="space-y-6 pt-10">
                 <div className="flex items-center gap-4 px-2">
@@ -394,12 +426,12 @@ export default function LandingPage() {
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-xl text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center border border-white/20">
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-xl text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border border-white/20">
             <div className="flex items-center gap-4">
-              <ShoppingBag size={20}/>
-              <div className="text-left"><p className="text-[10px] font-black uppercase opacity-40 leading-none">Order Now</p><p className="text-[18px] font-black italic mt-1">{getTotal()}฿ Total</p></div>
+              <div className="p-3 bg-white/10 rounded-full"><ShoppingBag size={20}/></div>
+              <div className="text-left"><p className="text-[10px] font-black uppercase tracking-widest leading-none opacity-40">Order Now</p><p className="text-[18px] font-black italic mt-1">{getTotal()}฿ Total</p></div>
             </div>
-            <Send size={18}/>
+            <div className="p-3 bg-white/10 rounded-full group-hover:bg-white group-hover:text-black transition-colors"><Send size={18}/></div>
           </button>
         </div>
       )}
