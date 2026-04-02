@@ -255,7 +255,6 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           ))}
         </div>
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          {/* ИСПРАВЛЕНО: Добавлен onClick */}
           <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
             <Headset size={18} className="text-emerald-400" />
             <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
@@ -379,7 +378,6 @@ export default function LandingPage() {
               const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
               if (gradeItems.length === 0) return null;
 
-              // ПРАВКА: Находим первый товар без бейджа SALE для заголовка
               const priceRef = gradeItems.find(p => p.badge?.toUpperCase() !== 'SALE') || gradeItems[0];
               const headerWeights = [1, 5, 10, 20];
 
@@ -393,14 +391,13 @@ export default function LandingPage() {
                       </div>
                     </div>
 
-                    {/* ПРАВКА: Сетка цен в заголовке */}
                     <div className="flex items-center gap-3 ml-auto mr-4">
                       {headerWeights.map(w => {
                         const price = Math.round(getInterpolatedPrice(w, priceRef.prices));
                         return (
-                          <div key={w} className="flex flex-col items-center min-w-[32px]">
-                            <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
-                            <span className="text-[10px] font-black italic tracking-tighter text-white/90">{price}฿</span>
+                          <div key={w} className="flex flex-col items-center min-w-[34px]">
+                            <span className="text-[7px] font-black opacity-30 uppercase tracking-tighter">{w}g</span>
+                            <span className="text-[11px] font-black italic tracking-tighter text-white">{price}฿</span>
                           </div>
                         );
                       })}
@@ -410,9 +407,12 @@ export default function LandingPage() {
                   </div>
                   <div className="divide-y divide-white/5">
                     {gradeItems.map((p: any) => (
-                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
+                      <div key={p.id} onClick={() => setSelectedProduct(p)} className="flex items-center gap-3 px-5 py-4 hover:bg-white/5 transition-all cursor-pointer group">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+                          {/* КОНТЕЙНЕР ДЛЯ ИКОНКИ: Выравнивает названия */}
+                          <div className="w-5 flex justify-center shrink-0">
+                            {p.badge && <BadgeIcon type={p.badge} />}
+                          </div>
                           <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
                         </div>
                         <div className="flex items-center gap-3 shrink-0 ml-auto">
@@ -485,3 +485,4 @@ export default function LandingPage() {
     </div>
   );
 }
+
