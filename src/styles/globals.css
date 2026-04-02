@@ -4,32 +4,50 @@
 
 @layer base {
   :root {
-    color-scheme: dark; /* Говорим браузеру на системном уровне, что мы в dark mode */
+    color-scheme: dark;
   }
 
   body {
-    /* Убираем !important, если в layout.tsx цвет уже стоит. 
-       Добавляем bg-fixed, чтобы при скролле на мобилках фон не "дергался" */
     @apply bg-[#193D2E] text-white antialiased;
     background-color: #193D2E;
+    /* Улучшаем плавность скролла и убираем лишние перерисовки */
+    -webkit-overflow-scrolling: touch;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Глобальный хак для всех кастомных шрифтов, если они подгружаются динамически */
+  * {
+    font-display: swap !important;
   }
 }
 
 @layer utilities {
-  /* Твое стекло */
+  /* Оптимизированное стекло */
   .backdrop-blur-3xl {
-    /* 60px — это очень тяжелый блюр для мобильных процессоров. 
-       Если в PSI будет жалоба на "Long Tasks", попробуй снизить до 40px. */
+    /* 60px действительно тяжеловато для старых iPhone. 
+       Добавим hardware acceleration (transform), чтобы блюр считал видеочип, а не процессор */
     -webkit-backdrop-filter: blur(60px);
     backdrop-filter: blur(60px);
+    transform: translateZ(0); 
+    backface-visibility: hidden;
   }
   
-  /* Скрываем скроллбар правильно */
+  /* Скрываем скроллбар */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* Добавим класс для плавной загрузки картинок, чтобы не было резкого появления */
+  .image-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 }
