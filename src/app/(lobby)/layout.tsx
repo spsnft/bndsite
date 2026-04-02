@@ -10,16 +10,12 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://app.bnd.delivery"),
+  // Базовые метаданные наследуются из корневого layout, здесь пишем только дополнения
   title: {
     default: "BND Delivery",
     template: "%s - BND Delivery",
   },
   description: "Premium Delivery Service",
-  // Добавляем preconnect для ускорения загрузки картинок
-  other: {
-    "dns-prefetch": "https://res.cloudinary.com",
-  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -45,20 +41,16 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png", // Лучше использовать стандартное имя для Apple
+    apple: "/apple-touch-icon.png",
   },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function LobbyLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark" style={{ colorScheme: 'dark' }}>
-      <head>
-        {/* Ручной коннект к Cloudinary для максимальной скорости */}
-        <link rel="preconnect" href="https://res.cloudinary.com" />
-      </head>
-      <body className="min-h-screen bg-[#193D2E] text-white antialiased selection:bg-emerald-500/30">
-        {children}
-      </body>
-    </html>
+    // Здесь не нужно снова оборачивать в <html> и <body>, так как это вложенный layout. 
+    // Оставляем только контент.
+    <div className="relative flex min-h-screen flex-col">
+      <main className="flex-1">{children}</main>
+    </div>
   )
 }
