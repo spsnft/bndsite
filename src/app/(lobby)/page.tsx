@@ -155,6 +155,20 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
   const typeColor = TYPE_COLORS[String(product?.type || "").toLowerCase()] || "#FFF";
 
+  // Логика для плашки скидки
+  const getPromoTip = () => {
+    if (isEliteProduct) return null;
+    const nextWeight = weights.find(w => w > weight);
+    if (!nextWeight) return null;
+    const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product?.prices));
+    const nextPpg = Math.round(nextPrice / nextWeight);
+    return {
+      diff: (nextWeight - weight).toFixed(0),
+      nextPpg
+    };
+  };
+  const promo = getPromoTip();
+
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -187,6 +201,23 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
             </div>
 
+            {/* Слайдер выбора граммовки */}
+            <div className="px-2">
+              <input 
+                type="range" 
+                min={weights[0]} 
+                max={weights[weights.length-1]} 
+                step={isEliteProduct ? 0.5 : 1}
+                value={weight}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  // Находим ближайшее доступное значение, если нужно ограничить шаг
+                  setWeight(val);
+                }}
+                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
+              />
+            </div>
+
             <div className="grid grid-cols-4 gap-2">
               {weights.map(v => {
                 const hasPrice = isEliteProduct ? (getElitePrice(v, product?.prices) > 0) : true;
@@ -200,6 +231,16 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                 );
               })}
             </div>
+
+            {/* Плашка «Добавьте Х для скидки» */}
+            {promo && (
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-3 animate-pulse">
+                <Flame size={14} className="text-emerald-400" />
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
+                  Add {promo.diff}g more for {promo.nextPpg}B per gram!
+                </span>
+              </div>
+            )}
 
             <button onClick={() => { if(!product) return; addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} 
               className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
@@ -374,7 +415,6 @@ export default function LandingPage() {
           </>
         ) : (
           <>
-            // ... (весь предыдущий код остается без изменений до момента рендеринга GRADES.map)
 
 {GRADES.map((grade) => {
   const gradeItems = products.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
@@ -387,17 +427,14 @@ export default function LandingPage() {
     <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 backdrop-blur-md shadow-xl">
       <div className="px-5 py-3 flex items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
         
-        {/* 1. ИКОНКА ПЕРЕНЕСЕНА В САМОЕ НАЧАЛО */}
         <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
 
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-            {/* Здесь иконка удалена, так как она теперь в начале */}
           </div>
         </div>
 
-        {/* СЕТКА ЦЕН */}
         <div className="flex items-center gap-3 ml-auto mr-1">
           {headerWeights.map(w => {
             const price = Math.round(getInterpolatedPrice(w, priceRef.prices));
@@ -409,8 +446,6 @@ export default function LandingPage() {
             );
           })}
         </div>
-
-        {/* 2. ПРАВАЯ ДУБЛИРУЮЩАЯ ИКОНКА УДАЛЕНА ОТСЮДА */}
       </div>
 
       <div className="divide-y divide-white/5">
@@ -432,8 +467,6 @@ export default function LandingPage() {
     </div>
   );
 })}
-
-// ... (остальная часть кода без изменений)
 
             {/* LOCAL EXCLUSIVES SECTION */}
             {products.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')).length > 0 && (
@@ -494,4 +527,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
