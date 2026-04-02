@@ -1,29 +1,26 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  // ВАЖНО: Мы заставляем Tailwind искать классы во ВСЕХ папках
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       colors: {
+        // Твои цвета теперь жестко вшиты в Tailwind
         brand: {
           green: "#193D2E",
           emerald: "#34D399",
           gold: "#FEC107",
-        }
+          silver: "#C1C1C1",
+        },
       },
-      fontFamily: {
-        // Указываем Tailwind использовать нашу переменную из Next.js
-        sans: ["var(--font-inter)", "system-ui", "-apple-system", "sans-serif"],
+      borderRadius: {
+        '4xl': '2rem',
+        '5xl': '2.5rem',
       },
-      boxShadow: {
-        'premium': '0 10px 30px -10px rgba(0, 0, 0, 0.5)',
-      }
     },
-  },
-  corePlugins: {
-    float: false,
-    objectFit: true,
   },
   plugins: [],
 }
