@@ -75,43 +75,40 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   return (
     <div 
       onClick={onClick} 
-      className="relative rounded-[2rem] border border-white/10 bg-black/40 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col h-full hover:border-white/20 overflow-hidden"
+      className="relative rounded-[2rem] border border-white/10 bg-black/40 active:scale-[0.98] transition-all cursor-pointer group shadow-2xl flex flex-col justify-between h-full hover:border-white/20 overflow-hidden"
     >
       <div 
         className="absolute inset-x-0 top-0 h-3/4 opacity-20 blur-[40px] pointer-events-none z-0" 
         style={{ background: `radial-gradient(circle at center top, ${accentColor}, transparent)` }}
       />
       
-      <div className="relative z-10 p-4 pb-0 flex-1">
-        <div className="flex justify-between items-start gap-2 mb-3">
+      <div className="relative z-10 space-y-3 p-4">
+        <div className="flex justify-between items-start gap-2">
           <div className="min-w-0">
-            <h3 className="text-[14px] font-black italic uppercase tracking-tighter leading-tight truncate">{item.name}</h3>
-            <p className="text-[8px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
+            <h3 className="text-[16px] font-black italic uppercase tracking-tighter leading-tight">{item.name}</h3>
+            <p className="text-[9px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
           </div>
-          <div className="bg-white/5 border border-white/10 p-1.5 rounded-lg shrink-0">
-            {isImport ? <Crown size={12} style={{ color: accentColor }} /> : <Flame size={12} style={{ color: accentColor }} />}
+          <div className="bg-white/5 border border-white/10 p-2 rounded-xl shrink-0 mt-1">
+            {isImport ? <Crown size={14} style={{ color: accentColor }} /> : <Flame size={14} style={{ color: accentColor }} />}
           </div>
         </div>
-
-        {/* Контейнер картинки с фиксом фона и загрузки */}
-        <div className="relative aspect-square w-full bg-black/40 rounded-2xl border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
+        <div className="aspect-square w-full bg-black/20 rounded-2xl flex items-center justify-center relative overflow-hidden border border-white/5 shadow-inner">
             <BlurImage 
               src={item.image} 
               priority={priority}
-              loading={priority ? "eager" : "lazy"}
               width={300}
               height={300}
-              className="w-full h-full object-contain p-2 drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-500" 
+              className="h-[90%] w-auto object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-500" 
               alt={item.name} 
             />
         </div>
       </div>
 
-      <div className="relative z-10 flex justify-between items-end p-4">
-        <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[7px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
+      <div className="relative z-10 flex justify-between items-end p-4 pt-0 mt-2">
+        <span className="px-2.5 py-1 rounded-full bg-white/5 border border-white/5 text-[8px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
         <div className="text-right ml-2">
-           <p className="text-[7px] font-black uppercase opacity-20 leading-none mb-0.5">From</p>
-           <p className="text-[18px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
+           <p className="text-[8px] font-black uppercase opacity-20 leading-none mb-0.5">Starting at</p>
+           <p className="text-[20px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
         </div>
       </div>
     </div>
@@ -502,7 +499,7 @@ export default function LandingPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {eliteLocal.map((p, idx) => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
+                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 2} />
                   ))}
                 </div>
               </div>
@@ -516,8 +513,8 @@ export default function LandingPage() {
                   <Crown size={14} className="text-[#60A5FA]" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {eliteImport.map((p, idx) => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 2} />
+                  {eliteImport.map(p => (
+                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
                   ))}
                 </div>
               </div>
