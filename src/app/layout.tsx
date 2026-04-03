@@ -1,5 +1,6 @@
 import "@/styles/globals.css"
 import type { Metadata, Viewport } from "next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const viewport: Viewport = {
   themeColor: "#193D2E",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen bg-[#193D2E] text-white antialiased selection:bg-emerald-500/30">
         {children}
+        <SpeedInsights />
       </body>
     </html>
   )
