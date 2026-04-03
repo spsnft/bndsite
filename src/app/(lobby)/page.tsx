@@ -82,7 +82,7 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
         style={{ background: `radial-gradient(circle at center top, ${accentColor}, transparent)` }}
       />
       
-      <div className="relative z-10 p-4 pb-0">
+      <div className="relative z-10 p-4 pb-0 flex-1">
         <div className="flex justify-between items-start gap-2 mb-3">
           <div className="min-w-0">
             <h3 className="text-[14px] font-black italic uppercase tracking-tighter leading-tight truncate">{item.name}</h3>
@@ -93,10 +93,12 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
           </div>
         </div>
 
-        <div className="relative aspect-square w-full bg-black/20 rounded-2xl border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
+        {/* Контейнер картинки с фиксом фона и загрузки */}
+        <div className="relative aspect-square w-full bg-black/40 rounded-2xl border border-white/5 shadow-inner overflow-hidden flex items-center justify-center">
             <BlurImage 
               src={item.image} 
               priority={priority}
+              loading={priority ? "eager" : "lazy"}
               width={300}
               height={300}
               className="w-full h-full object-contain p-2 drop-shadow-[0_10px_20px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-500" 
@@ -500,7 +502,7 @@ export default function LandingPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {eliteLocal.map((p, idx) => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 2} />
+                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
                   ))}
                 </div>
               </div>
@@ -514,8 +516,8 @@ export default function LandingPage() {
                   <Crown size={14} className="text-[#60A5FA]" />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  {eliteImport.map(p => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
+                  {eliteImport.map((p, idx) => (
+                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 2} />
                   ))}
                 </div>
               </div>
