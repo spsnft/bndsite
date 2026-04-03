@@ -75,11 +75,16 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   return (
     <div 
       onClick={onClick} 
-      className="relative rounded-[2rem] border border-white/10 bg-black/40 active:scale-[0.98] transition-transform cursor-pointer group shadow-2xl flex flex-col h-full hover:border-white/20 overflow-hidden"
+      // isolate и overflow-hidden критичны для того, чтобы тень "цвела" только внутри карточки
+      className="relative rounded-[2rem] border border-white/10 bg-black/60 active:scale-[0.98] transition-transform cursor-pointer group shadow-2xl flex flex-col h-full hover:border-white/20 overflow-hidden isolate"
     >
+      {/* ОПТИМИЗИРОВАННАЯ ПОДСВЕТКА: Вместо фильтра Blur используем Box-Shadow */}
       <div 
-        className="absolute inset-x-0 top-0 h-3/4 opacity-20 blur-[40px] pointer-events-none z-0" 
-        style={{ background: `radial-gradient(circle at center top, ${accentColor}, transparent)` }}
+        className="absolute inset-x-0 -top-12 h-32 pointer-events-none z-0 opacity-40" 
+        style={{ 
+          boxShadow: `0 35px 60px 15px ${accentColor}`,
+          background: `linear-gradient(to bottom, ${accentColor} 0%, transparent 100%)`
+        }}
       />
       
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
@@ -93,7 +98,6 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
           </div>
         </div>
         
-        {/* Контейнер с фиксированным соотношением сторон для стабильности сетки */}
         <div className="relative aspect-square w-full mt-auto">
             <BlurImage 
               src={item.image} 
@@ -501,7 +505,6 @@ export default function LandingPage() {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {eliteLocal.map((p, idx) => (
-                    // Priority={idx < 4} подгружает первые 2 ряда эксклюзивов заранее
                     <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
                   ))}
                 </div>
