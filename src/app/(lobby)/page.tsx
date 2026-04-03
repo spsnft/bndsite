@@ -75,26 +75,27 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   return (
     <div 
       onClick={onClick} 
-      className="relative rounded-[2rem] bg-black/60 active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-full"
+      className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-full overflow-hidden"
       style={{ 
-        // Внешнее мягкое свечение
-        boxShadow: `0 0 20px -5px ${accentColor}30`,
-        border: `1px solid ${accentColor}40`
+        // Подсветка границ по всем сторонам (Neon glow)
+        boxShadow: `inset 0 0 0 1px ${accentColor}40, 0 0 20px -5px ${accentColor}30`,
+        // Мягкий фоновый градиент внутри карточки (имитация подсветки фона)
+        background: `radial-gradient(circle at 50% 0%, ${accentColor}15 0%, rgba(0,0,0,1) 85%)`,
       }}
     >
-      {/* Акцентная полоска сверху для премиальности */}
+      {/* Световой блик сверху */}
       <div 
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] blur-[1px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] blur-[0.5px]"
+        style={{ background: `linear-gradient(90deg, transparent, ${accentColor}80, transparent)` }}
       />
       
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
         <div className="flex justify-between items-start gap-2 mb-3">
           <div className="min-w-0">
-            <h3 className="text-[14px] font-black italic uppercase tracking-tighter leading-tight truncate">{item.name}</h3>
-            <p className="text-[8px] font-bold mt-0.5 opacity-60 truncate">{item.farm || "Private Reserve"}</p>
+            <h3 className="text-[14px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
+            <p className="text-[8px] font-bold mt-0.5 opacity-60 truncate text-white">{item.farm || "Private Reserve"}</p>
           </div>
-          <div className="bg-white/5 border border-white/10 p-1.5 rounded-lg shrink-0">
+          <div className="bg-black/20 border border-white/10 p-1.5 rounded-lg shrink-0">
             {isImport ? <Crown size={12} style={{ color: accentColor }} /> : <Flame size={12} style={{ color: accentColor }} />}
           </div>
         </div>
@@ -112,9 +113,9 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
       </div>
 
       <div className="relative z-10 flex justify-between items-end p-4 pt-2">
-        <span className="px-2 py-0.5 rounded-full bg-white/5 border border-white/5 text-[7px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
+        <span className="px-2 py-0.5 rounded-full bg-black/40 border border-white/5 text-[7px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
         <div className="text-right ml-2">
-           <p className="text-[7px] font-black uppercase opacity-20 leading-none mb-0.5">Starting at</p>
+           <p className="text-[7px] font-black uppercase opacity-20 leading-none mb-0.5 text-white">Starting at</p>
            <p className="text-[18px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
         </div>
       </div>
