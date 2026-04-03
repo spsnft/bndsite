@@ -75,16 +75,17 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   return (
     <div 
       onClick={onClick} 
-      // isolate и overflow-hidden критичны для того, чтобы тень "цвела" только внутри карточки
-      className="relative rounded-[2rem] border border-white/10 bg-black/60 active:scale-[0.98] transition-transform cursor-pointer group shadow-2xl flex flex-col h-full hover:border-white/20 overflow-hidden isolate"
+      className="relative rounded-[2rem] bg-black/60 active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-full"
+      style={{ 
+        // Внешнее мягкое свечение
+        boxShadow: `0 0 20px -5px ${accentColor}30`,
+        border: `1px solid ${accentColor}40`
+      }}
     >
-      {/* ОПТИМИЗИРОВАННАЯ ПОДСВЕТКА: Вместо фильтра Blur используем Box-Shadow */}
+      {/* Акцентная полоска сверху для премиальности */}
       <div 
-        className="absolute inset-x-0 -top-12 h-32 pointer-events-none z-0 opacity-40" 
-        style={{ 
-          boxShadow: `0 35px 60px 15px ${accentColor}`,
-          background: `linear-gradient(to bottom, ${accentColor} 0%, transparent 100%)`
-        }}
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] blur-[1px]"
+        style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }}
       />
       
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
