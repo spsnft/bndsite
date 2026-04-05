@@ -64,6 +64,19 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
   return val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
 };
 
+// Функция для получения первой доступной цены для превью
+const getFirstAvailablePrice = (product: any) => {
+  const isEliteProduct = isElite(product);
+  const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+  const keyMap: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
+  
+  for (let w of steps) {
+    const price = Number(product.prices?.[keyMap[w]]) || 0;
+    if (price > 0) return { price: Math.round(price), weight: w };
+  }
+  return { price: 0, weight: 0 };
+};
+
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
@@ -81,11 +94,14 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
   const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
   const accentColor = isElite(item) ? (isImport ? IMPORT_COLOR : SELECTED_COLOR) : gradeColor; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
-  const displayPrice = Math.round(getInterpolatedPrice(isElite(item) ? 3.5 : 1, item.prices, isElite(item)));
+  
+  // Умный поиск первой цены для превью
+  const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
+  const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
+  const oldPrice = Math.round(oldPriceRaw);
 
   return (
     <div onClick={onClick} className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden" style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}>
-      {/* Шильдик: скрыт в хайлайтах, в каталоге теперь справа */}
       {!hideBadge && item.badge && (
         <div className="absolute top-3 right-3 z-20">
           <BadgeIcon type={item.badge} />
@@ -93,7 +109,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
       )}
       
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col min-h-0">
-        <div className="min-w-0 pr-6"> {/* pr-6 чтобы текст не наезжал на шильдик справа */}
+        <div className="min-w-0 pr-6">
           <h3 className="text-[10px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
           <p className="text-[7px] font-black mt-1 text-white/40 truncate uppercase italic tracking-widest">{item.subcategory || "Buds"}</p>
         </div>
@@ -102,16 +118,21 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
         </div>
       </div>
 
-      <div className="relative z-10 flex justify-between items-center px-4 pb-4 mt-auto">
-        <span className="text-[6px] font-black uppercase tracking-widest opacity-60" style={{ color: typeColor }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
-        <p className="text-[11px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice > 0 ? `${displayPrice}฿` : '—'}</p>
+      <div className="relative z-10 flex justify-between items-end px-4 pb-4 mt-auto">
+        <span className="text-[6px] font-black uppercase tracking-widest opacity-60 mb-1" style={{ color: typeColor }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+        <div className="flex flex-col items-end">
+          {oldPrice > currentPrice && (
+            <span className="text-[7px] line-through opacity-30 text-white leading-none mb-0.5">{oldPrice}฿</span>
+          )}
+          <p className="text-[11px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
+        </div>
       </div>
     </div>
   );
 });
 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  <div onClick={onClick} className="flex items-center justify-between gap-3 px-6 py-3.5 active:bg-white/5 transition-colors cursor-pointer group">
+  <div onClick={onClick} className="flex items-center justify-between gap-3 px-6 py-3.5 active:bg-white/5 transition-colors cursor-pointer group text-white">
     <div className="flex items-center gap-3 truncate flex-1">
       <div className="w-6 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
@@ -131,11 +152,14 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
+  
   const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
   const [weight, setWeight] = React.useState(firstAvailableWeight);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
+  
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
+  const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
   const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
   const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
 
@@ -162,7 +186,13 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-end text-white">
-              <div><div className="text-3xl font-black italic tracking-tighter">{currentPrice}฿</div><div className="text-[8px] font-bold opacity-30 uppercase tracking-widest">Per gram: {pricePerGram}฿</div></div>
+              <div>
+                {oldPrice > currentPrice && (
+                  <div className="text-[12px] font-black line-through opacity-30 italic leading-none mb-1">{oldPrice}฿</div>
+                )}
+                <div className="text-3xl font-black italic tracking-tighter leading-none">{currentPrice}฿</div>
+                <div className="text-[8px] font-bold opacity-30 uppercase tracking-widest mt-1">Per gram: {pricePerGram}฿</div>
+              </div>
               <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full">{weight}g</div>
             </div>
             <div className="grid grid-cols-4 gap-2">
@@ -234,8 +264,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
   const sortProductsByPrice = (prods: any[]) => {
     return [...prods].sort((a, b) => {
-      const priceA = getInterpolatedPrice(isElite(a) ? 3.5 : 1, a.prices, isElite(a));
-      const priceB = getInterpolatedPrice(isElite(b) ? 3.5 : 1, b.prices, isElite(b));
+      const priceA = getFirstAvailablePrice(a).price;
+      const priceB = getFirstAvailablePrice(b).price;
       return priceB - priceA;
     });
   };
@@ -295,7 +325,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {/* В хайлайтах передаем hideBadge={true} */}
               {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} /></div>))}
             </div>
           </section>
