@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2, Headset
+  SendHorizontal, Gift, Info, Trash2, Headset, ChevronDown
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -77,13 +77,10 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
       onClick={onClick} 
       className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-full overflow-hidden"
       style={{ 
-        // Подсветка границ по всем сторонам (Neon glow)
         boxShadow: `inset 0 0 0 1px ${accentColor}40, 0 0 20px -5px ${accentColor}30`,
-        // Мягкий фоновый градиент внутри карточки (имитация подсветки фона)
         background: `radial-gradient(circle at 50% 0%, ${accentColor}15 0%, rgba(0,0,0,1) 85%)`,
       }}
     >
-      {/* Световой блик сверху */}
       <div 
         className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] blur-[0.5px]"
         style={{ background: `linear-gradient(90deg, transparent, ${accentColor}80, transparent)` }}
@@ -388,6 +385,15 @@ export default function LandingPage() {
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const { items, getTotal } = useCart();
 
+  // Состояние развернутых секций
+  const [openGrades, setOpenGrades] = React.useState<string[]>([]);
+  const [isEliteLocalOpen, setIsEliteLocalOpen] = React.useState(false);
+  const [isEliteImportOpen, setIsEliteImportOpen] = React.useState(false);
+
+  const toggleGrade = (id: string) => {
+    setOpenGrades(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   React.useEffect(() => { 
     async function fetchData() {
       try {
@@ -467,6 +473,13 @@ export default function LandingPage() {
       </header>
 
       <div className="max-w-xl mx-auto space-y-4">
+        {/* ЗАГОЛОВОК РАЗДЕЛА */}
+        <div className="flex items-center gap-4 py-8 opacity-40">
+           <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white"></div>
+           <span className="text-[10px] font-black uppercase tracking-[0.5em] italic">Flower Menu</span>
+           <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white"></div>
+        </div>
+
         {isLoading ? (
           <>
             <SkeletonGrade />
@@ -474,38 +487,63 @@ export default function LandingPage() {
           </>
         ) : (
           <>
-            {gradeSections.map(({ grade, items, priceRef }) => (
-              <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 shadow-xl">
-                <div className="px-5 py-3 flex items-center border-b border-white/5" style={{ backgroundColor: `${grade.color}10` }}>
-                  <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
-                  <div className="flex flex-col">
-                    <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                  </div>
-                  <div className="flex items-center gap-3 ml-auto mr-1">
-                    {[1, 5, 10, 20].map(w => (
-                      <div key={w} className="flex flex-col items-center min-w-[32px]">
-                        <span className="text-[7px] font-black opacity-30 uppercase">{w}g</span>
-                        <span className="text-[11px] font-black italic tracking-tighter text-white">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+            {gradeSections.map(({ grade, items, priceRef }) => {
+              const isOpen = openGrades.includes(grade.id);
+              return (
+                <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 shadow-xl transition-all">
+                  <button 
+                    onClick={() => toggleGrade(grade.id)}
+                    className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
+                      <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right">
+                        <span className="text-[7px] font-black opacity-30 uppercase block leading-none">Starting at</span>
+                        <span className="text-[14px] font-black italic tracking-tighter text-white leading-none">
+                          {Math.round(getInterpolatedPrice(1, priceRef.prices))}฿/g
+                        </span>
                       </div>
-                    ))}
+                      <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                  </button>
+
+                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                    <div className="px-5 py-2 border-y border-white/5 bg-white/5 flex items-center justify-end gap-3">
+                      {[5, 10, 20].map(w => (
+                        <div key={w} className="flex items-center gap-1 min-w-[32px]">
+                          <span className="text-[7px] font-black opacity-30 uppercase">{w}g:</span>
+                          <span className="text-[10px] font-black italic tracking-tighter text-white">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="divide-y divide-white/5">
+                      {items.map((p: any) => (
+                        <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={priceRef} />
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="divide-y divide-white/5">
-                  {items.map((p: any) => (
-                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={priceRef} />
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
+            {/* LOCAL EXCLUSIVES */}
             {eliteLocal.length > 0 && (
-              <div className="space-y-6 pt-10">
-                <div className="flex items-center gap-4 px-2">
+              <div className="pt-6">
+                <button 
+                  onClick={() => setIsEliteLocalOpen(!isEliteLocalOpen)}
+                  className="w-full flex items-center gap-4 px-2 group"
+                >
                   <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local Exclusives</h2>
-                  <div className="h-[1px] flex-1 bg-[#2DD4BF]/20"></div>
-                  <Flame size={14} className="text-[#2DD4BF]" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                  <div className="h-[1px] flex-1 bg-[#2DD4BF]/20 group-hover:bg-[#2DD4BF]/40 transition-colors"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-black opacity-40 uppercase">{eliteLocal.length} strains</span>
+                    <ChevronDown size={14} className={`text-[#2DD4BF] transition-transform ${isEliteLocalOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+                <div className={`grid grid-cols-2 gap-4 transition-all duration-500 overflow-hidden ${isEliteLocalOpen ? 'max-h-[2000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
                   {eliteLocal.map((p, idx) => (
                     <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
                   ))}
@@ -513,14 +551,21 @@ export default function LandingPage() {
               </div>
             )}
 
+            {/* IMPORT EXCLUSIVES */}
             {eliteImport.length > 0 && (
-              <div className="space-y-6 pt-10">
-                <div className="flex items-center gap-4 px-2">
+              <div className="pt-6">
+                <button 
+                  onClick={() => setIsEliteImportOpen(!isEliteImportOpen)}
+                  className="w-full flex items-center gap-4 px-2 group"
+                >
                   <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#60A5FA] shrink-0">Import Exclusives</h2>
-                  <div className="h-[1px] flex-1 bg-[#60A5FA]/20"></div>
-                  <Crown size={14} className="text-[#60A5FA]" />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                  <div className="h-[1px] flex-1 bg-[#60A5FA]/20 group-hover:bg-[#60A5FA]/40 transition-colors"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-black opacity-40 uppercase">{eliteImport.length} strains</span>
+                    <ChevronDown size={14} className={`text-[#60A5FA] transition-transform ${isEliteImportOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
+                <div className={`grid grid-cols-2 gap-4 transition-all duration-500 overflow-hidden ${isEliteImportOpen ? 'max-h-[2000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
                   {eliteImport.map((p, idx) => (
                     <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
                   ))}
