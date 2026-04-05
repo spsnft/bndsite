@@ -406,14 +406,14 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               ))}
            </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-2 mb-6">
           {INFO_CARDS.map((card) => (
-            <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
-              <div className="space-y-0.5">
-                <p className="text-[15px] font-black italic tracking-[0.1em] text-white uppercase">{card.value}</p>
-                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30">{card.title}</p>
+            <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[68px]">
+              <div className="space-y-0">
+                <p className="text-[13px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
+                <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{card.title}</p>
               </div>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full" style={{ backgroundColor: card.color }}></div>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full" style={{ backgroundColor: card.color }}></div>
             </div>
           ))}
         </div>
