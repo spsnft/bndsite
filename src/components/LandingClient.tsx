@@ -40,6 +40,37 @@ const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "
 const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
 
 // --- HELPERS ---
+
+/**
+ * Важнейшая функция: превращает плоские данные из Google Sheets 
+ * (price_1g, oldprice_1g) в структурированные объекты цен.
+ */
+const processProductData = (rawProducts: any[]) => {
+  return rawProducts.map(p => {
+    const prices: any = {};
+    const oldPrices: any = {};
+
+    Object.keys(p).forEach(key => {
+      // Парсим обычные цены (price_1g, price_3.5g и т.д.)
+      if (key.startsWith('price_')) {
+        const weight = key.replace('price_', '').replace('g', '');
+        prices[weight] = p[key];
+      }
+      // Парсим старые цены (oldprice_1g, oldprice_3.5g и т.д.)
+      if (key.startsWith('oldprice_')) {
+        const weight = key.replace('oldprice_', '').replace('g', '');
+        oldPrices[weight] = p[key];
+      }
+    });
+
+    return {
+      ...p,
+      prices: Object.keys(prices).length ? prices : p.prices,
+      old_prices: Object.keys(oldPrices).length ? oldPrices : null
+    };
+  });
+};
+
 const isElite = (product: any) => {
   const sub = product?.subcategory?.toLowerCase() || "";
   return sub.includes('exclusive') || sub.includes('import');
@@ -64,7 +95,6 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
   return val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
 };
 
-// Функция для получения первой доступной цены для превью
 const getFirstAvailablePrice = (product: any) => {
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
@@ -87,7 +117,6 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
     default: return null;
   }
 });
-BadgeIcon.displayName = "BadgeIcon";
 
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
@@ -95,7 +124,6 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
   const accentColor = isElite(item) ? (isImport ? IMPORT_COLOR : SELECTED_COLOR) : gradeColor; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
   
-  // Умный поиск первой цены для превью
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
@@ -103,9 +131,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
   return (
     <div onClick={onClick} className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden" style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}>
       {!hideBadge && item.badge && (
-        <div className="absolute top-3 right-3 z-20">
-          <BadgeIcon type={item.badge} />
-        </div>
+        <div className="absolute top-3 right-3 z-20"><BadgeIcon type={item.badge} /></div>
       )}
       
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col min-h-0">
@@ -257,6 +283,9 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
 
 // --- MAIN LANDING ---
 export default function LandingClient({ initialProducts }: { initialProducts: any[] }) {
+  // Обрабатываем входящие продукты перед сохранением в стейт
+  const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
+
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
@@ -271,20 +300,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   };
 
   const recentUpdates = React.useMemo(() => 
-    sortProductsByPrice(initialProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW')), 
-  [initialProducts]);
+    sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW')), 
+  [processedProducts]);
 
   const gradeSections = React.useMemo(() => {
     return GRADES.map(grade => {
-      const items = initialProducts.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
+      const items = processedProducts.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
       const priceRef = items.find(p => p.badge?.toUpperCase() !== 'SALE') || items[0];
       return { grade, items, priceRef };
     }).filter(g => g.items.length > 0);
-  }, [initialProducts]);
+  }, [processedProducts]);
 
   const eliteSections = [
-    { id: 'local', title: 'Local Exclusives', items: initialProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
-    { id: 'import', title: 'Import', items: initialProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
+    { id: 'local', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
+    { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
   ];
 
   return (
