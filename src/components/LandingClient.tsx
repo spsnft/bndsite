@@ -30,11 +30,12 @@ const CONTACT_METHODS = [
   { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
 ];
 
+// Обновленный порядок и нейминг в УТП
 const INFO_CARDS = [
-  { id: 1, title: "DAILY SUPPORT", value: "12:00—00:00", color: "#A855F7" },
-  { id: 2, title: "PHUKET DELIVERY", value: "60 MINUTES", color: "#2DD4BF" },
-  { id: 3, title: "MINIMAL ORDER", value: "1000฿", color: "#FBBF24" },
-  { id: 4, title: "TH SHIPPING", value: "2-3 DAYS", color: "#60A5FA" },
+  { id: 1, title: "DAILY SUPPORT", value: "12:00—00:00", color: "#A855F7" }, // Слева вверху
+  { id: 3, title: "MINIMAL ORDER", value: "1000฿", color: "#FBBF24" },        // Справа вверху
+  { id: 2, title: "PHUKET DELIVERY", value: "60 MINUTES", color: "#2DD4BF" }, // Слева внизу
+  { id: 4, title: "NATIONWIDE", value: "2-3 DAYS", color: "#60A5FA" },      // Справа внизу
 ];
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
@@ -126,19 +127,26 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   );
 });
 
+// Обновленный ProductRow: ферма в одну строку с названием
 const ProductRow = React.memo(({ p, onClick, showFarm }: { p: any, onClick: () => void, showFarm?: boolean }) => {
   return (
     <div onClick={onClick} className="flex flex-col gap-1 px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
       <div className="flex items-center justify-between min-w-0">
-        <div className="flex items-center gap-3 truncate flex-1">
+        <div className="flex items-center gap-2 truncate flex-1">
           <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+          <div className="flex items-baseline gap-2 truncate">
+            <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">
+              {p.name}
+            </span>
+            {showFarm && p.farm && (
+              <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest italic shrink-0 underline decoration-white/10 underline-offset-4">
+                {p.farm}
+              </span>
+            )}
+          </div>
         </div>
         <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       </div>
-      {showFarm && p.farm && (
-        <div className="pl-8 text-[8px] font-bold text-white/20 uppercase tracking-widest italic">{p.farm}</div>
-      )}
     </div>
   );
 });
@@ -297,6 +305,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
            </div>
         </div>
 
+        {/* УТП с обновленным порядком и текстом */}
         <div className="grid grid-cols-2 gap-3 mb-8">
           {INFO_CARDS.map((card) => (
             <div key={card.id} className="relative p-6 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center group active:scale-[0.98] transition-all min-h-[100px]">
@@ -367,11 +376,14 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                           </div>
                           <ChevronDown size={14} className={`opacity-20 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                         </div>
+                        {/* КРУПНЫЕ ЦЕНЫ */}
                         <div className="flex items-center gap-4 pl-[28px]">
                            {[1, 5, 10, 20].map(w => (
                              <div key={w} className="flex items-center gap-1.5">
-                               <span className="text-[7px] font-black opacity-20 uppercase tracking-widest">{w}g</span>
-                               <span className="text-[10px] font-black italic text-white/50">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+                               <span className="text-[7px] font-black opacity-30 uppercase tracking-widest">{w}g</span>
+                               <span className="text-[12px] font-black italic text-white leading-none">
+                                 {Math.round(getInterpolatedPrice(w, priceRef.prices))}฿
+                               </span>
                              </div>
                            ))}
                         </div>
