@@ -6,7 +6,7 @@ import {
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
   SendHorizontal, Gift, Info, Trash2, Headset, ChevronDown,
-  Clock, Bike, ShoppingCart, Globe
+  Clock, Bike, ShoppingCart, Globe, Star, Phone
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -25,7 +25,7 @@ const GRADES = [
 
 const CONTACT_METHODS = [
   { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
-  { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, ph: "phone number" },
+  { id: "whatsapp", label: "WhatsApp", icon: Phone, ph: "phone number" },
   { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
   { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
 ];
@@ -39,28 +39,6 @@ const INFO_CARDS = [
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
 const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
-
-// --- CUSTOM FLAG ICONS ---
-const ThaiFlag = () => (
-  <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20 shadow-[0_0_8px_rgba(255,255,255,0.1)] shrink-0 mr-3">
-    <svg viewBox="0 0 900 600" className="w-full h-full object-cover opacity-80">
-      <rect fill="#ED1C24" width="900" height="600"/>
-      <rect fill="#FFFFFF" y="100" width="900" height="400"/>
-      <rect fill="#241D73" y="200" width="900" height="200"/>
-    </svg>
-  </div>
-);
-
-const USAFlag = () => (
-  <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20 shadow-[0_0_8px_rgba(96,165,250,0.3)] shrink-0 mr-3">
-    <svg viewBox="0 0 7410 3900" className="w-full h-full object-cover opacity-80">
-      <rect width="7410" height="3900" fill="#b22234"/>
-      <path d="M0,450H7410M0,1050H7410M0,1650H7410M0,2250H7410M0,2850H7410M0,3450H7410" stroke="#fff" strokeWidth="300"/>
-      <rect width="2964" height="2100" fill="#3c3b6e"/>
-      <circle cx="1482" cy="1050" r="600" fill="white" opacity="0.5"/>
-    </svg>
-  </div>
-);
 
 // --- HELPERS ---
 const isElite = (product: any) => {
@@ -119,37 +97,20 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   );
 });
 
-const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () => void, priceRef: any }) => {
-  const isSale = p.badge?.toUpperCase() === 'SALE';
-  const isEliteProduct = isElite(p);
-
+// Упрощенная строка товара (без дублирования цен)
+const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => {
   return (
-    <div onClick={onClick} className="flex flex-col gap-2 px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
-      <div className="flex items-center justify-between min-w-0">
-        <div className="flex items-center gap-3 truncate flex-1">
-          <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
-        </div>
-        <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+    <div onClick={onClick} className="flex items-center justify-between px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
+      <div className="flex items-center gap-3 truncate flex-1">
+        <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+        <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
       </div>
-      {!isEliteProduct && (
-        <div className="flex items-center gap-3 pl-8 overflow-x-auto no-scrollbar">
-           {[1, 5, 10, 20].map(w => (
-             <div key={w} className="flex flex-col items-center gap-0.5 shrink-0">
-                <span className="text-[6px] font-bold opacity-20 uppercase">{w}g</span>
-                <span className={`text-[10px] font-black italic ${isSale ? 'text-emerald-400' : 'text-white/60'}`}>{Math.round(getInterpolatedPrice(w, p.prices))}฿</span>
-             </div>
-           ))}
-        </div>
-      )}
-      {isEliteProduct && (
-        <div className="pl-8 text-[10px] font-black italic text-white/60">From {Math.round(getElitePrice(3.5, p.prices))}฿</div>
-      )}
+      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
     </div>
   );
 });
 
-// --- MODALS (Product, Checkout) ---
+// --- MODALS ---
 function ProductModal({ product, style, onClose, categoryBasePrices }: { product: any, style: any, onClose: () => void, categoryBasePrices?: any }) {
   const isEliteProduct = isElite(product);
   const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
@@ -294,10 +255,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
                 <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={64} height={64} className="w-full h-full object-contain relative z-10" alt="Logo" />
               </div>
-              <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Phuket Premium Delivery</h1>
+              <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Premium Service</h1>
            </div>
            <div className="flex gap-2">
               <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all"><SendHorizontal size={16}/></Link>
+              <Link href="https://bndeliveryphuket.click/wa" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all"><Phone size={16}/></Link>
               <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all"><Instagram size={16}/></Link>
            </div>
         </div>
@@ -364,20 +326,28 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                   const isOpen = openGrades.includes(grade.id);
                   return (
                     <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
-                      <button onClick={() => toggleGrade(grade.id)} className="w-full px-5 py-4 flex items-center justify-between active:bg-white/5 transition-colors">
-                        <div className="flex items-center">
-                          <grade.icon size={16} style={{ color: grade.color }} className="mr-3" />
-                          <h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="text-[13px] font-black italic text-white/50">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿/g</span>
+                      <button onClick={() => toggleGrade(grade.id)} className="w-full px-5 py-4 flex flex-col items-start active:bg-white/5 transition-colors group">
+                        <div className="w-full flex items-center justify-between mb-2">
+                          <div className="flex items-center">
+                            <grade.icon size={16} style={{ color: grade.color }} className="mr-3" />
+                            <h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
+                          </div>
                           <ChevronDown size={14} className={`opacity-20 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                        {/* 1: Ценники под заголовком категории */}
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 pl-[28px]">
+                           {[1, 5, 10, 20].map(w => (
+                             <div key={w} className="flex items-center gap-2">
+                               <span className="text-[7px] font-black opacity-20 uppercase tracking-widest w-4">{w}g</span>
+                               <span className="text-[11px] font-black italic text-white/50">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+                             </div>
+                           ))}
                         </div>
                       </button>
                       <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[1500px]' : 'max-h-0'}`}>
                         <div className="divide-y divide-white/5 bg-white/5">
                           {items.map((p: any) => (
-                            <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={priceRef} />
+                            <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
                           ))}
                         </div>
                       </div>
@@ -385,15 +355,15 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                   );
                 })}
 
-                {/* 4 & 5: Local Exclusives (флаг TH) и Import (флаг USA) */}
+                {/* 2: Local (MapPin) и Import (Star) */}
                 {[
-                  { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, flag: <ThaiFlag /> },
-                  { id: 'import', title: 'Import', items: eliteImport, color: IMPORT_COLOR, flag: <USAFlag /> }
+                  { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, icon: MapPin },
+                  { id: 'import', title: 'Import', items: eliteImport, color: IMPORT_COLOR, icon: Star }
                 ].map(sec => sec.items.length > 0 && (
                   <div key={sec.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
                     <button onClick={() => toggleGrade(sec.id)} className="w-full px-5 py-4 flex items-center justify-between active:bg-white/5 transition-colors">
                       <div className="flex items-center">
-                        {sec.flag}
+                        <sec.icon size={16} style={{ color: sec.color }} className="mr-3" />
                         <h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2>
                       </div>
                       <ChevronDown size={14} className={`opacity-20 transition-transform ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
@@ -401,7 +371,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                     <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[1500px]' : 'max-h-0'}`}>
                         <div className="divide-y divide-white/5 bg-white/5">
                           {sec.items.map(p => (
-                             <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={null} />
+                             <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
                           ))}
                         </div>
                     </div>
