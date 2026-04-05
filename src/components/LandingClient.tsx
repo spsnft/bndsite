@@ -15,6 +15,7 @@ import { BlurImage } from "@/components/blur-image"
 const SELECTED_COLOR = "#2DD4BF"; 
 const IMPORT_COLOR = "#60A5FA";
 
+// Строгий порядок категорий для рендеринга
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
   { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Star },
@@ -285,6 +286,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     }).filter(g => g.items.length > 0);
   }, [initialProducts]);
 
+  // Секции Exclusives для конца списка
   const eliteSections = [
     { id: 'local', title: 'Local Exclusives', items: initialProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
     { id: 'import', title: 'Import', items: initialProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
@@ -293,7 +295,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
       <header className="max-w-xl mx-auto pt-4">
-        {/* Притянули к логотипу: mb-4 вместо mb-8 */}
         <div className="flex items-center justify-between mb-4"> 
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
@@ -309,7 +310,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
            </div>
         </div>
 
-        {/* Блоки УТП: Высота -20% (min-h-80), mb-8 для плотности */}
         <div className="grid grid-cols-2 gap-3 mb-8">
           {INFO_CARDS.map((card) => (
             <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
@@ -317,7 +317,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                 <p className="text-[15px] font-black italic tracking-[0.1em] text-white uppercase">{card.value}</p>
                 <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30">{card.title}</p>
               </div>
-              {/* Яркие акцентные линии: h-3, opacity-100 */}
               <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full" style={{ backgroundColor: card.color }}></div>
             </div>
           ))}
@@ -344,16 +343,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
-          {eliteSections.map(sec => sec.items.length > 0 && (
-            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
-                <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
-              </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}><div className="bg-white/5">{sec.items.map(p => (<ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div></div>
-            </div>
-          ))}
-
+          {/* 1. Сначала выводим основные категории: Silver -> Golden -> Premium -> Selected */}
           {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
               <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-6 py-6 flex flex-col items-start active:bg-white/5 transition-colors">
@@ -382,19 +372,27 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               </div>
             </div>
           ))}
+
+          {/* 2. В конце выводим: Local Exclusives -> Import */}
+          {eliteSections.map(sec => sec.items.length > 0 && (
+            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
+              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
+                <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+              </button>
+              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}><div className="bg-white/5">{sec.items.map(p => (<ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div></div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Кнопка Total Order: ГЛАССМОРФИЗМ */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
           <button 
             onClick={() => setIsCheckoutOpen(true)} 
             className="w-full bg-white/10 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all overflow-hidden"
           >
-            {/* Декоративный блик для глубины */}
             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
-            
             <div className="flex items-center gap-3 relative z-10">
               <ShoppingBag size={20} className="text-emerald-400"/>
               <span className="font-black uppercase text-[13px] tracking-[0.1em]">{getTotal()}฿ Total</span>
