@@ -71,6 +71,36 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
   }
 });
 
+// Форм-фактор для Exclusive товаров (Local & Import) в общем каталоге
+const ExclusiveCard = React.memo(({ item, onClick }: { item: any, onClick: () => void }) => {
+  const isImport = item.subcategory?.toLowerCase().includes('import');
+  const accentColor = isImport ? IMPORT_COLOR : SELECTED_COLOR;
+  const displayPrice = getElitePrice(3.5, item.prices);
+
+  return (
+    <div 
+      onClick={onClick} 
+      className="flex items-center gap-4 p-4 active:bg-white/5 transition-colors cursor-pointer group border-b border-white/5 last:border-0"
+    >
+      <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/10 flex-shrink-0 overflow-hidden p-2 relative">
+        <div className="absolute inset-0 bg-gradient-to-br opacity-20" style={{ from: accentColor, to: 'transparent' }} />
+        <BlurImage src={item.image} width={64} height={64} className="w-full h-full object-contain relative z-10" alt={item.name} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-0.5">
+           <h3 className="text-[11px] font-black italic uppercase tracking-tight text-white leading-tight truncate">{item.name}</h3>
+           <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] }}>{TYPE_SHORT[item.type?.toLowerCase()]}</span>
+        </div>
+        <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest">{item.farm || "Private Reserve"}</p>
+      </div>
+      <div className="text-right shrink-0">
+        <p className="text-[14px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice}฿</p>
+        <p className="text-[7px] font-bold opacity-20 uppercase tracking-widest">3.5g</p>
+      </div>
+    </div>
+  );
+});
+
 const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onClick: () => void, priority?: boolean }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
   const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
@@ -97,15 +127,20 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   );
 });
 
-// Упрощенная строка товара (без дублирования цен)
-const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => {
+const ProductRow = React.memo(({ p, onClick, showFarm }: { p: any, onClick: () => void, showFarm?: boolean }) => {
   return (
-    <div onClick={onClick} className="flex items-center justify-between px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
-      <div className="flex items-center gap-3 truncate flex-1">
-        <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-        <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+    <div onClick={onClick} className="flex flex-col gap-1 px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
+      <div className="flex items-center justify-between min-w-0">
+        <div className="flex items-center gap-3 truncate flex-1">
+          <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+        </div>
+        <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       </div>
-      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+      {/* 3: Вывод фермы для Premium и Selected */}
+      {showFarm && p.farm && (
+        <div className="pl-8 text-[8px] font-bold text-white/20 uppercase tracking-widest italic">{p.farm}</div>
+      )}
     </div>
   );
 });
@@ -278,7 +313,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       </header>
 
       <div className="max-w-xl mx-auto space-y-12">
-          <>
             {recentUpdates.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
@@ -324,6 +358,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
                 {gradeSections.map(({ grade, items, priceRef }) => {
                   const isOpen = openGrades.includes(grade.id);
+                  const isHighGrade = grade.id === 'premium' || grade.id === 'selected';
                   return (
                     <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
                       <button onClick={() => toggleGrade(grade.id)} className="w-full px-5 py-4 flex flex-col items-start active:bg-white/5 transition-colors group">
@@ -334,20 +369,25 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                           </div>
                           <ChevronDown size={14} className={`opacity-20 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                         </div>
-                        {/* 1: Ценники под заголовком категории */}
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 pl-[28px]">
+                        {/* 1: Цены в одну строку */}
+                        <div className="flex items-center gap-4 pl-[28px]">
                            {[1, 5, 10, 20].map(w => (
-                             <div key={w} className="flex items-center gap-2">
-                               <span className="text-[7px] font-black opacity-20 uppercase tracking-widest w-4">{w}g</span>
-                               <span className="text-[11px] font-black italic text-white/50">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+                             <div key={w} className="flex items-center gap-1.5">
+                               <span className="text-[7px] font-black opacity-20 uppercase tracking-widest">{w}g</span>
+                               <span className="text-[10px] font-black italic text-white/50">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
                              </div>
                            ))}
                         </div>
                       </button>
-                      <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[1500px]' : 'max-h-0'}`}>
+                      <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[2500px]' : 'max-h-0'}`}>
                         <div className="divide-y divide-white/5 bg-white/5">
                           {items.map((p: any) => (
-                            <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                            <ProductRow 
+                              key={p.id} 
+                              p={p} 
+                              onClick={() => setSelectedProduct(p)} 
+                              showFarm={isHighGrade} // 3: Условие для вывода фермы
+                            />
                           ))}
                         </div>
                       </div>
@@ -355,7 +395,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                   );
                 })}
 
-                {/* 2: Local (MapPin) и Import (Star) */}
+                {/* 2: Elite/Import в формате ExclusiveCard */}
                 {[
                   { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, icon: MapPin },
                   { id: 'import', title: 'Import', items: eliteImport, color: IMPORT_COLOR, icon: Star }
@@ -368,17 +408,16 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                       </div>
                       <ChevronDown size={14} className={`opacity-20 transition-transform ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                     </button>
-                    <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[1500px]' : 'max-h-0'}`}>
-                        <div className="divide-y divide-white/5 bg-white/5">
+                    <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[2500px]' : 'max-h-0'}`}>
+                        <div className="bg-white/5">
                           {sec.items.map(p => (
-                             <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                             <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
                           ))}
                         </div>
                     </div>
                   </div>
                 ))}
             </div>
-          </>
       </div>
 
       {items.length > 0 && (
