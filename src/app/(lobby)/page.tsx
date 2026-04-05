@@ -32,10 +32,10 @@ const CONTACT_METHODS = [
 ];
 
 const INFO_CARDS = [
-  { id: 1, title: "Daily Support", value: "12:00—00:00", icon: Clock, color: "#A855F7" },
-  { id: 2, title: "Phuket Delivery", value: "60 Minutes", icon: Bike, color: "#2DD4BF" },
-  { id: 3, title: "Minimal Order", value: "1000฿", icon: ShoppingCart, color: "#FBBF24" },
-  { id: 4, title: "Thailand Shipping", value: "2-3 Days", icon: Globe, color: "#60A5FA" },
+  { id: 1, title: "DAILY SUPPORT", value: "12:00—00:00", color: "#A855F7" },
+  { id: 2, title: "PHUKET DELIVERY", value: "60 MINUTES", color: "#2DD4BF" },
+  { id: 3, title: "MINIMAL ORDER", value: "1000฿", color: "#FBBF24" },
+  { id: 4, title: "TH SHIPPING", value: "2-3 DAYS", color: "#60A5FA" },
 ];
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
@@ -67,69 +67,52 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
     case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400 uppercase leading-none">New</span></div>;
-    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
+    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-400/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
     case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
     default: return null;
   }
 });
 BadgeIcon.displayName = "BadgeIcon";
 
-const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onClick: () => void, priority?: boolean }) => {
+// Карточка для верхних блоков БЕЗ бейджей
+const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onClick: () => void, priority?: boolean }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
   const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
   const accentColor = isElite(item) ? (isImport ? IMPORT_COLOR : SELECTED_COLOR) : gradeColor; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
-  
-  const displayPrice = isElite(item) 
-    ? (Object.values(item.prices || {}).find(v => Number(v) > 0) || 0)
-    : Math.round(getInterpolatedPrice(1, item.prices));
+  const displayPrice = isElite(item) ? (Object.values(item.prices || {}).find(v => Number(v) > 0) || 0) : Math.round(getInterpolatedPrice(1, item.prices));
 
   return (
     <div 
       onClick={onClick} 
-      className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[210px] overflow-hidden"
+      className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden"
       style={{ 
-        boxShadow: `inset 0 0 0 1px ${accentColor}40, 0 0 20px -5px ${accentColor}30`,
-        background: `radial-gradient(circle at 50% 0%, ${accentColor}15 0%, rgba(0,0,0,1) 85%)`,
+        boxShadow: `inset 0 0 0 1px ${accentColor}30`,
+        background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)`,
       }}
     >
-      <div className="absolute top-3 left-3 z-20">
-         {item.badge && <BadgeIcon type={item.badge} />}
-      </div>
-      
-      <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
-        <div className="min-w-0 mb-1">
+      <div className="relative z-10 p-5 pb-0 flex-1 flex flex-col">
+        <div className="min-w-0">
           <h3 className="text-[11px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
-          <p className="text-[7px] font-bold mt-0.5 opacity-40 truncate text-white uppercase">{item.farm || "Private Reserve"}</p>
+          <p className="text-[7px] font-bold mt-1 opacity-30 truncate text-white uppercase">{item.farm || "Private Reserve"}</p>
         </div>
-        
         <div className="relative aspect-square w-full mt-auto mb-2">
-            <BlurImage 
-              src={item.image} 
-              priority={priority}
-              width={200}
-              height={200}
-              className="w-full h-full object-contain p-1 drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] group-hover:scale-110 transition-transform duration-500" 
-              alt={item.name} 
-            />
+            <BlurImage src={item.image} priority={priority} width={180} height={180} className="w-full h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] group-hover:scale-105 transition-transform duration-500" alt={item.name} />
         </div>
       </div>
-
-      <div className="relative z-10 flex justify-between items-end p-4 pt-0">
-        <span className="px-1.5 py-0.5 rounded-full bg-black/40 border border-white/5 text-[6px] font-black uppercase tracking-widest" style={{ color: typeColor }}>{item.type}</span>
-        <div className="text-right">
-           <p className="text-[14px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{displayPrice}฿</p>
-        </div>
+      <div className="relative z-10 flex justify-between items-center p-5 pt-0">
+        <span className="text-[6px] font-black uppercase tracking-widest opacity-60" style={{ color: typeColor }}>{item.type}</span>
+        <p className="text-[13px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice}฿</p>
       </div>
     </div>
   );
 });
-ExclusiveCard.displayName = "ExclusiveCard";
+HighlightCard.displayName = "HighlightCard";
 
 const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () => void, priceRef: any }) => {
   const isSale = p.badge?.toUpperCase() === 'SALE';
   return (
-    <div onClick={onClick} className="flex items-center gap-3 px-5 py-3 hover:bg-white/5 transition-all cursor-pointer group">
+    <div onClick={onClick} className="flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
       <div className="flex items-center gap-3 min-w-0 flex-1">
         <div className="w-5 flex justify-center shrink-0">
           {p.badge && <BadgeIcon type={p.badge} />}
@@ -144,7 +127,6 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
              <span className="text-[10px] font-black italic text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
            </div>
          )}
-         {p.farm && p.farm !== '-' && <div className="text-[9px] font-bold opacity-20 italic truncate max-w-[80px] uppercase">{p.farm}</div>}
          <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       </div>
     </div>
@@ -152,8 +134,7 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
 });
 ProductRow.displayName = "ProductRow";
 
-// --- MODALS ---
-
+// --- MODALS (Product, Checkout) ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ ---
 function ProductModal({ product, style, onClose, categoryBasePrices }: { product: any, style: any, onClose: () => void, categoryBasePrices?: any }) {
   const isEliteProduct = isElite(product);
   const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
@@ -304,7 +285,6 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
       <header className="max-w-xl mx-auto mb-10 pt-4">
-        {/* LOGO AREA */}
         <div className="flex items-center justify-between mb-10">
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
@@ -319,16 +299,15 @@ export default function LandingPage() {
            </div>
         </div>
 
-        {/* TRUST INFO CARDS (ЗАМЕНА СТОРИСОВ) */}
+        {/* --- УТП БЛОКИ (БЕЗ ИКОНОК, КРУПНО, CAPS) --- */}
         <div className="grid grid-cols-2 gap-3 mb-12">
           {INFO_CARDS.map((card) => (
-            <div key={card.id} className="relative p-5 rounded-[2rem] border border-white/5 bg-black/20 flex flex-col items-center text-center overflow-hidden group active:scale-[0.98] transition-all">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-              <card.icon size={20} style={{ color: card.color }} className="mb-3 opacity-80" />
-              <div className="space-y-1 relative z-10">
-                <p className="text-[14px] font-black italic tracking-tighter text-white">{card.value}</p>
-                <p className="text-[7px] font-black uppercase tracking-widest text-white/30">{card.title}</p>
+            <div key={card.id} className="relative p-6 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center group active:scale-[0.98] transition-all min-h-[100px]">
+              <div className="space-y-1">
+                <p className="text-[16px] font-black italic tracking-[0.1em] text-white uppercase">{card.value}</p>
+                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30">{card.title}</p>
               </div>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] rounded-full opacity-20" style={{ backgroundColor: card.color }}></div>
             </div>
           ))}
         </div>
@@ -342,7 +321,7 @@ export default function LandingPage() {
           </div>
         ) : (
           <>
-            {/* RECENT UPDATES */}
+            {/* RECENT UPDATES (БЕЗ БЕЙДЖЕЙ) */}
             {recentUpdates.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
@@ -350,19 +329,18 @@ export default function LandingPage() {
                     <Sparkles size={14} className="text-blue-400" />
                     <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
                   </div>
-                  <div className="h-[1px] flex-1 ml-4 bg-gradient-to-r from-blue-400/20 to-transparent"></div>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
                   {recentUpdates.map((p, idx) => (
                     <div key={p.id} className="w-[160px] shrink-0 snap-start">
-                      <ExclusiveCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
+                      <HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
                     </div>
                   ))}
                 </div>
               </section>
             )}
 
-            {/* MENU HITS */}
+            {/* MENU HITS (БЕЗ БЕЙДЖЕЙ) */}
             {menuHits.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
@@ -370,12 +348,11 @@ export default function LandingPage() {
                     <Flame size={14} className="text-orange-400" />
                     <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Menu Hits</h2>
                   </div>
-                  <div className="h-[1px] flex-1 ml-4 bg-gradient-to-r from-orange-400/20 to-transparent"></div>
                 </div>
                 <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
                   {menuHits.map((p, idx) => (
                     <div key={p.id} className="w-[160px] shrink-0 snap-start">
-                      <ExclusiveCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
+                      <HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
                     </div>
                   ))}
                 </div>
@@ -390,13 +367,13 @@ export default function LandingPage() {
                    <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white"></div>
                 </div>
 
-                {/* ELITE ACCORDIONS */}
+                {/* ELITE ACCORDIONS (БЕЗ ПЕРМАНЕНТНОГО ОБЕСЦВЕЧИВАНИЯ) */}
                 {[
                   { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, icon: Flame },
                   { id: 'import', title: 'Import Exclusives', items: eliteImport, color: IMPORT_COLOR, icon: Crown }
                 ].map(sec => sec.items.length > 0 && (
                   <div key={sec.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
-                    <button onClick={() => toggleGrade(sec.id)} className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                    <button onClick={() => toggleGrade(sec.id)} className="w-full px-5 py-4 flex items-center justify-between active:bg-white/5 transition-colors">
                       <div className="flex items-center">
                         <sec.icon size={16} style={{ color: sec.color }} className="mr-3" />
                         <h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2>
@@ -421,7 +398,7 @@ export default function LandingPage() {
                   const isOpen = openGrades.includes(grade.id);
                   return (
                     <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
-                      <button onClick={() => toggleGrade(grade.id)} className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                      <button onClick={() => toggleGrade(grade.id)} className="w-full px-5 py-4 flex items-center justify-between active:bg-white/5 transition-colors">
                         <div className="flex items-center">
                           <grade.icon size={16} style={{ color: grade.color }} className="mr-3" />
                           <h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
