@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Trash2, ChevronDown, Star, Phone
+  SendHorizontal, Trash2, ChevronDown, Star, Phone, Info
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -41,28 +41,20 @@ const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#F
 
 // --- HELPERS ---
 
-/**
- * Важнейшая функция: превращает плоские данные из Google Sheets 
- * (price_1g, oldprice_1g) в структурированные объекты цен.
- */
 const processProductData = (rawProducts: any[]) => {
   return rawProducts.map(p => {
     const prices: any = {};
     const oldPrices: any = {};
-
     Object.keys(p).forEach(key => {
-      // Парсим обычные цены (price_1g, price_3.5g и т.д.)
       if (key.startsWith('price_')) {
         const weight = key.replace('price_', '').replace('g', '');
         prices[weight] = p[key];
       }
-      // Парсим старые цены (oldprice_1g, oldprice_3.5g и т.д.)
       if (key.startsWith('oldprice_')) {
         const weight = key.replace('oldprice_', '').replace('g', '');
         oldPrices[weight] = p[key];
       }
     });
-
     return {
       ...p,
       prices: Object.keys(prices).length ? prices : p.prices,
@@ -99,7 +91,6 @@ const getFirstAvailablePrice = (product: any) => {
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const keyMap: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-  
   for (let w of steps) {
     const price = Number(product.prices?.[keyMap[w]]) || 0;
     if (price > 0) return { price: Math.round(price), weight: w };
@@ -123,17 +114,13 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
   const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
   const accentColor = isElite(item) ? (isImport ? IMPORT_COLOR : SELECTED_COLOR) : gradeColor; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
-  
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
 
   return (
     <div onClick={onClick} className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden" style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}>
-      {!hideBadge && item.badge && (
-        <div className="absolute top-3 right-3 z-20"><BadgeIcon type={item.badge} /></div>
-      )}
-      
+      {!hideBadge && item.badge && <div className="absolute top-3 right-3 z-20"><BadgeIcon type={item.badge} /></div>}
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
           <h3 className="text-[10px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
@@ -143,13 +130,10 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
             <BlurImage src={item.image} priority={priority} width={160} height={160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
         </div>
       </div>
-
       <div className="relative z-10 flex justify-between items-end px-4 pb-4 mt-auto">
         <span className="text-[6px] font-black uppercase tracking-widest opacity-60 mb-1" style={{ color: typeColor }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
         <div className="flex flex-col items-end">
-          {oldPrice > currentPrice && (
-            <span className="text-[7px] line-through opacity-30 text-white leading-none mb-0.5">{oldPrice}฿</span>
-          )}
+          {oldPrice > currentPrice && <span className="text-[7px] line-through opacity-30 text-white leading-none mb-0.5">{oldPrice}฿</span>}
           <p className="text-[11px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
         </div>
       </div>
@@ -164,9 +148,7 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
     <div className="flex items-center gap-4 shrink-0">
-      {p.farm && p.farm !== "-" && (
-        <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest italic truncate max-w-[80px]">{p.farm}</span>
-      )}
+      {p.farm && p.farm !== "-" && <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest italic truncate max-w-[80px]">{p.farm}</span>}
       <span className="text-[8px] font-black uppercase px-2 py-1 rounded bg-white/5 min-w-[36px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
     </div>
   </div>
@@ -178,7 +160,6 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-  
   const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
   const [weight, setWeight] = React.useState(firstAvailableWeight);
   const [isAdded, setIsAdded] = React.useState(false);
@@ -186,8 +167,17 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
-  const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
   const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
+
+  // Логика добора
+  const getUpsellInfo = () => {
+    if (isEliteProduct) return null;
+    if (weight < 5) return { next: 5, diff: (5 - weight).toFixed(1), text: "до акции 5+1" };
+    if (weight < 10) return { next: 10, diff: (10 - weight).toFixed(1), text: "до акции 10+2.5" };
+    return null;
+  };
+  const upsell = getUpsellInfo();
+  const progress = upsell ? (weight / upsell.next) * 100 : 100;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
@@ -204,32 +194,43 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             </p>
           </div>
         </div>
-        <div className="px-6 pb-6 space-y-4">
+        <div className="px-6 pb-6 space-y-5">
           <div className="grid grid-cols-3 gap-3 border-b border-white/5 pb-3">
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.farm && product.farm !== "-" ? product.farm : 'Private'}</p></div>
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.taste || '-'}</p></div>
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.terpenes || '-'}</p></div>
           </div>
-          <div className="space-y-3">
+
+          {!isEliteProduct && upsell && (
+            <div className="space-y-2 px-1">
+              <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest">
+                <span className="text-emerald-400">Добавь {upsell.diff}г</span>
+                <span className="opacity-30">{upsell.text}</span>
+              </div>
+              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="h-full bg-emerald-400 transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
+              </div>
+            </div>
+          )}
+
+          <div className="space-y-4">
             <div className="flex justify-between items-end text-white">
               <div>
-                {oldPrice > currentPrice && (
-                  <div className="text-[12px] font-black line-through opacity-30 italic leading-none mb-1">{oldPrice}฿</div>
-                )}
-                <div className="text-3xl font-black italic tracking-tighter leading-none">{currentPrice}฿</div>
-                <div className="text-[8px] font-bold opacity-30 uppercase tracking-widest mt-1">Per gram: {pricePerGram}฿</div>
+                {oldPrice > currentPrice && <div className="text-[12px] font-black line-through opacity-30 italic leading-none mb-1">{oldPrice}฿</div>}
+                <div className="text-4xl font-black italic tracking-tighter leading-none">{currentPrice}฿</div>
+                <div className="text-[8px] font-bold opacity-30 uppercase tracking-widest mt-2">Weight: {weight} grams</div>
               </div>
-              <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full">{weight}g</div>
+              <div className="text-[10px] font-black uppercase bg-white/10 px-4 py-2 rounded-full border border-white/5">{weight}g</div>
             </div>
             <div className="grid grid-cols-4 gap-2">
               {steps.map(v => {
                 const available = isWeightAvailable(v);
                 return (
-                  <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${!available ? "opacity-10 grayscale border-white/5 text-white/10" : weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
+                  <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${!available ? "opacity-10 grayscale border-white/5 text-white/10" : weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40 active:bg-white/5"}`}>{v}g</button>
                 )
               })}
             </div>
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
           </div>
         </div>
       </div>
@@ -251,7 +252,6 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
       alert("Order sent!"); clearCart(); onClose();
     } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
   };
-
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
@@ -283,9 +283,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
 
 // --- MAIN LANDING ---
 export default function LandingClient({ initialProducts }: { initialProducts: any[] }) {
-  // Обрабатываем входящие продукты перед сохранением в стейт
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
-
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
