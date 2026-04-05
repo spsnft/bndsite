@@ -111,7 +111,10 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
 });
 
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean }) => {
-  const accentColor = isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR);
+  const accentColor = item.category === 'concentrates' 
+    ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
+    : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR));
+  
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
@@ -126,7 +129,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       <div className={`relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-4">
           <h3 className={`${isMini ? 'text-[8px]' : 'text-[10px]'} font-black italic uppercase tracking-tighter leading-tight truncate text-white`}>{item.name}</h3>
-          <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Buds"}</p>
+          <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Product"}</p>
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center mt-1 mb-1">
             <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
@@ -201,7 +204,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/60">
               <span style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
               <span className="mx-2 opacity-20">•</span>
-              <span style={{ color: style?.color }}>{product?.subcategory} Grade</span>
+              <span style={{ color: style?.color }}>{product?.subcategory}</span>
             </p>
           </div>
         </div>
@@ -334,15 +337,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   };
 
   const recentUpdates = React.useMemo(() => {
-    const news = processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW');
+    const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
     return [...news].sort((a, b) => {
-      // Сортировка по дате (06.04 -> 04.06 для корректного сравнения строк или перевода в цифры)
       const dateA = a.date ? a.date.split('.').reverse().join('') : '0000';
       const dateB = b.date ? b.date.split('.').reverse().join('') : '0000';
-      
       if (dateB !== dateA) return dateB.localeCompare(dateA);
-      
-      // Если дата одинаковая — по цене
       const priceA = getFirstAvailablePrice(a).price;
       const priceB = getFirstAvailablePrice(b).price;
       return priceB - priceA;
@@ -350,7 +349,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   }, [processedProducts]);
 
   const flashSales = React.useMemo(() => 
-    sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'SALE')), 
+    sortProductsByPrice(processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')), 
   [processedProducts]);
 
   const gradeSections = React.useMemo(() => {
@@ -374,7 +373,9 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       const subLower = sub?.toLowerCase() || "";
       
       if (subLower.includes('old school')) color = "#C1C1C1";
-      if (subLower.includes('fresh frozen')) color = "#FEC107"; // Golden Grade Color
+      if (subLower.includes('fresh frozen premium')) color = "#34D399"; // Premium Grade Color
+      else if (subLower.includes('fresh frozen')) color = "#FEC107"; // Golden Grade Color
+      
       if (subLower.includes('live rosin')) color = "#A855F7"; // Selected Grade Color
       
       return {
@@ -419,7 +420,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       </header>
 
       <div className="max-w-xl mx-auto space-y-3">
-        {/* NEW HIGHLIGHTS SLIDER */}
         {recentUpdates.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
@@ -432,7 +432,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           </section>
         )}
 
-        {/* FLASH SALES SLIDER */}
         {flashSales.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
