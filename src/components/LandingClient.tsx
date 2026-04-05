@@ -118,8 +118,8 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
   return (
     <div 
       onClick={onClick} 
-      className={`relative rounded-[1.5rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden ${isMini ? 'h-[140px]' : 'h-[200px]'}`} 
-      style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}
+      className={`relative rounded-[1.5rem] active:translate-y-0.5 transition-transform cursor-pointer group flex flex-col overflow-hidden will-change-transform ${isMini ? 'h-[140px]' : 'h-[200px]'}`} 
+      style={{ boxShadow: `inset 0 0 0 1px ${accentColor}20`, background: `linear-gradient(180deg, ${accentColor}05 0%, rgba(0,0,0,1) 100%)` }}
     >
       {!hideBadge && item.badge && <div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75 origin-top-right' : ''}`}><BadgeIcon type={item.badge} /></div>}
       <div className={`relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0`}>
@@ -128,7 +128,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
           <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Buds"}</p>
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center mt-1 mb-1">
-            <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.6)]" alt={item.name} />
         </div>
       </div>
       <div className={`relative z-10 flex justify-between items-end px-3 pb-3 mt-auto`}>
@@ -190,7 +190,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   };
 
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
         <div className="relative aspect-[1.4/1] w-full bg-black/10">
@@ -257,7 +257,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             </div>
 
             {upsell && (
-              <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-2xl p-3 flex items-center gap-3 animate-pulse">
+              <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-2xl p-3 flex items-center gap-3">
                 <Flame size={14} className="text-emerald-400 shrink-0" />
                 <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
                   Add {upsell.diff}g more for {upsell.ppg}฿ per gram!
@@ -288,10 +288,10 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
     } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
   };
   return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+      <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
+          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
@@ -322,7 +322,14 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
+  const [isPending, startTransition] = React.useTransition();
   const { items, getTotal } = useCart();
+
+  const handleProductSelect = (p: any) => {
+    startTransition(() => {
+      setSelectedProduct(p);
+    });
+  };
 
   const sortProductsByPrice = (prods: any[]) => {
     return [...prods].sort((a, b) => {
@@ -359,20 +366,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         <div className="flex items-center justify-between mb-4"> 
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px]"></div>
+                <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[20px]"></div>
                 <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={64} height={64} className="w-full h-full object-contain relative z-10" alt="Logo" />
               </div>
               <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none text-emerald-400/80">Premium Service</h1>
            </div>
            <div className="flex gap-2">
               {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                <Link key={i} href={soc.url} target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all active:scale-90"><soc.icon size={18}/></Link>
+                <Link key={i} href={soc.url} target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-opacity active:translate-y-0.5"><soc.icon size={18}/></Link>
               ))}
            </div>
         </div>
         <div className="grid grid-cols-2 gap-3 mb-8">
           {INFO_CARDS.map((card) => (
-            <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
+            <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/10 flex flex-col items-center justify-center text-center min-h-[80px]">
               <div className="space-y-0.5">
                 <p className="text-[15px] font-black italic tracking-[0.1em] text-white uppercase">{card.value}</p>
                 <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30">{card.title}</p>
@@ -384,7 +391,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       </header>
 
       <div className="max-w-xl mx-auto space-y-6">
-        {/* NEW HIGHLIGHTS SLIDER (COMPACT) */}
         {recentUpdates.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
@@ -392,12 +398,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
+              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => handleProductSelect(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
             </div>
           </section>
         )}
 
-        {/* FLASH SALES SLIDER (COMPACT) */}
         {flashSales.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
@@ -405,20 +410,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {flashSales.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
+              {flashSales.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => handleProductSelect(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
             </div>
           </section>
         )}
 
         <div className="space-y-5 pt-2">
           <div className="flex items-center gap-4 py-4">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
+             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/5 to-emerald-500/10"></div>
              <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Full Catalog</span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
+             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/5 to-emerald-500/10"></div>
           </div>
 
           {gradeSections.map(({ grade, items, priceRef }) => (
-            <div key={grade.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
+            <div key={grade.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/10">
               <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-6 py-6 flex flex-col items-start active:bg-white/5 transition-colors">
                 <div className="w-full flex items-center justify-between mb-5">
                   <div className="flex items-center"><grade.icon size={18} style={{ color: grade.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
@@ -436,10 +441,10 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                    })}
                 </div>
               </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+              <div className={`overflow-hidden transition-all duration-300 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                 <div className="divide-y divide-white/5 bg-white/5">
                   {items.map((p: any) => (
-                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                    <ProductRow key={p.id} p={p} onClick={() => handleProductSelect(p)} />
                   ))}
                 </div>
               </div>
@@ -447,15 +452,15 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           ))}
 
           {eliteSections.map(sec => sec.items.length > 0 && (
-            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
+            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/10">
               <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
                 <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                 <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
               </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+              <div className={`overflow-hidden transition-all duration-300 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                 <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
                   {sec.items.map(p => (
-                    <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
+                    <HighlightCard key={p.id} item={p} onClick={() => handleProductSelect(p)} />
                   ))}
                 </div>
               </div>
@@ -466,8 +471,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-[#222]/80 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:translate-y-0.5 transition-transform overflow-hidden">
             <div className="flex items-center gap-3 relative z-10">
               <ShoppingBag size={20} className="text-emerald-400"/>
               <span className="font-black uppercase text-[13px] tracking-[0.1em]">{getTotal()}฿ Total</span>
