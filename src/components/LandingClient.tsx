@@ -3,7 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
+  Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
   SendHorizontal, Trash2, ChevronDown, Star, Phone
 } from "lucide-react"
@@ -17,7 +17,7 @@ const IMPORT_COLOR = "#60A5FA";
 
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
-  { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Sparkles },
+  { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Star },
   { id: "premium", title: "PREMIUM GRADE", color: "#34D399", icon: Flame },
   { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
 ];
@@ -47,31 +47,40 @@ const isElite = (product: any) => {
 
 const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boolean) => {
   if (!prices) return 0;
+  
   if (isEliteProduct) {
     const eliteMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
     const steps = [3.5, 7, 14, 28];
     const baseTier = [...steps].reverse().find(s => s <= weight) || 3.5;
-    const priceAtTier = prices[eliteMap[baseTier]] || 0;
+    const priceAtTier = Number(prices[eliteMap[baseTier]]) || 0;
     return priceAtTier > 0 ? (priceAtTier / baseTier) * weight : 0;
   }
   
-  if (weight <= 1) return prices[1] || 0;
+  // Исправление NaN для обычных сортов
+  const p1 = Number(prices[1]) || 0;
+  if (weight <= 1) return p1;
+
   const tiers = [1, 5, 10, 20];
   const lowerTier = [...tiers].reverse().find(t => t <= weight) || 1;
   const upperTier = tiers.find(t => t > weight) || 20;
   
-  const p1 = prices[lowerTier] || 0;
-  const p2 = prices[upperTier] || 0;
+  const val1 = Number(prices[lowerTier]) || 0;
+  const val2 = Number(prices[upperTier]) || val1; // если 20г нет, берем предыдущий
   
-  if (p1 === 0 || p2 === 0) return p1 || p2; 
+  if (val1 === 0) return 0;
+  if (lowerTier === upperTier) return val1;
 
-  return p1 + (p2 - p1) * ((weight - lowerTier) / (upperTier - lowerTier));
+  return val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
 };
 
 // --- COMPONENTS ---
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
-    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400 uppercase leading-none">New</span></div>;
+    case "NEW": return (
+      <div className="px-1.5 py-0.5 rounded border border-blue-400/50 bg-blue-500/10 shrink-0">
+        <span className="text-[7px] font-black text-blue-400 uppercase leading-none tracking-tighter">NEW</span>
+      </div>
+    );
     case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-400/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
     case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
     default: return null;
@@ -93,9 +102,9 @@ const ExclusiveCard = React.memo(({ item, onClick }: { item: any, onClick: () =>
            <h3 className="text-[11px] font-black italic uppercase tracking-tight text-white leading-tight truncate">{item.name}</h3>
            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] }}>{TYPE_SHORT[item.type?.toLowerCase()]}</span>
         </div>
-        {item.farm && item.farm !== "-" && (
-          <p className="text-[8px] font-bold text-white/70 uppercase tracking-widest">{item.farm}</p>
-        )}
+        <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest truncate">
+          {item.farm && item.farm !== "-" ? item.farm : (isImport ? 'USA IMPORT' : 'LOCAL TOP SHELF')}
+        </p>
       </div>
       <div className="text-right shrink-0">
         <p className="text-[14px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice > 0 ? `${displayPrice}฿` : '—'}</p>
@@ -134,15 +143,13 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
   <div onClick={onClick} className="flex items-center justify-between gap-3 px-6 py-3.5 active:bg-white/5 transition-colors cursor-pointer group">
     <div className="flex items-center gap-3 truncate flex-1">
-      <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      <div className="w-8 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
     
     <div className="flex items-center gap-4 shrink-0">
       {p.farm && p.farm !== "-" && (
-        <span className="text-[8px] font-bold text-white/70 uppercase tracking-widest italic truncate max-w-[100px]">
-          {p.farm}
-        </span>
+        <span className="text-[8px] font-bold text-white/70 uppercase tracking-widest italic truncate max-w-[100px]">{p.farm}</span>
       )}
       <span className="text-[8px] font-black uppercase px-2 py-1 rounded bg-white/5 min-w-[36px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
     </div>
@@ -154,38 +161,21 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
-  
-  // Карта сопоставления веса к ключам в объекте цен
-  const weightToKey: Record<number, number> = isEliteProduct 
-    ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } 
-    : { 1: 1, 5: 5, 10: 10, 20: 20 };
+  const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
 
-  // Поиск первого доступного веса с ценой
-  const firstAvailableWeight = steps.find(w => (product.prices?.[weightToKey[w]] || 0) > 0) || steps[0];
-
+  const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
   const [weight, setWeight] = React.useState(firstAvailableWeight);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
 
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
-
-  const isWeightAvailable = (w: number) => (product.prices?.[weightToKey[w]] || 0) > 0;
-
-  const getUpsell = () => {
-    const next = steps.find(s => s > weight && isWeightAvailable(s));
-    if (!next) return null;
-    const nextPrice = Math.round(getInterpolatedPrice(next, product.prices, isEliteProduct));
-    return { diff: (next - weight).toFixed(1).replace('.0', ''), ppg: Math.round(nextPrice / next) };
-  };
-
-  const upsell = getUpsell();
+  const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
-        
         <div className="relative aspect-[1.4/1] w-full bg-black/10">
           <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
@@ -197,52 +187,26 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             </p>
           </div>
         </div>
-
         <div className="px-6 pb-6 space-y-4">
           <div className="grid grid-cols-3 gap-3 border-b border-white/5 pb-3">
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.farm && product.farm !== "-" ? product.farm : 'Private'}</p></div>
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.taste || '-'}</p></div>
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.terpenes || '-'}</p></div>
           </div>
-
           <div className="space-y-3">
             <div className="flex justify-between items-end text-white">
               <div><div className="text-3xl font-black italic tracking-tighter">{currentPrice}฿</div><div className="text-[8px] font-bold opacity-30 uppercase tracking-widest">Per gram: {pricePerGram}฿</div></div>
               <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full">{weight}g</div>
             </div>
-
             <div className="grid grid-cols-4 gap-2">
               {steps.map(v => {
                 const available = isWeightAvailable(v);
                 return (
-                  <button 
-                    key={v} 
-                    disabled={!available}
-                    onClick={() => setWeight(v)} 
-                    className={`py-2 text-[10px] font-black rounded-xl border transition-all ${
-                      !available ? "opacity-10 grayscale border-white/5 text-white/10" :
-                      weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"
-                    }`}
-                  >
-                    {v}g
-                  </button>
+                  <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${!available ? "opacity-10 grayscale border-white/5 text-white/10" : weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
                 )
               })}
             </div>
-
-            {upsell && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5 flex items-center justify-center gap-2">
-                <Flame size={12} className="text-emerald-400" />
-                <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Add {upsell.diff}g for {upsell.ppg}฿ p/g!</p>
-              </div>
-            )}
-
-            <button 
-              onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} 
-              className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}
-            >
-              {isAdded ? "Added to Cart" : "Add to Order"}
-            </button>
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
           </div>
         </div>
       </div>
@@ -255,14 +219,13 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
-  const getOrderSummary = () => items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
   
   const handleSubmit = async () => {
     if (!contact) return alert("Please enter contact info");
     setIsSending(true);
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: getOrderSummary(), total }) });
+      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
       alert("Order sent!"); clearCart(); onClose();
     } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
   };
@@ -315,10 +278,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     sortProductsByPrice(initialProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW')), 
   [initialProducts]);
 
-  const menuHits = React.useMemo(() => 
-    sortProductsByPrice(initialProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'HIT')), 
-  [initialProducts]);
-
   const gradeSections = React.useMemo(() => {
     return GRADES.map(grade => {
       const items = initialProducts.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
@@ -365,18 +324,12 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       <div className="max-w-xl mx-auto space-y-8">
         {recentUpdates.length > 0 && (
           <section className="space-y-4">
-            <div className="flex items-center gap-2 px-2"><Sparkles size={14} className="text-blue-400" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2></div>
+            <div className="flex items-center gap-2 px-2">
+              <div className="px-1.5 py-0.5 rounded border border-blue-400/50 bg-blue-500/10"><span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter">NEW</span></div>
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
+            </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
               {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
-            </div>
-          </section>
-        )}
-
-        {menuHits.length > 0 && (
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 px-2"><Flame size={14} className="text-orange-400" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Menu Hits</h2></div>
-            <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {menuHits.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
             </div>
           </section>
         )}
@@ -388,6 +341,16 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
+          {eliteSections.map(sec => sec.items.length > 0 && (
+            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
+              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
+                <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+              </button>
+              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}><div className="bg-white/5">{sec.items.map(p => (<ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div></div>
+            </div>
+          ))}
+
           {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
               <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-6 py-6 flex flex-col items-start active:bg-white/5 transition-colors">
@@ -396,14 +359,15 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                   <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
                 <div className="w-full flex flex-row justify-between items-center opacity-80 px-1">
-                   {[1, 5, 10, 20].map(w => (
-                     <div key={w} className="flex items-baseline gap-1">
-                       <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">{w}g</span>
-                       <span className="text-[16px] font-black italic text-white tracking-tighter leading-none">
-                         {Math.round(getInterpolatedPrice(w, priceRef.prices, false))}฿
-                       </span>
-                     </div>
-                   ))}
+                   {[1, 5, 10, 20].map(w => {
+                     const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
+                     return (
+                       <div key={w} className="flex items-baseline gap-1">
+                         <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">{w}g</span>
+                         <span className="text-[16px] font-black italic text-white tracking-tighter leading-none">{p > 0 ? `${p}฿` : '—'}</span>
+                       </div>
+                     )
+                   })}
                 </div>
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
@@ -413,16 +377,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                   ))}
                 </div>
               </div>
-            </div>
-          ))}
-
-          {eliteSections.map(sec => sec.items.length > 0 && (
-            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
-                <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
-              </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}><div className="bg-white/5">{sec.items.map(p => (<ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div></div>
             </div>
           ))}
         </div>
