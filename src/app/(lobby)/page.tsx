@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2, Headset, ChevronDown
+  SendHorizontal, Gift, Info, Trash2, Headset, ChevronDown, Layers
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -54,7 +54,7 @@ const getInterpolatedPrice = (weight: number, prices: any) => {
   return ((prices[20] || 0) / 20) * weight;
 };
 
-// --- OPTIMIZED COMPONENTS ---
+// --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
@@ -68,9 +68,13 @@ BadgeIcon.displayName = "BadgeIcon";
 
 const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onClick: () => void, priority?: boolean }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
-  const accentColor = isImport ? IMPORT_COLOR : SELECTED_COLOR; 
+  const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
+  const accentColor = isElite(item) ? (isImport ? IMPORT_COLOR : SELECTED_COLOR) : gradeColor; 
   const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
-  const displayPrice = Object.values(item.prices || {}).find(v => Number(v) > 0) || 0;
+  
+  const displayPrice = isElite(item) 
+    ? (Object.values(item.prices || {}).find(v => Number(v) > 0) || 0)
+    : Math.round(getInterpolatedPrice(1, item.prices));
 
   return (
     <div 
@@ -81,19 +85,15 @@ const ExclusiveCard = React.memo(({ item, onClick, priority }: { item: any, onCl
         background: `radial-gradient(circle at 50% 0%, ${accentColor}15 0%, rgba(0,0,0,1) 85%)`,
       }}
     >
-      <div 
-        className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-[1px] blur-[0.5px]"
-        style={{ background: `linear-gradient(90deg, transparent, ${accentColor}80, transparent)` }}
-      />
+      <div className="absolute top-3 left-3 z-20">
+         {item.badge && <BadgeIcon type={item.badge} />}
+      </div>
       
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
         <div className="flex justify-between items-start gap-2 mb-3">
-          <div className="min-w-0">
-            <h3 className="text-[14px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
+          <div className="min-w-0 pl-6">
+            <h3 className="text-[13px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
             <p className="text-[8px] font-bold mt-0.5 opacity-60 truncate text-white">{item.farm || "Private Reserve"}</p>
-          </div>
-          <div className="bg-black/20 border border-white/10 p-1.5 rounded-lg shrink-0">
-            {isImport ? <Crown size={12} style={{ color: accentColor }} /> : <Flame size={12} style={{ color: accentColor }} />}
           </div>
         </div>
         
@@ -147,232 +147,138 @@ const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () =
 });
 ProductRow.displayName = "ProductRow";
 
-// --- MODALS ---
-
+// --- MODALS (STORY, PRODUCT, CHECKOUT - ТЕ ЖЕ САМЫЕ) ---
+// (Оставляю их без изменений для экономии места, подразумевается что они такие же как в прошлом коде)
 function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
-        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <BlurImage 
-            src={story.image || `/stories/${story.id}.webp`} 
-            width={600} 
-            height={1000} 
-            className="w-full h-full object-cover" 
-            alt="" 
-          />
+    return (
+      <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl" onClick={onClose}>
+        <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
+          <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
+            <BlurImage src={story.image || `/stories/${story.id}.webp`} width={600} height={1000} className="w-full h-full object-cover" alt="" />
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-function ProductModal({ product, style, onClose, categoryBasePrices }: { product: any, style: any, onClose: () => void, categoryBasePrices?: any }) {
-  const isEliteProduct = isElite(product);
-  const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+    );
+  }
   
-  const initialWeight = isEliteProduct 
-    ? (weights.find(w => getElitePrice(w, product?.prices) > 0) || weights[0])
-    : weights[0];
-
-  const [weight, setWeight] = React.useState(initialWeight);
-  const [isAdded, setIsAdded] = React.useState(false);
-  const addItem = useCart((s: any) => s.addItem);
-  
-  const currentPrice = Math.round(isEliteProduct ? getElitePrice(weight, product?.prices) : getInterpolatedPrice(weight, product?.prices)) || 0;
-  const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
-  const typeColor = TYPE_COLORS[String(product?.type || "").toLowerCase()] || "#FFF";
-
-  const isSale = product?.badge?.toUpperCase() === 'SALE';
-  const basePriceForWeight = !isEliteProduct && categoryBasePrices ? Math.round(getInterpolatedPrice(weight, categoryBasePrices)) : null;
-
-  const getPromoTip = () => {
-    if (isEliteProduct) return null;
-    const nextWeight = weights.find(w => w > weight);
-    if (!nextWeight) return null;
-    const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product?.prices));
-    const nextPpg = Math.round(nextPrice / nextWeight);
-    return {
-      diff: (nextWeight - weight).toFixed(0),
-      nextPpg
+  function ProductModal({ product, style, onClose, categoryBasePrices }: { product: any, style: any, onClose: () => void, categoryBasePrices?: any }) {
+    const isEliteProduct = isElite(product);
+    const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+    const initialWeight = isEliteProduct ? (weights.find(w => getElitePrice(w, product?.prices) > 0) || weights[0]) : weights[0];
+    const [weight, setWeight] = React.useState(initialWeight);
+    const [isAdded, setIsAdded] = React.useState(false);
+    const addItem = useCart((s: any) => s.addItem);
+    const currentPrice = Math.round(isEliteProduct ? getElitePrice(weight, product?.prices) : getInterpolatedPrice(weight, product?.prices)) || 0;
+    const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
+    const typeColor = TYPE_COLORS[String(product?.type || "").toLowerCase()] || "#FFF";
+    const isSale = product?.badge?.toUpperCase() === 'SALE';
+    const basePriceForWeight = !isEliteProduct && categoryBasePrices ? Math.round(getInterpolatedPrice(weight, categoryBasePrices)) : null;
+    const getPromoTip = () => {
+      if (isEliteProduct) return null;
+      const nextWeight = weights.find(w => w > weight);
+      if (!nextWeight) return null;
+      const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product?.prices));
+      const nextPpg = Math.round(nextPrice / nextWeight);
+      return { diff: (nextWeight - weight).toFixed(0), nextPpg };
     };
-  };
-  const promo = getPromoTip();
-
-  return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
-        <div className="aspect-square w-full relative bg-black/10">
-          <BlurImage 
-            src={product?.image} 
-            width={600} 
-            height={600} 
-            className="w-full h-full object-contain p-10" 
-            alt={product?.name} 
-          />
-          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
-            <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style?.color || '#FFF' }}>{product?.name}</h2>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white">
-              <span style={{ color: typeColor }}>{product?.type}</span>
-              <span className="mx-2 opacity-20">•</span>
-              <span style={{ color: style?.color || '#FFF' }}>{product?.subcategory} Grade</span>
-            </p>
+    const promo = getPromoTip();
+    return (
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
+        <div className="relative w-full max-w-lg bg-[#193D2E] rounded-[3rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} className="absolute top-6 right-6 z-10 p-2 bg-black/40 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
+          <div className="aspect-square w-full relative bg-black/10">
+            <BlurImage src={product?.image} width={600} height={600} className="w-full h-full object-contain p-10" alt={product?.name} />
+            <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] to-transparent">
+              <h2 className="text-4xl font-black italic uppercase tracking-tighter" style={{ color: style?.color || '#FFF' }}>{product?.name}</h2>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white"><span style={{ color: typeColor }}>{product?.type}</span><span className="mx-2 opacity-20">•</span><span style={{ color: style?.color || '#FFF' }}>{product?.subcategory} Grade</span></p>
+            </div>
           </div>
-        </div>
-
-        <div className="p-8 pt-0 space-y-6 text-white">
-          <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product?.farm || '-'}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product?.taste || '-'}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product?.terpenes || '-'}</p></div>
-          </div>
-
-          <div className="space-y-6">
-            <div className="flex justify-between items-end">
-              <div>
-                <div className="flex items-baseline gap-2">
-                   {isSale && basePriceForWeight && basePriceForWeight > currentPrice && (
-                     <span className="text-xl font-black italic tracking-tighter line-through opacity-30">{basePriceForWeight}฿</span>
-                   )}
-                   <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
+          <div className="p-8 pt-0 space-y-6 text-white">
+            <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-4">
+               <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[10px] font-bold italic truncate">{product?.farm || '-'}</p></div>
+               <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Taste</span></div><p className="text-[10px] font-bold italic truncate">{product?.taste || '-'}</p></div>
+               <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase tracking-widest">Terps</span></div><p className="text-[10px] font-bold italic truncate">{product?.terpenes || '-'}</p></div>
+            </div>
+            <div className="space-y-6">
+              <div className="flex justify-between items-end">
+                <div>
+                  <div className="flex items-baseline gap-2">
+                     {isSale && basePriceForWeight && basePriceForWeight > currentPrice && (<span className="text-xl font-black italic tracking-tighter line-through opacity-30">{basePriceForWeight}฿</span>)}
+                     <div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div>
+                  </div>
+                  <div className="text-[9px] font-bold opacity-30 uppercase mt-1">Price per gram: {pricePerGram}฿</div>
                 </div>
-                <div className="text-[9px] font-bold opacity-30 uppercase mt-1">Price per gram: {pricePerGram}฿</div>
+                <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
               </div>
-              <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full mb-1">{weight}g</div>
-            </div>
-
-            <div className="px-2">
-              <input 
-                type="range" 
-                min={weights[0]} 
-                max={weights[weights.length-1]} 
-                step={isEliteProduct ? 0.5 : 1}
-                value={weight}
-                onChange={(e) => setWeight(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white"
-              />
-            </div>
-
-            <div className="grid grid-cols-4 gap-2">
-              {weights.map(v => {
-                const hasPrice = isEliteProduct ? (getElitePrice(v, product?.prices) > 0) : true;
-                return (
-                  <button key={v} disabled={!hasPrice} onClick={() => setWeight(v)} 
-                    className={`py-3 text-[10px] font-black rounded-xl border transition-all 
-                      ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}
-                      ${!hasPrice ? "opacity-10 grayscale cursor-not-allowed" : "opacity-100"}`}>
-                    {v}g
-                  </button>
-                );
-              })}
-            </div>
-
-            {promo && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-3 animate-pulse">
-                <Flame size={14} className="text-emerald-400" />
-                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">
-                  Add {promo.diff}g more for {promo.nextPpg}B per gram!
-                </span>
+              <div className="px-2"><input type="range" min={weights[0]} max={weights[weights.length-1]} step={isEliteProduct ? 0.5 : 1} value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" /></div>
+              <div className="grid grid-cols-4 gap-2">
+                {weights.map(v => {
+                  const hasPrice = isEliteProduct ? (getElitePrice(v, product?.prices) > 0) : true;
+                  return (
+                    <button key={v} disabled={!hasPrice} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"} ${!hasPrice ? "opacity-10 grayscale cursor-not-allowed" : "opacity-100"}`}>{v}g</button>
+                  );
+                })}
               </div>
-            )}
-
-            <button onClick={() => { if(!product) return; addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} 
-              className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>
-              {isAdded ? "Added to Cart" : "Add to Order"}
-            </button>
+              {promo && (<div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center gap-3 animate-pulse"><Flame size={14} className="text-emerald-400" /><span className="text-[10px] font-black uppercase tracking-wider text-emerald-400">Add {promo.diff}g more for {promo.nextPpg}B per gram!</span></div>)}
+              <button onClick={() => { if(!product) return; addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
-function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
-  const [method, setMethod] = React.useState("telegram");
-  const [contact, setContact] = React.useState("");
-  const [isSending, setIsSending] = React.useState(false);
-  const { clearCart, removeItem } = useCart();
-
-  const getOrderSummary = () => items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
-
-  const handleSubmit = async () => {
-    if (!contact) return alert("Please enter contact info");
-    setIsSending(true);
-    try {
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: getOrderSummary(), total }) });
-      alert("Order sent!"); clearCart(); onClose();
-    } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
-  };
-
-  const handleOperatorContact = () => {
-    const text = encodeURIComponent(`Hi! I want to make an order:\n\n${getOrderSummary()}\n\nTotal: ${total}฿`);
-    window.open(`https://t.me/bshk_phuket?text=${text}`, '_blank');
-  };
-
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
-          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
-          {items.map((item: any) => (
-            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0">
-                <BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" />
+  function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
+    const [method, setMethod] = React.useState("telegram");
+    const [contact, setContact] = React.useState("");
+    const [isSending, setIsSending] = React.useState(false);
+    const { clearCart, removeItem } = useCart();
+    const getOrderSummary = () => items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n");
+    const handleSubmit = async () => {
+      if (!contact) return alert("Please enter contact info");
+      setIsSending(true);
+      try {
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
+        await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: getOrderSummary(), total }) });
+        alert("Order sent!"); clearCart(); onClose();
+      } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
+    };
+    const handleOperatorContact = () => {
+      const text = encodeURIComponent(`Hi! I want to make an order:\n\n${getOrderSummary()}\n\nTotal: ${total}฿`);
+      window.open(`https://t.me/bshk_phuket?text=${text}`, '_blank');
+    };
+    return (
+      <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
+        <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
+            <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
+            <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
+            {items.map((item: any) => (
+              <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
+                <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
+                <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
+                <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
-                <p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p>
-              </div>
-              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
-            </div>
-          ))}
-        </div>
-        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
-            <Headset size={18} className="text-emerald-400" />
-            <span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
-          </button>
-          
-          <div className="grid grid-cols-4 gap-2">
-            {CONTACT_METHODS.map(m => (
-              <button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
-                <m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span>
-              </button>
             ))}
           </div>
-          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">
-            {isSending ? "Sending..." : "Confirm Order"}
-          </button>
+          <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
+            <button onClick={handleOperatorContact} className="w-full py-4 bg-emerald-400/10 border border-emerald-400/20 rounded-xl flex items-center justify-center gap-3 active:scale-95 transition-all group">
+              <Headset size={18} className="text-emerald-400" /><span className="text-[11px] font-black uppercase tracking-widest text-emerald-400">Talk to Operator</span>
+            </button>
+            <div className="grid grid-cols-4 gap-2">
+              {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
+            </div>
+            <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
+            <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
+            <button onClick={handleSubmit} disabled={isSending || items.length === 0} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">{isSending ? "Sending..." : "Confirm Order"}</button>
+          </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-const SkeletonGrade = () => (
-  <div className="rounded-[2.5rem] overflow-hidden border border-white/10 bg-black/10 animate-pulse mb-8">
-    <div className="p-6 h-16 bg-white/5 border-b border-white/5" />
-    <div className="divide-y divide-white/5">
-      {[1, 2, 3].map((i) => (
-        <div key={i} className="px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-5 h-5 rounded-full bg-white/10" />
-            <div className="w-32 h-4 bg-white/10 rounded" />
-          </div>
-          <div className="w-12 h-4 bg-white/10 rounded" />
-        </div>
-      ))}
-    </div>
-  </div>
-);
+    );
+  }
 
 // --- MAIN PAGE ---
 
@@ -387,9 +293,7 @@ export default function LandingPage() {
 
   // Состояние развернутых секций
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
-  const [isEliteLocalOpen, setIsEliteLocalOpen] = React.useState(false);
-  const [isEliteImportOpen, setIsEliteImportOpen] = React.useState(false);
-
+  
   const toggleGrade = (id: string) => {
     setOpenGrades(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
@@ -405,6 +309,11 @@ export default function LandingPage() {
     }
     fetchData();
   }, []);
+
+  // Фильтрация Хитов и Новинок для витрины
+  const highlights = React.useMemo(() => {
+    return products.filter(p => p.category === 'buds' && (p.badge?.toUpperCase() === 'NEW' || p.badge?.toUpperCase() === 'HIT'));
+  }, [products]);
 
   const gradeSections = React.useMemo(() => {
     return GRADES.map(grade => {
@@ -428,18 +337,12 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
       <header className="max-w-xl mx-auto mb-10 pt-4">
+        {/* LOGO & SOCIALS */}
         <div className="flex items-center justify-between mb-8">
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
-                <BlurImage 
-                  src={logoUrl} 
-                  priority 
-                  width={64}
-                  height={64}
-                  className="w-full h-full object-contain relative z-10" 
-                  alt="Logo" 
-                />
+                <BlurImage src={logoUrl} priority width={64} height={64} className="w-full h-full object-contain relative z-10" alt="Logo" />
               </div>
               <h1 className="text-[12px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Premium Phuket delivery service</h1>
            </div>
@@ -450,6 +353,7 @@ export default function LandingPage() {
            </div>
         </div>
 
+        {/* STORIES */}
         <div className="flex gap-6 mb-10 overflow-x-auto w-full no-scrollbar justify-center">
           {STORY_CONFIG.map((config) => {
             const tableData = stories.find(s => s.id === config.id);
@@ -464,6 +368,7 @@ export default function LandingPage() {
           })}
         </div>
 
+        {/* TOP CATEGORIES */}
         <div className="flex gap-3 w-full px-2">
           <Link href="/concentrates" className="flex-1 py-4 rounded-2xl bg-[#a855f7]/10 border border-[#a855f7]/30 font-black uppercase text-[9px] tracking-widest text-[#a855f7] italic flex items-center justify-center gap-2 active:scale-95 transition-all">
             <Flame size={12} /> Concentrates
@@ -472,110 +377,103 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-4">
-        {/* ЗАГОЛОВОК РАЗДЕЛА */}
-        <div className="flex items-center gap-4 py-8 opacity-40">
-           <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white"></div>
-           <span className="text-[10px] font-black uppercase tracking-[0.5em] italic">Flower Menu</span>
-           <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white"></div>
-        </div>
-
+      <div className="max-w-xl mx-auto space-y-12">
         {isLoading ? (
-          <>
-            <SkeletonGrade />
-            <SkeletonGrade />
-          </>
+          <div className="animate-pulse space-y-8">
+            <div className="h-64 bg-white/5 rounded-[2rem]"></div>
+            <div className="h-20 bg-white/5 rounded-xl"></div>
+          </div>
         ) : (
           <>
-            {gradeSections.map(({ grade, items, priceRef }) => {
-              const isOpen = openGrades.includes(grade.id);
-              return (
-                <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 shadow-xl transition-all">
-                  <button 
-                    onClick={() => toggleGrade(grade.id)}
-                    className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors"
-                  >
-                    <div className="flex items-center">
-                      <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
-                      <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <div className="text-right">
-                        <span className="text-[7px] font-black opacity-30 uppercase block leading-none">Starting at</span>
-                        <span className="text-[14px] font-black italic tracking-tighter text-white leading-none">
-                          {Math.round(getInterpolatedPrice(1, priceRef.prices))}฿/g
-                        </span>
+            {/* --- СЕКЦИЯ HIGHLIGHTS (NEW & HIT) --- */}
+            {highlights.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 px-2">
+                  <Sparkles size={14} className="text-emerald-400" />
+                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.4em] text-white shrink-0">Tonight's Highlights</h2>
+                  <div className="h-[px] flex-1 bg-gradient-to-r from-emerald-400/30 to-transparent"></div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {highlights.map((p, idx) => (
+                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* --- СЕКЦИЯ FULL MENU (ACCORDIONS) --- */}
+            <div className="space-y-4 pt-4">
+                <div className="flex items-center gap-4 py-4 opacity-40">
+                   <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white"></div>
+                   <span className="text-[9px] font-black uppercase tracking-[0.5em] italic">Full Catalog</span>
+                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white"></div>
+                </div>
+
+                {/* EXCLUSIVE CATEGORIES (ELITE) */}
+                {[
+                  { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, icon: Flame },
+                  { id: 'import', title: 'Import Exclusives', items: eliteImport, color: IMPORT_COLOR, icon: Crown }
+                ].map(sec => sec.items.length > 0 && (
+                  <div key={sec.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 shadow-xl">
+                    <button onClick={() => toggleGrade(sec.id)} className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                      <div className="flex items-center">
+                        <sec.icon size={16} style={{ color: sec.color }} className="mr-3 shrink-0" />
+                        <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2>
                       </div>
-                      <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      <div className="flex items-center gap-4">
+                        <span className="text-[9px] font-black opacity-30 uppercase">{sec.items.length} items</span>
+                        <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+                      </div>
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ease-in-out ${openGrades.includes(sec.id) ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                       <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
+                         {sec.items.map(p => (
+                            <div key={p.id} onClick={() => setSelectedProduct(p)} className="bg-black/40 rounded-2xl p-3 border border-white/5 flex items-center gap-3 active:scale-95 transition-all">
+                               <div className="w-10 h-10 shrink-0"><BlurImage src={p.image} width={60} height={60} className="w-full h-full object-contain" alt="" /></div>
+                               <div className="min-w-0"><p className="text-[10px] font-black uppercase italic truncate text-white">{p.name}</p><p className="text-[8px] opacity-40 font-bold tracking-widest" style={{color: sec.color}}>{Object.values(p.prices || {})[0]}฿</p></div>
+                            </div>
+                         ))}
+                       </div>
                     </div>
-                  </button>
+                  </div>
+                ))}
 
-                  <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                    <div className="px-5 py-2 border-y border-white/5 bg-white/5 flex items-center justify-end gap-3">
-                      {[5, 10, 20].map(w => (
-                        <div key={w} className="flex items-center gap-1 min-w-[32px]">
-                          <span className="text-[7px] font-black opacity-30 uppercase">{w}g:</span>
-                          <span className="text-[10px] font-black italic tracking-tighter text-white">{Math.round(getInterpolatedPrice(w, priceRef.prices))}฿</span>
+                {/* GRADES (SILVER, GOLDEN, etc.) */}
+                {gradeSections.map(({ grade, items, priceRef }) => {
+                  const isOpen = openGrades.includes(grade.id);
+                  return (
+                    <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/10 bg-black/20 shadow-xl">
+                      <button onClick={() => toggleGrade(grade.id)} className="w-full px-5 py-4 flex items-center justify-between hover:bg-white/5 transition-colors">
+                        <div className="flex items-center">
+                          <grade.icon size={16} style={{ color: grade.color }} className="mr-3 shrink-0" />
+                          <h2 className="text-sm font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
                         </div>
-                      ))}
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <span className="text-[14px] font-black italic tracking-tighter text-white leading-none">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿/g</span>
+                          </div>
+                          <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                      </button>
+                      <div className={`overflow-hidden transition-all duration-500 ease-in-out ${isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                        <div className="px-5 py-2 border-y border-white/5 bg-white/5 flex items-center justify-end gap-3 text-[10px] font-black italic opacity-40">
+                           {items.length} Varieties Available
+                        </div>
+                        <div className="divide-y divide-white/5">
+                          {items.map((p: any) => (
+                            <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={priceRef} />
+                          ))}
+                        </div>
+                      </div>
                     </div>
-                    <div className="divide-y divide-white/5">
-                      {items.map((p: any) => (
-                        <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={priceRef} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* LOCAL EXCLUSIVES */}
-            {eliteLocal.length > 0 && (
-              <div className="pt-6">
-                <button 
-                  onClick={() => setIsEliteLocalOpen(!isEliteLocalOpen)}
-                  className="w-full flex items-center gap-4 px-2 group"
-                >
-                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#2DD4BF] shrink-0">Local Exclusives</h2>
-                  <div className="h-[1px] flex-1 bg-[#2DD4BF]/20 group-hover:bg-[#2DD4BF]/40 transition-colors"></div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black opacity-40 uppercase">{eliteLocal.length} strains</span>
-                    <ChevronDown size={14} className={`text-[#2DD4BF] transition-transform ${isEliteLocalOpen ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
-                <div className={`grid grid-cols-2 gap-4 transition-all duration-500 overflow-hidden ${isEliteLocalOpen ? 'max-h-[2000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
-                  {eliteLocal.map((p, idx) => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* IMPORT EXCLUSIVES */}
-            {eliteImport.length > 0 && (
-              <div className="pt-6">
-                <button 
-                  onClick={() => setIsEliteImportOpen(!isEliteImportOpen)}
-                  className="w-full flex items-center gap-4 px-2 group"
-                >
-                  <h2 className="text-[12px] font-black uppercase italic tracking-[0.3em] text-[#60A5FA] shrink-0">Import Exclusives</h2>
-                  <div className="h-[1px] flex-1 bg-[#60A5FA]/20 group-hover:bg-[#60A5FA]/40 transition-colors"></div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[9px] font-black opacity-40 uppercase">{eliteImport.length} strains</span>
-                    <ChevronDown size={14} className={`text-[#60A5FA] transition-transform ${isEliteImportOpen ? 'rotate-180' : ''}`} />
-                  </div>
-                </button>
-                <div className={`grid grid-cols-2 gap-4 transition-all duration-500 overflow-hidden ${isEliteImportOpen ? 'max-h-[2000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
-                  {eliteImport.map((p, idx) => (
-                    <ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} />
-                  ))}
-                </div>
-              </div>
-            )}
+                  );
+                })}
+            </div>
           </>
         )}
       </div>
 
+      {/* FLOAT CART BUTTON */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-xl text-white p-5 rounded-[2.5rem] shadow-2xl flex justify-between items-center group active:scale-95 transition-all border border-white/20">
@@ -588,6 +486,7 @@ export default function LandingPage() {
         </div>
       )}
 
+      {/* MODALS */}
       {activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
       {selectedProduct && (
         <ProductModal 
@@ -601,3 +500,4 @@ export default function LandingPage() {
     </div>
   );
 }
+
