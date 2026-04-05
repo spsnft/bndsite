@@ -104,7 +104,7 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
     case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
     case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
+    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><span className="text-[6px] font-black text-emerald-400">SALE</span></div>;
     default: return null;
   }
 });
@@ -124,7 +124,8 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       {!hideBadge && item.badge && <div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75 origin-top-right' : ''}`}><BadgeIcon type={item.badge} /></div>}
       <div className={`relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-4">
-          <h3 className={`${isMini ? 'text-[8px]' : 'text-[10px]'} font-black italic uppercase tracking-tighter leading-tight truncate text-white`}>{item.name}</h3>
+          {/* ПРАВКА 1: Увеличена разрядка названия товара (tracking-wider) */}
+          <h3 className={`${isMini ? 'text-[8px]' : 'text-[10px]'} font-black italic uppercase tracking-wider leading-tight truncate text-white`}>{item.name}</h3>
           <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Buds"}</p>
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center mt-1 mb-1">
@@ -155,166 +156,167 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
   </div>
 ));
 
-// --- MODALS ---
+// --- MODALS (ProductModal, CheckoutModal omitted for brevity, keeping existing logic) ---
+// ... (ProductModal & CheckoutModal stay exactly the same as in your original code)
 
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
-  const isEliteProduct = isElite(product);
-  const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
-  const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-  const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
+    const isEliteProduct = isElite(product);
+    const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+    const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
+    const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
+    
+    const [weight, setWeight] = React.useState(firstAvailableWeight);
+    const [isAdded, setIsAdded] = React.useState(false);
+    const addItem = useCart((s: any) => s.addItem);
+    
+    const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
+    const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
+    const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
   
-  const [weight, setWeight] = React.useState(firstAvailableWeight);
-  const [isAdded, setIsAdded] = React.useState(false);
-  const addItem = useCart((s: any) => s.addItem);
+    const getUpsellInfo = () => {
+      if (isEliteProduct) return null;
+      const nextWeight = steps.find(s => s > weight && (Number(product.prices?.[weightToKey[s]]) || 0) > 0);
+      if (!nextWeight) return null;
+      const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product.prices, false));
+      const nextPpg = Math.round(nextPrice / nextWeight);
+      return { next: nextWeight, diff: (nextWeight - weight).toFixed(1), ppg: nextPpg };
+    };
+    const upsell = getUpsellInfo();
   
-  const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
-  const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
-  const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
-
-  const getUpsellInfo = () => {
-    if (isEliteProduct) return null;
-    const nextWeight = steps.find(s => s > weight && (Number(product.prices?.[weightToKey[s]]) || 0) > 0);
-    if (!nextWeight) return null;
-    const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product.prices, false));
-    const nextPpg = Math.round(nextPrice / nextWeight);
-    return { next: nextWeight, diff: (nextWeight - weight).toFixed(1), ppg: nextPpg };
-  };
-  const upsell = getUpsellInfo();
-
-  const hasValue = (val: string, placeholder?: string) => {
-    if (!val) return false;
-    const v = val.trim();
-    if (v === "" || v === "-" || v.toLowerCase() === "none") return false;
-    if (placeholder && v.toLowerCase() === placeholder.toLowerCase()) return false;
-    return true;
-  };
-
-  return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
-        <div className="relative aspect-[1.4/1] w-full bg-black/10">
-          <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
-          <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/60">
-              <span style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
-              <span className="mx-2 opacity-20">•</span>
-              <span style={{ color: style?.color }}>{product?.subcategory} Grade</span>
-            </p>
+    const hasValue = (val: string, placeholder?: string) => {
+      if (!val) return false;
+      const v = val.trim();
+      if (v === "" || v === "-" || v.toLowerCase() === "none") return false;
+      if (placeholder && v.toLowerCase() === placeholder.toLowerCase()) return false;
+      return true;
+    };
+  
+    return (
+      <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={onClose}>
+        <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
+          <div className="relative aspect-[1.4/1] w-full bg-black/10">
+            <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
+            <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
+              <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
+              <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/60">
+                <span style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
+                <span className="mx-2 opacity-20">•</span>
+                <span style={{ color: style?.color }}>{product?.subcategory} Grade</span>
+              </p>
+            </div>
           </div>
-        </div>
-        <div className="px-6 pb-6 space-y-5">
-          {(hasValue(product?.farm) || hasValue(product?.taste, "Sweet, Earthy") || hasValue(product?.terpenes, "Myrcene, Limonene")) && (
-            <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
-               {hasValue(product?.farm) && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
-               )}
-               {hasValue(product?.taste, "Sweet, Earthy") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
-               )}
-               {hasValue(product?.terpenes, "Myrcene, Limonene") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
-               )}
-            </div>
-          )}
-
-          <div className="space-y-5">
-            <div className="flex justify-between items-end">
-              <div className="flex items-center gap-3">
-                 {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
-                 <span className="text-3xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
-              </div>
-              <div className="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-full border border-white/5 text-white/60 tracking-widest">{weight}g</div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-4 gap-1.5">
-                {steps.map(v => {
-                  const available = isWeightAvailable(v);
-                  return (
-                    <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-3 text-[9px] font-black rounded-xl border transition-all ${!available ? "opacity-5 grayscale border-white/5" : weight === v ? "bg-white text-black border-white" : "border-white/5 text-white/30 active:bg-white/5"}`}>{v}g</button>
-                  )
-                })}
-              </div>
-              
-              {!isEliteProduct && (
-                <div className="px-1 space-y-2">
-                  <input 
-                    type="range" 
-                    min={steps[0]} 
-                    max={steps[steps.length-1]} 
-                    step="0.5" 
-                    value={weight} 
-                    onChange={(e) => setWeight(parseFloat(e.target.value))}
-                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
-                  />
-                  <div className="flex justify-between text-[7px] font-black uppercase opacity-10 tracking-[0.2em]">
-                    {steps.map(s => <span key={s}>{s}g</span>)}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {upsell && (
-              <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-2xl p-3 flex items-center gap-3">
-                <Flame size={14} className="text-emerald-400 shrink-0" />
-                <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
-                  Add {upsell.diff}g more for {upsell.ppg}฿ per gram!
-                </p>
+          <div className="px-6 pb-6 space-y-5">
+            {(hasValue(product?.farm) || hasValue(product?.taste, "Sweet, Earthy") || hasValue(product?.terpenes, "Myrcene, Limonene")) && (
+              <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
+                 {hasValue(product?.farm) && (
+                   <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
+                 )}
+                 {hasValue(product?.taste, "Sweet, Earthy") && (
+                   <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
+                 )}
+                 {hasValue(product?.terpenes, "Myrcene, Limonene") && (
+                   <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
+                 )}
               </div>
             )}
-
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
-  const [method, setMethod] = React.useState("telegram");
-  const [contact, setContact] = React.useState("");
-  const [isSending, setIsSending] = React.useState(false);
-  const { clearCart, removeItem } = useCart();
-  const handleSubmit = async () => {
-    if (!contact) return alert("Please enter contact info");
-    setIsSending(true);
-    try {
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
-      alert("Order sent!"); clearCart(); onClose();
-    } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
-  };
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
-          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
-          {items.map((item: any) => (
-            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
-              <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
-              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
+  
+            <div className="space-y-5">
+              <div className="flex justify-between items-end">
+                <div className="flex items-center gap-3">
+                   {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
+                   <span className="text-3xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
+                </div>
+                <div className="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-full border border-white/5 text-white/60 tracking-widest">{weight}g</div>
+              </div>
+  
+              <div className="space-y-4">
+                <div className="grid grid-cols-4 gap-1.5">
+                  {steps.map(v => {
+                    const available = isWeightAvailable(v);
+                    return (
+                      <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-3 text-[9px] font-black rounded-xl border transition-all ${!available ? "opacity-5 grayscale border-white/5" : weight === v ? "bg-white text-black border-white" : "border-white/5 text-white/30 active:bg-white/5"}`}>{v}g</button>
+                    )
+                  })}
+                </div>
+                
+                {!isEliteProduct && (
+                  <div className="px-1 space-y-2">
+                    <input 
+                      type="range" 
+                      min={steps[0]} 
+                      max={steps[steps.length-1]} 
+                      step="0.5" 
+                      value={weight} 
+                      onChange={(e) => setWeight(parseFloat(e.target.value))}
+                      className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
+                    />
+                    <div className="flex justify-between text-[7px] font-black uppercase opacity-10 tracking-[0.2em]">
+                      {steps.map(s => <span key={s}>{s}g</span>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+  
+              {upsell && (
+                <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-2xl p-3 flex items-center gap-3">
+                  <Flame size={14} className="text-emerald-400 shrink-0" />
+                  <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
+                    Add {upsell.diff}g more for {upsell.ppg}฿ per gram!
+                  </p>
+                </div>
+              )}
+  
+              <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
             </div>
-          ))}
-        </div>
-        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <div className="grid grid-cols-4 gap-2">
-            {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
           </div>
-          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]">Confirm Order</button>
         </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
+  
+  function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
+    const [method, setMethod] = React.useState("telegram");
+    const [contact, setContact] = React.useState("");
+    const [isSending, setIsSending] = React.useState(false);
+    const { clearCart, removeItem } = useCart();
+    const handleSubmit = async () => {
+      if (!contact) return alert("Please enter contact info");
+      setIsSending(true);
+      try {
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
+        await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
+        alert("Order sent!"); clearCart(); onClose();
+      } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
+    };
+    return (
+      <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+        <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
+            <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
+            <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
+            {items.map((item: any) => (
+              <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
+                <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
+                <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
+                <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
+              </div>
+            ))}
+          </div>
+          <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
+            <div className="grid grid-cols-4 gap-2">
+              {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
+            </div>
+            <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
+            <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
+            <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]">Confirm Order</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
 // --- MAIN LANDING ---
 export default function LandingClient({ initialProducts }: { initialProducts: any[] }) {
@@ -363,6 +365,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
       <header className="max-w-xl mx-auto pt-4">
+        {/* ... Header Content ... */}
         <div className="flex items-center justify-between mb-4"> 
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
@@ -390,31 +393,33 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-6">
+      {/* ПРАВКА 2 & 3: Сближение каруселей и настройка иерархии заголовков */}
+      <div className="max-w-xl mx-auto">
         {recentUpdates.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center gap-2 px-2">
+          <section className="mb-4"> {/* Уменьшен внешний отступ всей секции */}
+            <div className="flex items-center gap-2 px-2 mb-2 mt-2"> {/* Заголовок "прилипает" к карусели */}
               <BadgeIcon type="NEW" />
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
+            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4 snap-x">
               {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => handleProductSelect(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
             </div>
           </section>
         )}
 
         {flashSales.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center gap-2 px-2">
+          <section className="mb-8"> 
+            <div className="flex items-center gap-2 px-2 mb-2 mt-4"> {/* Расстояние сверху (mt-4) больше чем снизу (mb-2) */}
               <BadgeIcon type="SALE" />
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
             </div>
-            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
+            <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar -mx-4 px-4 snap-x">
               {flashSales.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => handleProductSelect(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
             </div>
           </section>
         )}
 
+        {/* Остальной каталог */}
         <div className="space-y-5 pt-2">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/5 to-emerald-500/10"></div>
@@ -469,6 +474,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </div>
 
+      {/* Floating Button */}
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-[#222]/80 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:translate-y-0.5 transition-transform overflow-hidden">
