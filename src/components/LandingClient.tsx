@@ -56,7 +56,6 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
     return priceAtTier > 0 ? (priceAtTier / baseTier) * weight : 0;
   }
   
-  // Исправление NaN для обычных сортов
   const p1 = Number(prices[1]) || 0;
   if (weight <= 1) return p1;
 
@@ -65,7 +64,7 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
   const upperTier = tiers.find(t => t > weight) || 20;
   
   const val1 = Number(prices[lowerTier]) || 0;
-  const val2 = Number(prices[upperTier]) || val1; // если 20г нет, берем предыдущий
+  const val2 = Number(prices[upperTier]) || val1; 
   
   if (val1 === 0) return 0;
   if (lowerTier === upperTier) return val1;
@@ -77,7 +76,7 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
     case "NEW": return (
-      <div className="px-1.5 py-0.5 rounded border border-blue-400/50 bg-blue-500/10 shrink-0">
+      <div className="px-1.5 py-1 rounded border border-blue-400/50 bg-blue-500/10 flex items-center justify-center shrink-0">
         <span className="text-[7px] font-black text-blue-400 uppercase leading-none tracking-tighter">NEW</span>
       </div>
     );
@@ -294,7 +293,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
       <header className="max-w-xl mx-auto pt-4">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4"> 
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px]"></div>
@@ -308,14 +307,14 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               ))}
            </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-10">
+        <div className="grid grid-cols-2 gap-3 mb-8">
           {INFO_CARDS.map((card) => (
-            <div key={card.id} className="relative p-6 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[100px]">
-              <div className="space-y-1">
-                <p className="text-[16px] font-black italic tracking-[0.1em] text-white uppercase">{card.value}</p>
+            <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
+              <div className="space-y-0.5">
+                <p className="text-[15px] font-black italic tracking-[0.1em] text-white uppercase">{card.value}</p>
                 <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30">{card.title}</p>
               </div>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[2px] rounded-full opacity-20" style={{ backgroundColor: card.color }}></div>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full" style={{ backgroundColor: card.color }}></div>
             </div>
           ))}
         </div>
@@ -325,7 +324,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         {recentUpdates.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-2">
-              <div className="px-1.5 py-0.5 rounded border border-blue-400/50 bg-blue-500/10"><span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter">NEW</span></div>
+              {/* Замена иконки наBadgeIcon NEW */}
+              <BadgeIcon type="NEW" />
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
@@ -384,9 +384,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white text-black p-5 rounded-[2.2rem] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all">
-            <div className="flex items-center gap-3"><ShoppingBag size={20}/><span className="font-black uppercase text-[13px] tracking-[0.1em]">{getTotal()}฿ Total</span></div>
-            <div className="flex items-center gap-2 text-emerald-600"><span className="text-[10px] font-black uppercase">Order</span><Send size={18}/></div>
+          <button 
+            onClick={() => setIsCheckoutOpen(true)} 
+            className="w-full bg-white/10 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all overflow-hidden"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
+            
+            <div className="flex items-center gap-3 relative z-10">
+              <ShoppingBag size={20} className="text-emerald-400"/>
+              <span className="font-black uppercase text-[13px] tracking-[0.1em]">{getTotal()}฿ Total</span>
+            </div>
+            <div className="flex items-center gap-2 text-emerald-400 relative z-10">
+              <span className="text-[10px] font-black uppercase">Order</span>
+              <Send size={18}/>
+            </div>
           </button>
         </div>
       )}
