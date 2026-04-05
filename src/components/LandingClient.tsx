@@ -40,6 +40,28 @@ const INFO_CARDS = [
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
 const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
 
+// --- CUSTOM FLAG ICONS ---
+const ThaiFlag = () => (
+  <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20 shadow-[0_0_8px_rgba(255,255,255,0.1)] shrink-0 mr-3">
+    <svg viewBox="0 0 900 600" className="w-full h-full object-cover opacity-80">
+      <rect fill="#ED1C24" width="900" height="600"/>
+      <rect fill="#FFFFFF" y="100" width="900" height="400"/>
+      <rect fill="#241D73" y="200" width="900" height="200"/>
+    </svg>
+  </div>
+);
+
+const USAFlag = () => (
+  <div className="w-4 h-4 rounded-full overflow-hidden border border-white/20 shadow-[0_0_8px_rgba(96,165,250,0.3)] shrink-0 mr-3">
+    <svg viewBox="0 0 7410 3900" className="w-full h-full object-cover opacity-80">
+      <rect width="7410" height="3900" fill="#b22234"/>
+      <path d="M0,450H7410M0,1050H7410M0,1650H7410M0,2250H7410M0,2850H7410M0,3450H7410" stroke="#fff" strokeWidth="300"/>
+      <rect width="2964" height="2100" fill="#3c3b6e"/>
+      <circle cx="1482" cy="1050" r="600" fill="white" opacity="0.5"/>
+    </svg>
+  </div>
+);
+
 // --- HELPERS ---
 const isElite = (product: any) => {
   const sub = product?.subcategory?.toLowerCase() || "";
@@ -83,7 +105,7 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
       <div className="relative z-10 p-5 pb-0 flex-1 flex flex-col">
         <div className="min-w-0">
           <h3 className="text-[11px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
-          <p className="text-[7px] font-bold mt-1 opacity-30 truncate text-white uppercase">{item.farm || "Private Reserve"}</p>
+          <p className="text-[7px] font-black mt-1 text-white/40 truncate uppercase italic tracking-widest">{item.subcategory || "Buds"}</p>
         </div>
         <div className="relative aspect-square w-full mt-auto mb-2">
             <BlurImage src={item.image} priority={priority} width={180} height={180} className="w-full h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)] group-hover:scale-105 transition-transform duration-500" alt={item.name} />
@@ -99,21 +121,30 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
 
 const ProductRow = React.memo(({ p, onClick, priceRef }: { p: any, onClick: () => void, priceRef: any }) => {
   const isSale = p.badge?.toUpperCase() === 'SALE';
+  const isEliteProduct = isElite(p);
+
   return (
-    <div onClick={onClick} className="flex items-center gap-3 px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
-      <div className="flex items-center gap-3 min-w-0 flex-1">
-        <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-        <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+    <div onClick={onClick} className="flex flex-col gap-2 px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
+      <div className="flex items-center justify-between min-w-0">
+        <div className="flex items-center gap-3 truncate flex-1">
+          <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+        </div>
+        <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       </div>
-      <div className="flex items-center gap-3 shrink-0 ml-auto">
-         {isSale && priceRef && (
-           <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
-             <span className="text-[9px] font-black italic line-through opacity-20 text-white">{Math.round(getInterpolatedPrice(1, priceRef.prices))}฿</span>
-             <span className="text-[10px] font-black italic text-emerald-400">{Math.round(getInterpolatedPrice(1, p.prices))}฿</span>
-           </div>
-         )}
-         <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
-      </div>
+      {!isEliteProduct && (
+        <div className="flex items-center gap-3 pl-8 overflow-x-auto no-scrollbar">
+           {[1, 5, 10, 20].map(w => (
+             <div key={w} className="flex flex-col items-center gap-0.5 shrink-0">
+                <span className="text-[6px] font-bold opacity-20 uppercase">{w}g</span>
+                <span className={`text-[10px] font-black italic ${isSale ? 'text-emerald-400' : 'text-white/60'}`}>{Math.round(getInterpolatedPrice(w, p.prices))}฿</span>
+             </div>
+           ))}
+        </div>
+      )}
+      {isEliteProduct && (
+        <div className="pl-8 text-[10px] font-black italic text-white/60">From {Math.round(getElitePrice(3.5, p.prices))}฿</div>
+      )}
     </div>
   );
 });
@@ -220,7 +251,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           </div>
           <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
           <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">{isSending ? "Sending..." : "Confirm Order"}</button>
+          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">Confirm Order</button>
         </div>
       </div>
     </div>
@@ -234,7 +265,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
   const { items, getTotal } = useCart();
 
-  // Используем продукты, пришедшие от сервера
   const products = initialProducts;
 
   const recentUpdates = React.useMemo(() => products.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW'), [products]);
@@ -330,31 +360,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                    <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white"></div>
                 </div>
 
-                {[
-                  { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, icon: Flame },
-                  { id: 'import', title: 'Import Exclusives', items: eliteImport, color: IMPORT_COLOR, icon: Crown }
-                ].map(sec => sec.items.length > 0 && (
-                  <div key={sec.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
-                    <button onClick={() => toggleGrade(sec.id)} className="w-full px-5 py-4 flex items-center justify-between active:bg-white/5 transition-colors">
-                      <div className="flex items-center">
-                        <sec.icon size={16} style={{ color: sec.color }} className="mr-3" />
-                        <h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2>
-                      </div>
-                      <ChevronDown size={14} className={`opacity-20 transition-transform ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
-                    </button>
-                    <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[1500px]' : 'max-h-0'}`}>
-                       <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
-                         {sec.items.map(p => (
-                            <div key={p.id} onClick={() => setSelectedProduct(p)} className="bg-black/40 rounded-2xl p-3 border border-white/5 flex items-center gap-3 active:scale-95 transition-all cursor-pointer">
-                               <div className="w-8 h-8 shrink-0"><BlurImage src={p.image} width={40} height={40} className="w-full h-full object-contain" alt="" /></div>
-                               <div className="min-w-0"><p className="text-[10px] font-black uppercase italic truncate text-white">{p.name}</p></div>
-                            </div>
-                         ))}
-                       </div>
-                    </div>
-                  </div>
-                ))}
-
                 {gradeSections.map(({ grade, items, priceRef }) => {
                   const isOpen = openGrades.includes(grade.id);
                   return (
@@ -379,6 +384,29 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                     </div>
                   );
                 })}
+
+                {/* 4 & 5: Local Exclusives (флаг TH) и Import (флаг USA) */}
+                {[
+                  { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, flag: <ThaiFlag /> },
+                  { id: 'import', title: 'Import', items: eliteImport, color: IMPORT_COLOR, flag: <USAFlag /> }
+                ].map(sec => sec.items.length > 0 && (
+                  <div key={sec.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
+                    <button onClick={() => toggleGrade(sec.id)} className="w-full px-5 py-4 flex items-center justify-between active:bg-white/5 transition-colors">
+                      <div className="flex items-center">
+                        {sec.flag}
+                        <h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2>
+                      </div>
+                      <ChevronDown size={14} className={`opacity-20 transition-transform ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[1500px]' : 'max-h-0'}`}>
+                        <div className="divide-y divide-white/5 bg-white/5">
+                          {sec.items.map(p => (
+                             <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} priceRef={null} />
+                          ))}
+                        </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </>
       </div>
