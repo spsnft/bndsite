@@ -165,6 +165,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
+  const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
 
   const getUpsellInfo = () => {
     if (isEliteProduct) return null;
@@ -175,6 +176,9 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
     return { next: nextWeight, diff: (nextWeight - weight).toFixed(1), ppg: nextPpg };
   };
   const upsell = getUpsellInfo();
+
+  // Helper for conditional rendering of fields
+  const hasValue = (val: string) => val && val !== "-" && val !== "" && val.toLowerCase() !== "none";
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
@@ -191,47 +195,66 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             </p>
           </div>
         </div>
-        <div className="px-6 pb-6 space-y-6">
-          <div className="grid grid-cols-3 gap-3 border-b border-white/5 pb-3">
-             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.farm && product.farm !== "-" ? product.farm : 'Private'}</p></div>
-             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.taste || '-'}</p></div>
-             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.terpenes || '-'}</p></div>
-          </div>
+        <div className="px-6 pb-6 space-y-5">
+          {(hasValue(product?.farm) || hasValue(product?.taste) || hasValue(product?.terpenes)) && (
+            <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
+               {hasValue(product?.farm) && (
+                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
+               )}
+               {hasValue(product?.taste) && (
+                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
+               )}
+               {hasValue(product?.terpenes) && (
+                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
+               )}
+            </div>
+          )}
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div className="flex justify-between items-end">
-              <div className="flex items-center gap-4">
-                 {oldPrice > currentPrice && <span className="text-2xl font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
-                 <span className="text-5xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
+              <div className="flex items-center gap-3">
+                 {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
+                 <span className="text-3xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
               </div>
-              <div className="text-[12px] font-black italic tracking-tighter text-white/40 uppercase">{weight}g</div>
+              <div className="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-full border border-white/5 text-white/60 tracking-widest">{weight}g</div>
             </div>
 
-            <div className="space-y-4 px-1">
-              <input 
-                type="range" 
-                min={steps[0]} 
-                max={steps[steps.length-1]} 
-                step="0.5" 
-                value={weight} 
-                onChange={(e) => setWeight(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
-              />
-              <div className="flex justify-between text-[8px] font-black uppercase opacity-20 tracking-widest px-1">
-                {steps.map(s => <span key={s}>{s}g</span>)}
+            <div className="space-y-4">
+              <div className="grid grid-cols-4 gap-1.5">
+                {steps.map(v => {
+                  const available = isWeightAvailable(v);
+                  return (
+                    <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-3 text-[9px] font-black rounded-xl border transition-all ${!available ? "opacity-5 grayscale border-white/5" : weight === v ? "bg-white text-black border-white" : "border-white/5 text-white/30 active:bg-white/5"}`}>{v}g</button>
+                  )
+                })}
+              </div>
+              
+              <div className="px-1 space-y-2">
+                <input 
+                  type="range" 
+                  min={steps[0]} 
+                  max={steps[steps.length-1]} 
+                  step="0.5" 
+                  value={weight} 
+                  onChange={(e) => setWeight(parseFloat(e.target.value))}
+                  className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
+                />
+                <div className="flex justify-between text-[7px] font-black uppercase opacity-10 tracking-[0.2em]">
+                  {steps.map(s => <span key={s}>{s}g</span>)}
+                </div>
               </div>
             </div>
 
             {upsell && (
-              <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
-                <Flame size={16} className="text-emerald-400 shrink-0" />
-                <p className="text-[9px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
+              <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-2xl p-3 flex items-center gap-3 animate-pulse">
+                <Flame size={14} className="text-emerald-400 shrink-0" />
+                <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
                   Add {upsell.diff}g more for {upsell.ppg}฿ per gram!
                 </p>
               </div>
             )}
 
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
           </div>
         </div>
       </div>
