@@ -414,7 +414,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
         {/* ПРАВКА: Контейнер pt-0 и Flower Menu заголовок */}
         <div className="space-y-5 pt-0"> 
-          <div className="flex items-center gap-4 py-4"> {/* Уменьшен py-6 -> py-4 */}
+          <div className="flex items-center gap-4 py-4"> 
              <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-emerald-400 to-emerald-400/20"></div>
              <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400">Flower Menu</span>
              <div className="h-[1.5px] flex-1 bg-gradient-to-l from-transparent via-emerald-400 to-emerald-400/20"></div>
