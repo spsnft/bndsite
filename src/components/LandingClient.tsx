@@ -177,8 +177,14 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   };
   const upsell = getUpsellInfo();
 
-  // Helper for conditional rendering of fields
-  const hasValue = (val: string) => val && val !== "-" && val !== "" && val.toLowerCase() !== "none";
+  // Updated Helper: check for placeholders as well
+  const hasValue = (val: string, placeholder?: string) => {
+    if (!val) return false;
+    const v = val.trim();
+    if (v === "" || v === "-" || v.toLowerCase() === "none") return false;
+    if (placeholder && v.toLowerCase() === placeholder.toLowerCase()) return false;
+    return true;
+  };
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
@@ -196,15 +202,15 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           </div>
         </div>
         <div className="px-6 pb-6 space-y-5">
-          {(hasValue(product?.farm) || hasValue(product?.taste) || hasValue(product?.terpenes)) && (
+          {(hasValue(product?.farm) || hasValue(product?.taste, "Sweet, Earthy") || hasValue(product?.terpenes, "Myrcene, Limonene")) && (
             <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
                {hasValue(product?.farm) && (
                  <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
                )}
-               {hasValue(product?.taste) && (
+               {hasValue(product?.taste, "Sweet, Earthy") && (
                  <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
                )}
-               {hasValue(product?.terpenes) && (
+               {hasValue(product?.terpenes, "Myrcene, Limonene") && (
                  <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
                )}
             </div>
@@ -229,20 +235,23 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                 })}
               </div>
               
-              <div className="px-1 space-y-2">
-                <input 
-                  type="range" 
-                  min={steps[0]} 
-                  max={steps[steps.length-1]} 
-                  step="0.5" 
-                  value={weight} 
-                  onChange={(e) => setWeight(parseFloat(e.target.value))}
-                  className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
-                />
-                <div className="flex justify-between text-[7px] font-black uppercase opacity-10 tracking-[0.2em]">
-                  {steps.map(s => <span key={s}>{s}g</span>)}
+              {/* Slider: Hidden for Local Exclusives and Import */}
+              {!isEliteProduct && (
+                <div className="px-1 space-y-2">
+                  <input 
+                    type="range" 
+                    min={steps[0]} 
+                    max={steps[steps.length-1]} 
+                    step="0.5" 
+                    value={weight} 
+                    onChange={(e) => setWeight(parseFloat(e.target.value))}
+                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
+                  />
+                  <div className="flex justify-between text-[7px] font-black uppercase opacity-10 tracking-[0.2em]">
+                    {steps.map(s => <span key={s}>{s}g</span>)}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {upsell && (
