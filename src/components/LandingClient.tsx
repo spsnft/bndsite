@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Trash2, ChevronDown, Star, Phone
+  SendHorizontal, Trash2, ChevronDown, Star, Phone, Droplets
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -14,6 +14,7 @@ import { BlurImage } from "@/components/blur-image"
 // --- КОНСТАНТЫ ---
 const SELECTED_COLOR = "#2DD4BF"; 
 const IMPORT_COLOR = "#60A5FA";
+const CONCENTRATES_COLOR = "#F59E0B"; 
 
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
@@ -110,7 +111,10 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
 });
 
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean }) => {
-  const accentColor = isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR);
+  const accentColor = item.category === 'concentrates' 
+    ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
+    : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR));
+  
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
@@ -125,14 +129,14 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       <div className={`relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-4">
           <h3 className={`${isMini ? 'text-[8px]' : 'text-[10px]'} font-black italic uppercase tracking-tighter leading-tight truncate text-white`}>{item.name}</h3>
-          <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Buds"}</p>
+          <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Product"}</p>
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center mt-1 mb-1">
             <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
         </div>
       </div>
       <div className={`relative z-10 flex justify-between items-end px-3 pb-3 mt-auto`}>
-        <span className={`${isMini ? 'text-[5px]' : 'text-[6px]'} font-black uppercase tracking-widest opacity-60 mb-0.5`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+        <span className={`${isMini ? 'text-[7px]' : 'text-[8px]'} font-black uppercase tracking-widest mb-0.5`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
         <div className="flex flex-col items-end">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[6px]' : 'text-[8px]'} font-bold line-through opacity-30 text-white leading-none mb-0.5`}>{oldPrice}฿</span>}
           <p className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-black italic tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
@@ -200,7 +204,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
             <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/60">
               <span style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
               <span className="mx-2 opacity-20">•</span>
-              <span style={{ color: style?.color }}>{product?.subcategory} Grade</span>
+              <span style={{ color: style?.color }}>{product?.subcategory}</span>
             </p>
           </div>
         </div>
@@ -332,12 +336,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     });
   };
 
-  const recentUpdates = React.useMemo(() => 
-    sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW')), 
-  [processedProducts]);
+  const recentUpdates = React.useMemo(() => {
+    const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
+    return [...news].sort((a, b) => {
+      const dateA = a.date ? a.date.split('.').reverse().join('') : '0000';
+      const dateB = b.date ? b.date.split('.').reverse().join('') : '0000';
+      if (dateB !== dateA) return dateB.localeCompare(dateA);
+      const priceA = getFirstAvailablePrice(a).price;
+      const priceB = getFirstAvailablePrice(b).price;
+      return priceB - priceA;
+    });
+  }, [processedProducts]);
 
   const flashSales = React.useMemo(() => 
-    sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'SALE')), 
+    sortProductsByPrice(processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')), 
   [processedProducts]);
 
   const gradeSections = React.useMemo(() => {
@@ -352,6 +364,30 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     { id: 'local', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
     { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
   ];
+
+  const concentrateSections = React.useMemo(() => {
+    const allConcs = processedProducts.filter(p => p.category === 'concentrates');
+    const subs = Array.from(new Set(allConcs.map(p => p.subcategory)));
+    return subs.map(sub => {
+      let color = SELECTED_COLOR;
+      const subLower = sub?.toLowerCase() || "";
+      
+      if (subLower.includes('old school')) color = "#C1C1C1";
+      if (subLower.includes('fresh frozen premium')) color = "#34D399"; // Premium Grade Color
+      else if (subLower.includes('fresh frozen')) color = "#FEC107"; // Golden Grade Color
+      
+      if (subLower.includes('live rosin')) color = "#A855F7"; // Selected Grade Color
+      
+      return {
+        id: sub,
+        title: sub || "Concentrates",
+        items: allConcs.filter(p => p.subcategory === sub),
+        color: color,
+        icon: Droplets,
+        isList: subLower.includes('old school')
+      };
+    });
+  }, [processedProducts]);
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
@@ -370,21 +406,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               ))}
            </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-2 mb-6">
           {INFO_CARDS.map((card) => (
-            <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
-              <div className="space-y-0.5">
-                <p className="text-[15px] font-black italic tracking-[0.1em] text-white uppercase">{card.value}</p>
-                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30">{card.title}</p>
+            <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[68px]">
+              <div className="space-y-0">
+                <p className="text-[13px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
+                <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{card.title}</p>
               </div>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-[3px] rounded-full" style={{ backgroundColor: card.color }}></div>
+              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full" style={{ backgroundColor: card.color }}></div>
             </div>
           ))}
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-6">
-        {/* NEW HIGHLIGHTS SLIDER (COMPACT) */}
+      <div className="max-w-xl mx-auto space-y-3">
         {recentUpdates.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
@@ -392,12 +427,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
+              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
             </div>
           </section>
         )}
 
-        {/* FLASH SALES SLIDER (COMPACT) */}
         {flashSales.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
@@ -405,15 +439,15 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {flashSales.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
+              {flashSales.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
             </div>
           </section>
         )}
 
-        <div className="space-y-5 pt-2">
+        <div className="space-y-5 pt-0.5">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Full Catalog</span>
+             <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Flower Menu</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
@@ -461,6 +495,40 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               </div>
             </div>
           ))}
+
+          {concentrateSections.length > 0 && (
+            <>
+              <div className="flex items-center gap-4 py-8">
+                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/10 to-amber-500/30"></div>
+                 <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-amber-500/80">Concentrates</span>
+                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/10 to-amber-500/30"></div>
+              </div>
+
+              {concentrateSections.map(sec => (
+                <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
+                  <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
+                    <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                    <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                    {sec.isList ? (
+                      <div className="divide-y divide-white/5 bg-white/5">
+                        {sec.items.map(p => (
+                          <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
+                        {sec.items.map(p => (
+                          <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
         </div>
       </div>
 
@@ -483,7 +551,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       {selectedProduct && (
         <ProductModal 
           product={selectedProduct} 
-          style={isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
+          style={
+            selectedProduct.category === 'concentrates' 
+            ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR }
+            : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }))
+          } 
           onClose={() => setSelectedProduct(null)} 
         />
       )}
