@@ -5,7 +5,7 @@ import Link from "next/link"
 import { 
   Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Trash2, ChevronDown, Star, Phone, Info
+  SendHorizontal, Trash2, ChevronDown, Star, Phone
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -110,10 +110,7 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
 });
 
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean }) => {
-  const isImport = item.subcategory?.toLowerCase().includes('import');
-  const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
-  const accentColor = isElite(item) ? (isImport ? IMPORT_COLOR : SELECTED_COLOR) : gradeColor; 
-  const typeColor = TYPE_COLORS[item.type?.toLowerCase()] || "#FFF";
+  const accentColor = isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR);
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
@@ -131,10 +128,10 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item
         </div>
       </div>
       <div className="relative z-10 flex justify-between items-end px-4 pb-4 mt-auto">
-        <span className="text-[6px] font-black uppercase tracking-widest opacity-60 mb-1" style={{ color: typeColor }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+        <span className="text-[6px] font-black uppercase tracking-widest opacity-60 mb-1" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
         <div className="flex flex-col items-end">
-          {oldPrice > currentPrice && <span className="text-[7px] line-through opacity-30 text-white leading-none mb-0.5">{oldPrice}฿</span>}
-          <p className="text-[11px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
+          {oldPrice > currentPrice && <span className="text-[8px] font-bold line-through opacity-30 text-white leading-none mb-0.5">{oldPrice}฿</span>}
+          <p className="text-[12px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
         </div>
       </div>
     </div>
@@ -172,12 +169,13 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   // Логика добора
   const getUpsellInfo = () => {
     if (isEliteProduct) return null;
-    if (weight < 5) return { next: 5, diff: (5 - weight).toFixed(1), text: "до акции 5+1" };
-    if (weight < 10) return { next: 10, diff: (10 - weight).toFixed(1), text: "до акции 10+2.5" };
-    return null;
+    const nextWeight = steps.find(s => s > weight && isWeightAvailable(s));
+    if (!nextWeight) return null;
+    const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product.prices, false));
+    const nextPpg = Math.round(nextPrice / nextWeight);
+    return { next: nextWeight, diff: (nextWeight - weight).toFixed(1), ppg: nextPpg };
   };
   const upsell = getUpsellInfo();
-  const progress = upsell ? (weight / upsell.next) * 100 : 100;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
@@ -201,35 +199,37 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.terpenes || '-'}</p></div>
           </div>
 
-          {!isEliteProduct && upsell && (
-            <div className="space-y-2 px-1">
-              <div className="flex justify-between items-center text-[8px] font-black uppercase tracking-widest">
-                <span className="text-emerald-400">Добавь {upsell.diff}г</span>
-                <span className="opacity-30">{upsell.text}</span>
-              </div>
-              <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-emerald-400 transition-all duration-500 ease-out" style={{ width: `${progress}%` }}></div>
-              </div>
-            </div>
-          )}
-
           <div className="space-y-4">
-            <div className="flex justify-between items-end text-white">
-              <div>
-                {oldPrice > currentPrice && <div className="text-[12px] font-black line-through opacity-30 italic leading-none mb-1">{oldPrice}฿</div>}
-                <div className="text-4xl font-black italic tracking-tighter leading-none">{currentPrice}฿</div>
-                <div className="text-[8px] font-bold opacity-30 uppercase tracking-widest mt-2">Weight: {weight} grams</div>
+            <div className="flex justify-between items-end">
+              <div className="flex items-center gap-4">
+                 {oldPrice > currentPrice && <span className="text-2xl font-black italic line-through opacity-20 text-white italic">{oldPrice}฿</span>}
+                 <span className="text-5xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
               </div>
-              <div className="text-[10px] font-black uppercase bg-white/10 px-4 py-2 rounded-full border border-white/5">{weight}g</div>
+              <div className="text-[10px] font-black uppercase bg-white/10 px-4 py-2 rounded-full border border-white/5 text-white">{weight}g</div>
             </div>
+
+            <div className="relative h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                <div className="absolute top-0 left-0 h-full bg-emerald-400/20 transition-all duration-500" style={{ width: `${(weight / steps[steps.length-1]) * 100}%` }}></div>
+            </div>
+
             <div className="grid grid-cols-4 gap-2">
               {steps.map(v => {
                 const available = isWeightAvailable(v);
                 return (
-                  <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${!available ? "opacity-10 grayscale border-white/5 text-white/10" : weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40 active:bg-white/5"}`}>{v}g</button>
+                  <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-4 text-[10px] font-black rounded-xl border transition-all ${!available ? "opacity-10 grayscale border-white/5 text-white/10" : weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40 active:bg-white/5"}`}>{v}g</button>
                 )
               })}
             </div>
+
+            {upsell && (
+              <div className="bg-emerald-400/10 border border-emerald-400/20 rounded-2xl p-4 flex items-center gap-3 animate-pulse">
+                <Flame size={16} className="text-emerald-400 shrink-0" />
+                <p className="text-[9px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
+                  Add {upsell.diff}g more for {upsell.ppg}฿ per gram!
+                </p>
+              </div>
+            )}
+
             <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
           </div>
         </div>
