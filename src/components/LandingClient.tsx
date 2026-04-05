@@ -359,15 +359,19 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     const subs = Array.from(new Set(allConcs.map(p => p.subcategory)));
     return subs.map(sub => {
       let color = SELECTED_COLOR;
-      if (sub?.toLowerCase().includes('old school')) color = "#C1C1C1";
-      if (sub?.toLowerCase().includes('fresh frozen')) color = "#FEC107";
+      const subLower = sub?.toLowerCase() || "";
+      
+      if (subLower.includes('old school')) color = "#C1C1C1";
+      if (subLower.includes('fresh frozen')) color = "#34D399"; // Premium Grade Color
+      if (subLower.includes('live rosin')) color = "#A855F7"; // Selected Grade Color
       
       return {
         id: sub,
         title: sub || "Concentrates",
         items: allConcs.filter(p => p.subcategory === sub),
         color: color,
-        icon: Droplets
+        icon: Droplets,
+        isList: subLower.includes('old school') // Check if should display as list
       };
     });
   }, [processedProducts]);
@@ -402,7 +406,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      {/* Родительский контейнер с отступом 12px между блоками (Recent Updates / Flash Sales) */}
+      {/* Родительский контейнер */}
       <div className="max-w-xl mx-auto space-y-3">
         {/* NEW HIGHLIGHTS SLIDER */}
         {recentUpdates.length > 0 && (
@@ -430,8 +434,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           </section>
         )}
 
-        {/* FLOWER MENU с общим отступом 20px от предыдущей секции */}
-        <div className="space-y-5 pt-2">
+        {/* FLOWER MENU - Уменьшен отступ до 10px (pt-0.5) */}
+        <div className="space-y-5 pt-0.5">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
              <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Flower Menu</span>
@@ -499,11 +503,19 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                     <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
-                      {sec.items.map(p => (
-                        <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
-                      ))}
-                    </div>
+                    {sec.isList ? (
+                      <div className="divide-y divide-white/5 bg-white/5">
+                        {sec.items.map(p => (
+                          <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
+                        {sec.items.map(p => (
+                          <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
