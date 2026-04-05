@@ -66,30 +66,17 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
 
 // --- COMPONENTS ---
 
-// Обновленный BadgeIcon согласно запросу
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
-    case "NEW": return (
-      <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0">
-        <span className="text-[6px] font-black text-blue-400">NEW</span>
-      </div>
-    );
-    case "HIT": return (
-      <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0">
-        <Flame size={10} className="text-orange-400" />
-      </div>
-    );
-    case "SALE": return (
-      <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0">
-        <Percent size={10} className="text-emerald-400" />
-      </div>
-    );
+    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
+    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
     default: return null;
   }
 });
 BadgeIcon.displayName = "BadgeIcon";
 
-const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onClick: () => void, priority?: boolean }) => {
+const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
   const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
   const accentColor = isElite(item) ? (isImport ? IMPORT_COLOR : SELECTED_COLOR) : gradeColor; 
@@ -98,19 +85,24 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
 
   return (
     <div onClick={onClick} className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden" style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}>
-      <div className="absolute top-3 left-3 z-20">
-        {item.badge && <BadgeIcon type={item.badge} />}
-      </div>
-      <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
-        <div className="min-w-0">
+      {/* Шильдик: скрыт в хайлайтах, в каталоге теперь справа */}
+      {!hideBadge && item.badge && (
+        <div className="absolute top-3 right-3 z-20">
+          <BadgeIcon type={item.badge} />
+        </div>
+      )}
+      
+      <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col min-h-0">
+        <div className="min-w-0 pr-6"> {/* pr-6 чтобы текст не наезжал на шильдик справа */}
           <h3 className="text-[10px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
           <p className="text-[7px] font-black mt-1 text-white/40 truncate uppercase italic tracking-widest">{item.subcategory || "Buds"}</p>
         </div>
-        <div className="relative aspect-square w-full mt-auto mb-1">
-            <BlurImage src={item.image} priority={priority} width={180} height={180} className="w-full h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
+        <div className="relative flex-1 w-full min-h-0 flex items-center justify-center mt-1 mb-1">
+            <BlurImage src={item.image} priority={priority} width={160} height={160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
         </div>
       </div>
-      <div className="relative z-10 flex justify-between items-center p-4 pt-0">
+
+      <div className="relative z-10 flex justify-between items-center px-4 pb-4 mt-auto">
         <span className="text-[6px] font-black uppercase tracking-widest opacity-60" style={{ color: typeColor }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
         <p className="text-[11px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice > 0 ? `${displayPrice}฿` : '—'}</p>
       </div>
@@ -303,7 +295,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
+              {/* В хайлайтах передаем hideBadge={true} */}
+              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} /></div>))}
             </div>
           </section>
         )}
