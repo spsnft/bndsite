@@ -87,7 +87,9 @@ const ExclusiveCard = React.memo(({ item, onClick }: { item: any, onClick: () =>
            <h3 className="text-[11px] font-black italic uppercase tracking-tight text-white leading-tight truncate">{item.name}</h3>
            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] }}>{TYPE_SHORT[item.type?.toLowerCase()]}</span>
         </div>
-        <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest">{item.farm || "Private Reserve"}</p>
+        {item.farm && item.farm !== "-" && (
+          <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest">{item.farm}</p>
+        )}
       </div>
       <div className="text-right shrink-0">
         <p className="text-[14px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice}฿</p>
@@ -123,20 +125,20 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
   );
 });
 
-const ProductRow = React.memo(({ p, onClick, showFarm }: { p: any, onClick: () => void, showFarm?: boolean }) => (
-  <div onClick={onClick} className="flex items-center justify-between gap-3 px-5 py-3 active:bg-white/5 transition-colors cursor-pointer group">
-    <div className="flex items-center gap-2 truncate flex-1">
-      <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-      <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
+  <div onClick={onClick} className="flex items-center justify-between gap-3 px-6 py-3.5 active:bg-white/5 transition-colors cursor-pointer group">
+    <div className="flex items-center gap-3 truncate flex-1">
+      <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
     
-    <div className="flex items-center gap-3 shrink-0">
-      {showFarm && p.farm && (
-        <span className="text-[7px] font-bold text-[#60A5FA] uppercase tracking-widest italic truncate max-w-[90px]">
+    <div className="flex items-center gap-4 shrink-0">
+      {p.farm && p.farm !== "-" && (
+        <span className="text-[8px] font-bold text-white/70 uppercase tracking-widest italic truncate max-w-[100px]">
           {p.farm}
         </span>
       )}
-      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 min-w-[32px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+      <span className="text-[8px] font-black uppercase px-2 py-1 rounded bg-white/5 min-w-[36px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
     </div>
   </div>
 ));
@@ -168,9 +170,9 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50"><X size={18}/></button>
+        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
         
-        <div className="relative aspect-[1.3/1] w-full bg-black/10">
+        <div className="relative aspect-[1.4/1] w-full bg-black/10">
           <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
             <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
@@ -184,24 +186,24 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
 
         <div className="px-6 pb-6 space-y-4">
           <div className="grid grid-cols-3 gap-3 border-b border-white/5 pb-3">
-             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.farm || '-'}</p></div>
+             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.farm && product.farm !== "-" ? product.farm : 'Private'}</p></div>
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.taste || '-'}</p></div>
              <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.terpenes || '-'}</p></div>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex justify-between items-end text-white">
-              <div><div className="text-3xl font-black italic tracking-tighter">{currentPrice}฿</div><div className="text-[8px] font-bold opacity-30 uppercase">Per gram: {pricePerGram}฿</div></div>
-              <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-0.5 rounded-full">{weight}g</div>
+              <div><div className="text-3xl font-black italic tracking-tighter">{currentPrice}฿</div><div className="text-[8px] font-bold opacity-30 uppercase tracking-widest">Per gram: {pricePerGram}฿</div></div>
+              <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full">{weight}g</div>
             </div>
 
-            <div className="relative">
+            <div className="relative py-1">
               <input type="range" min={minW} max={maxW} step={0.5} value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
             </div>
 
             <div className="grid grid-cols-4 gap-2">
               {steps.map(v => (
-                <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[9px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
+                <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
               ))}
             </div>
 
@@ -212,7 +214,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               </div>
             )}
 
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
           </div>
         </div>
       </div>
@@ -239,17 +241,17 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-w-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
           <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
-          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100"><X size={24}/></button>
+          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
           {items.map((item: any) => (
             <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
+              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
               <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
-              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
+              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
             </div>
           ))}
         </div>
@@ -259,7 +261,7 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           </div>
           <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
           <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all">Confirm Order</button>
+          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]">Confirm Order</button>
         </div>
       </div>
     </div>
@@ -290,9 +292,9 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   ];
 
   return (
-    <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32">
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
       <header className="max-w-xl mx-auto pt-4">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-8">
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px]"></div>
@@ -302,11 +304,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
            </div>
            <div className="flex gap-2">
               {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                <Link key={i} href={soc.url} target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all"><soc.icon size={16}/></Link>
+                <Link key={i} href={soc.url} target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all active:scale-90"><soc.icon size={18}/></Link>
               ))}
            </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-8">
+        <div className="grid grid-cols-2 gap-3 mb-10">
           {INFO_CARDS.map((card) => (
             <div key={card.id} className="relative p-6 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[100px]">
               <div className="space-y-1">
@@ -319,12 +321,12 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-6">
+      <div className="max-w-xl mx-auto space-y-8">
         {recentUpdates.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-2"><Sparkles size={14} className="text-blue-400" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
+              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[170px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
             </div>
           </section>
         )}
@@ -333,40 +335,40 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-2"><Flame size={14} className="text-orange-400" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Menu Hits</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {menuHits.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
+              {menuHits.map((p, idx) => (<div key={p.id} className="w-[170px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
             </div>
           </section>
         )}
 
-        <div className="space-y-4 pt-2">
-          <div className="flex items-center gap-4 py-6">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-emerald-500/40"></div>
-             <span className="text-[10px] font-black uppercase tracking-[0.6em] italic text-emerald-400/90">Full Catalog</span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/20 to-emerald-500/40"></div>
+        <div className="space-y-5 pt-2">
+          <div className="flex items-center gap-4 py-4">
+             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
+             <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Full Catalog</span>
+             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
           {gradeSections.map(({ grade, items, priceRef }) => (
-            <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-5 py-5 flex flex-col items-start active:bg-white/5 transition-colors">
-                <div className="w-full flex items-center justify-between mb-4">
-                  <div className="flex items-center"><grade.icon size={16} style={{ color: grade.color }} className="mr-3" /><h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
-                  <ChevronDown size={14} className={`opacity-20 transition-transform ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
+            <div key={grade.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
+              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-6 py-6 flex flex-col items-start active:bg-white/5 transition-colors">
+                <div className="w-full flex items-center justify-between mb-5">
+                  <div className="flex items-center"><grade.icon size={18} style={{ color: grade.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
+                  <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
-                <div className="w-full flex justify-between items-center opacity-90 px-1">
+                <div className="w-full flex flex-row justify-between items-center opacity-80 px-1">
                    {[1, 5, 10, 20].map(w => (
-                     <div key={w} className="flex flex-col items-center">
-                       <span className="text-[7px] font-black opacity-30 uppercase tracking-widest mb-1.5">{w}g</span>
-                       <span className="text-[16px] font-black italic text-white leading-none">
+                     <div key={w} className="flex items-baseline gap-1">
+                       <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">{w}g</span>
+                       <span className="text-[18px] font-black italic text-white tracking-tighter leading-none">
                          {Math.round(getInterpolatedPrice(w, priceRef.prices, false))}฿
                        </span>
                      </div>
                    ))}
                 </div>
               </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[2500px]' : 'max-h-0'}`}>
+              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                 <div className="divide-y divide-white/5 bg-white/5">
                   {items.map((p: any) => (
-                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} showFarm={true} />
+                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
                   ))}
                 </div>
               </div>
@@ -374,12 +376,12 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           ))}
 
           {eliteSections.map(sec => sec.items.length > 0 && (
-            <div key={sec.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-5 py-4 flex items-center justify-between active:bg-white/5 transition-colors">
-                <div className="flex items-center"><sec.icon size={16} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                <ChevronDown size={14} className={`opacity-20 transition-transform ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
+              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
+                <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
               </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[2500px]' : 'max-h-0'}`}><div className="bg-white/5">{sec.items.map(p => (<ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div></div>
+              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}><div className="bg-white/5">{sec.items.map(p => (<ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div></div>
             </div>
           ))}
         </div>
@@ -387,9 +389,9 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white text-black p-5 rounded-[2rem] shadow-2xl flex justify-between items-center active:scale-95 transition-all">
-            <div className="flex items-center gap-3"><ShoppingBag size={20}/><span className="font-black uppercase text-[12px] tracking-widest">{getTotal()}฿ Total</span></div>
-            <Send size={18}/>
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white text-black p-5 rounded-[2.2rem] shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all">
+            <div className="flex items-center gap-3"><ShoppingBag size={20}/><span className="font-black uppercase text-[13px] tracking-[0.1em]">{getTotal()}฿ Total</span></div>
+            <div className="flex items-center gap-2 text-emerald-600"><span className="text-[10px] font-black uppercase">Order</span><Send size={18}/></div>
           </button>
         </div>
       )}
