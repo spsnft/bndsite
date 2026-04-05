@@ -14,7 +14,7 @@ import { BlurImage } from "@/components/blur-image"
 // --- КОНСТАНТЫ ---
 const SELECTED_COLOR = "#2DD4BF"; 
 const IMPORT_COLOR = "#60A5FA";
-const CONCENTRATES_COLOR = "#F59E0B"; // Предложение по цвету для концентратов
+const CONCENTRATES_COLOR = "#F59E0B"; 
 
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
@@ -354,7 +354,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
   ];
 
-  // Концентраты, сгруппированные по подкатегориям
   const concentrateSections = React.useMemo(() => {
     const allConcs = processedProducts.filter(p => p.category === 'concentrates');
     const subs = Array.from(new Set(allConcs.map(p => p.subcategory)));
@@ -403,8 +402,9 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-6">
-        {/* NEW HIGHLIGHTS SLIDER (COMPACT) */}
+      {/* Родительский контейнер с отступом 12px между блоками (Recent Updates / Flash Sales) */}
+      <div className="max-w-xl mx-auto space-y-3">
+        {/* NEW HIGHLIGHTS SLIDER */}
         {recentUpdates.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
@@ -412,12 +412,12 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
+              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
             </div>
           </section>
         )}
 
-        {/* FLASH SALES SLIDER (COMPACT) */}
+        {/* FLASH SALES SLIDER */}
         {flashSales.length > 0 && (
           <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
@@ -425,11 +425,12 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
             </div>
             <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {flashSales.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
+              {flashSales.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
             </div>
           </section>
         )}
 
+        {/* FLOWER MENU с общим отступом 20px от предыдущей секции */}
         <div className="space-y-5 pt-2">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
