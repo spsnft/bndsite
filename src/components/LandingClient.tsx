@@ -109,29 +109,33 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
   }
 });
 
-const HighlightCard = React.memo(({ item, onClick, priority, hideBadge }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean }) => {
+const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean }) => {
   const accentColor = isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR);
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
 
   return (
-    <div onClick={onClick} className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden" style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}>
-      {!hideBadge && item.badge && <div className="absolute top-3 right-3 z-20"><BadgeIcon type={item.badge} /></div>}
-      <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col min-h-0">
-        <div className="min-w-0 pr-6">
-          <h3 className="text-[10px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
-          <p className="text-[7px] font-black mt-1 text-white/40 truncate uppercase italic tracking-widest">{item.subcategory || "Buds"}</p>
+    <div 
+      onClick={onClick} 
+      className={`relative rounded-[1.5rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden ${isMini ? 'h-[140px]' : 'h-[200px]'}`} 
+      style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}
+    >
+      {!hideBadge && item.badge && <div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75 origin-top-right' : ''}`}><BadgeIcon type={item.badge} /></div>}
+      <div className={`relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0`}>
+        <div className="min-w-0 pr-4">
+          <h3 className={`${isMini ? 'text-[8px]' : 'text-[10px]'} font-black italic uppercase tracking-tighter leading-tight truncate text-white`}>{item.name}</h3>
+          <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Buds"}</p>
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center mt-1 mb-1">
-            <BlurImage src={item.image} priority={priority} width={160} height={160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
         </div>
       </div>
-      <div className="relative z-10 flex justify-between items-end px-4 pb-4 mt-auto">
-        <span className="text-[6px] font-black uppercase tracking-widest opacity-60 mb-1" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+      <div className={`relative z-10 flex justify-between items-end px-3 pb-3 mt-auto`}>
+        <span className={`${isMini ? 'text-[5px]' : 'text-[6px]'} font-black uppercase tracking-widest opacity-60 mb-0.5`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
         <div className="flex flex-col items-end">
-          {oldPrice > currentPrice && <span className="text-[8px] font-bold line-through opacity-30 text-white leading-none mb-0.5">{oldPrice}฿</span>}
-          <p className="text-[12px] font-black italic tracking-tighter leading-none" style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
+          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[6px]' : 'text-[8px]'} font-bold line-through opacity-30 text-white leading-none mb-0.5`}>{oldPrice}฿</span>}
+          <p className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-black italic tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
         </div>
       </div>
     </div>
@@ -177,7 +181,6 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   };
   const upsell = getUpsellInfo();
 
-  // Updated Helper: check for placeholders as well
   const hasValue = (val: string, placeholder?: string) => {
     if (!val) return false;
     const v = val.trim();
@@ -235,7 +238,6 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                 })}
               </div>
               
-              {/* Slider: Hidden for Local Exclusives and Import */}
               {!isEliteProduct && (
                 <div className="px-1 space-y-2">
                   <input 
@@ -334,6 +336,10 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW')), 
   [processedProducts]);
 
+  const flashSales = React.useMemo(() => 
+    sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'SALE')), 
+  [processedProducts]);
+
   const gradeSections = React.useMemo(() => {
     return GRADES.map(grade => {
       const items = processedProducts.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
@@ -377,15 +383,29 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-8">
+      <div className="max-w-xl mx-auto space-y-6">
+        {/* NEW HIGHLIGHTS SLIDER (COMPACT) */}
         {recentUpdates.length > 0 && (
-          <section className="space-y-4">
+          <section className="space-y-3">
             <div className="flex items-center gap-2 px-2">
               <BadgeIcon type="NEW" />
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
+              <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} /></div>))}
+            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
+              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
+            </div>
+          </section>
+        )}
+
+        {/* FLASH SALES SLIDER (COMPACT) */}
+        {flashSales.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center gap-2 px-2">
+              <BadgeIcon type="SALE" />
+              <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
+            </div>
+            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
+              {flashSales.map((p, idx) => (<div key={p.id} className="w-[120px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={true} /></div>))}
             </div>
           </section>
         )}
