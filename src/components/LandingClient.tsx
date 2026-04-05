@@ -129,9 +129,8 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
             <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.6)]" alt={item.name} />
         </div>
       </div>
-      {/* ПРАВКА 2: Увеличен шрифт типа и выровнен вправо (justify-between -> flex-col items-end) */}
       <div className={`relative z-10 flex flex-col items-end px-3 pb-3 mt-auto`}>
-        <span className={`${isMini ? 'text-[6px]' : 'text-[8px]'} font-black uppercase tracking-widest mb-1`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+        <span className={`${isMini ? 'text-[7px]' : 'text-[10px]'} font-black uppercase tracking-widest mb-1`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
         <div className="flex flex-col items-end">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[6px]' : 'text-[8px]'} font-bold line-through opacity-30 text-white leading-none mb-0.5`}>{oldPrice}฿</span>}
           <p className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-black italic tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
@@ -145,16 +144,15 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
   <div onClick={onClick} className="flex items-center justify-between gap-3 px-6 py-3.5 active:bg-white/5 transition-colors cursor-pointer group text-white">
     <div className="flex items-center gap-3 truncate flex-1">
       <div className="w-6 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      {/* ПРАВКА: Тип перенесен налево к названию и увеличен шрифт */}
+      <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-white/5 min-w-[38px] text-center shrink-0" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
     <div className="flex items-center gap-4 shrink-0">
       {p.farm && p.farm !== "-" && <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest italic truncate max-w-[80px]">{p.farm}</span>}
-      <span className="text-[8px] font-black uppercase px-2 py-1 rounded bg-white/5 min-w-[36px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
     </div>
   </div>
 ));
-
-// Модалки ProductModal и CheckoutModal остаются без изменений для экономии места
 
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
     const isEliteProduct = isElite(product);
@@ -403,7 +401,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         )}
 
         {flashSales.length > 0 && (
-          <section className="mb-4"> {/* ПРАВКА 1: Уменьшен отступ до Flower Menu */}
+          <section className="mb-4">
             <div className="flex items-center gap-2 px-2 mb-2 mt-4">
               <BadgeIcon type="SALE" />
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
@@ -414,9 +412,9 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           </section>
         )}
 
-        {/* ПРАВКА 1: Обновленный заголовок Flower Menu, яркость линий и отступы */}
+        {/* ПРАВКА: Контейнер pt-0 и Flower Menu заголовок */}
         <div className="space-y-5 pt-0"> 
-          <div className="flex items-center gap-4 py-6">
+          <div className="flex items-center gap-4 py-4"> {/* Уменьшен py-6 -> py-4 */}
              <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-emerald-400 to-emerald-400/20"></div>
              <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400">Flower Menu</span>
              <div className="h-[1.5px] flex-1 bg-gradient-to-l from-transparent via-emerald-400 to-emerald-400/20"></div>
