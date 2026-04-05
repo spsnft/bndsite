@@ -71,7 +71,6 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
   }
 });
 
-// Форм-фактор для Exclusive товаров (Local & Import) в общем каталоге
 const ExclusiveCard = React.memo(({ item, onClick }: { item: any, onClick: () => void }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
   const accentColor = isImport ? IMPORT_COLOR : SELECTED_COLOR;
@@ -137,7 +136,6 @@ const ProductRow = React.memo(({ p, onClick, showFarm }: { p: any, onClick: () =
         </div>
         <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
       </div>
-      {/* 3: Вывод фермы для Premium и Selected */}
       {showFarm && p.farm && (
         <div className="pl-8 text-[8px] font-bold text-white/20 uppercase tracking-widest italic">{p.farm}</div>
       )}
@@ -283,14 +281,14 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
-      <header className="max-w-xl mx-auto mb-10 pt-4">
-        <div className="flex items-center justify-between mb-10">
+      <header className="max-w-xl mx-auto pt-4">
+        <div className="flex items-center justify-between mb-6">
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
                 <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={64} height={64} className="w-full h-full object-contain relative z-10" alt="Logo" />
               </div>
-              <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none">Premium Service</h1>
+              <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none text-emerald-400/80">Premium Service</h1>
            </div>
            <div className="flex gap-2">
               <Link href="https://t.me/bshk_phuket" target="_blank" className="p-2 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all"><SendHorizontal size={16}/></Link>
@@ -299,7 +297,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
            </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-12">
+        <div className="grid grid-cols-2 gap-3 mb-8">
           {INFO_CARDS.map((card) => (
             <div key={card.id} className="relative p-6 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center group active:scale-[0.98] transition-all min-h-[100px]">
               <div className="space-y-1">
@@ -312,7 +310,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-12">
+      <div className="max-w-xl mx-auto space-y-6">
             {recentUpdates.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
@@ -349,11 +347,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               </section>
             )}
 
-            <div className="space-y-4 pt-4">
-                <div className="flex items-center gap-4 py-4 opacity-20">
-                   <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white"></div>
-                   <span className="text-[8px] font-black uppercase tracking-[0.5em] italic">Full Catalog</span>
-                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent to-white"></div>
+            <div className="space-y-4 pt-2">
+                <div className="flex items-center gap-4 py-6">
+                   <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/20 to-emerald-500/40"></div>
+                   <span className="text-[10px] font-black uppercase tracking-[0.6em] italic text-emerald-400/90 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]">Full Catalog</span>
+                   <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/20 to-emerald-500/40"></div>
                 </div>
 
                 {gradeSections.map(({ grade, items, priceRef }) => {
@@ -369,7 +367,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                           </div>
                           <ChevronDown size={14} className={`opacity-20 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                         </div>
-                        {/* 1: Цены в одну строку */}
                         <div className="flex items-center gap-4 pl-[28px]">
                            {[1, 5, 10, 20].map(w => (
                              <div key={w} className="flex items-center gap-1.5">
@@ -386,7 +383,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                               key={p.id} 
                               p={p} 
                               onClick={() => setSelectedProduct(p)} 
-                              showFarm={isHighGrade} // 3: Условие для вывода фермы
+                              showFarm={isHighGrade}
                             />
                           ))}
                         </div>
@@ -395,7 +392,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                   );
                 })}
 
-                {/* 2: Elite/Import в формате ExclusiveCard */}
                 {[
                   { id: 'local', title: 'Local Exclusives', items: eliteLocal, color: SELECTED_COLOR, icon: MapPin },
                   { id: 'import', title: 'Import', items: eliteImport, color: IMPORT_COLOR, icon: Star }
