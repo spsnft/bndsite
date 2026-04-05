@@ -5,8 +5,7 @@ import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2, Headset, ChevronDown,
-  Clock, Bike, ShoppingCart, Globe, Star, Phone
+  SendHorizontal, Trash2, ChevronDown, Star, Phone
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -53,13 +52,20 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
     const steps = [3.5, 7, 14, 28];
     const baseTier = [...steps].reverse().find(s => s <= weight) || 3.5;
     const priceAtTier = prices[eliteMap[baseTier]] || 0;
-    return (priceAtTier / baseTier) * weight;
+    return priceAtTier > 0 ? (priceAtTier / baseTier) * weight : 0;
   }
-  if (weight <= 1) return (prices[1] || 0) * weight;
-  if (weight <= 5) return (prices[1] || 0) + ((prices[5] || 0) - (prices[1] || 0)) * ((weight - 1) / 4);
-  if (weight <= 10) return (prices[5] || 0) + ((prices[10] || 0) - (prices[5] || 0)) * ((weight - 5) / 5);
-  if (weight <= 20) return (prices[10] || 0) + ((prices[20] || 0) - (prices[10] || 0)) * ((weight - 10) / 10);
-  return ((prices[20] || 0) / 20) * weight;
+  
+  if (weight <= 1) return prices[1] || 0;
+  const tiers = [1, 5, 10, 20];
+  const lowerTier = [...tiers].reverse().find(t => t <= weight) || 1;
+  const upperTier = tiers.find(t => t > weight) || 20;
+  
+  const p1 = prices[lowerTier] || 0;
+  const p2 = prices[upperTier] || 0;
+  
+  if (p1 === 0 || p2 === 0) return p1 || p2; 
+
+  return p1 + (p2 - p1) * ((weight - lowerTier) / (upperTier - lowerTier));
 };
 
 // --- COMPONENTS ---
@@ -88,11 +94,11 @@ const ExclusiveCard = React.memo(({ item, onClick }: { item: any, onClick: () =>
            <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] }}>{TYPE_SHORT[item.type?.toLowerCase()]}</span>
         </div>
         {item.farm && item.farm !== "-" && (
-          <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest">{item.farm}</p>
+          <p className="text-[8px] font-bold text-white/70 uppercase tracking-widest">{item.farm}</p>
         )}
       </div>
       <div className="text-right shrink-0">
-        <p className="text-[14px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice}฿</p>
+        <p className="text-[14px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice > 0 ? `${displayPrice}฿` : '—'}</p>
         <p className="text-[7px] font-bold opacity-20 uppercase tracking-widest">3.5g</p>
       </div>
     </div>
@@ -108,18 +114,18 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
 
   return (
     <div onClick={onClick} className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden" style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}>
-      <div className="relative z-10 p-5 pb-0 flex-1 flex flex-col">
+      <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
         <div className="min-w-0">
-          <h3 className="text-[11px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
+          <h3 className="text-[10px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
           <p className="text-[7px] font-black mt-1 text-white/40 truncate uppercase italic tracking-widest">{item.subcategory || "Buds"}</p>
         </div>
-        <div className="relative aspect-square w-full mt-auto mb-2">
+        <div className="relative aspect-square w-full mt-auto mb-1">
             <BlurImage src={item.image} priority={priority} width={180} height={180} className="w-full h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
         </div>
       </div>
-      <div className="relative z-10 flex justify-between items-center p-5 pt-0">
-        <span className="text-[6px] font-black uppercase tracking-widest opacity-60" style={{ color: typeColor }}>{item.type}</span>
-        <p className="text-[13px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice}฿</p>
+      <div className="relative z-10 flex justify-between items-center p-4 pt-0">
+        <span className="text-[6px] font-black uppercase tracking-widest opacity-60" style={{ color: typeColor }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+        <p className="text-[11px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice > 0 ? `${displayPrice}฿` : '—'}</p>
       </div>
     </div>
   );
@@ -147,19 +153,27 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
 
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
   const isEliteProduct = isElite(product);
-  const minW = isEliteProduct ? 3.5 : 1;
-  const maxW = isEliteProduct ? 28 : 20;
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+  
+  // Карта сопоставления веса к ключам в объекте цен
+  const weightToKey: Record<number, number> = isEliteProduct 
+    ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } 
+    : { 1: 1, 5: 5, 10: 10, 20: 20 };
 
-  const [weight, setWeight] = React.useState(minW);
+  // Поиск первого доступного веса с ценой
+  const firstAvailableWeight = steps.find(w => (product.prices?.[weightToKey[w]] || 0) > 0) || steps[0];
+
+  const [weight, setWeight] = React.useState(firstAvailableWeight);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
 
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
 
+  const isWeightAvailable = (w: number) => (product.prices?.[weightToKey[w]] || 0) > 0;
+
   const getUpsell = () => {
-    const next = steps.find(s => s > weight);
+    const next = steps.find(s => s > weight && isWeightAvailable(s));
     if (!next) return null;
     const nextPrice = Math.round(getInterpolatedPrice(next, product.prices, isEliteProduct));
     return { diff: (next - weight).toFixed(1).replace('.0', ''), ppg: Math.round(nextPrice / next) };
@@ -197,14 +211,23 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-1 rounded-full">{weight}g</div>
             </div>
 
-            <div className="relative py-1">
-              <input type="range" min={minW} max={maxW} step={0.5} value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
-            </div>
-
             <div className="grid grid-cols-4 gap-2">
-              {steps.map(v => (
-                <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
-              ))}
+              {steps.map(v => {
+                const available = isWeightAvailable(v);
+                return (
+                  <button 
+                    key={v} 
+                    disabled={!available}
+                    onClick={() => setWeight(v)} 
+                    className={`py-2 text-[10px] font-black rounded-xl border transition-all ${
+                      !available ? "opacity-10 grayscale border-white/5 text-white/10" :
+                      weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"
+                    }`}
+                  >
+                    {v}g
+                  </button>
+                )
+              })}
             </div>
 
             {upsell && (
@@ -214,7 +237,12 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
               </div>
             )}
 
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
+            <button 
+              onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} 
+              className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_20px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}
+            >
+              {isAdded ? "Added to Cart" : "Add to Order"}
+            </button>
           </div>
         </div>
       </div>
@@ -275,8 +303,21 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
   const { items, getTotal } = useCart();
 
-  const recentUpdates = React.useMemo(() => initialProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW'), [initialProducts]);
-  const menuHits = React.useMemo(() => initialProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'HIT'), [initialProducts]);
+  const sortProductsByPrice = (prods: any[]) => {
+    return [...prods].sort((a, b) => {
+      const priceA = getInterpolatedPrice(isElite(a) ? 3.5 : 1, a.prices, isElite(a));
+      const priceB = getInterpolatedPrice(isElite(b) ? 3.5 : 1, b.prices, isElite(b));
+      return priceB - priceA;
+    });
+  };
+
+  const recentUpdates = React.useMemo(() => 
+    sortProductsByPrice(initialProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW')), 
+  [initialProducts]);
+
+  const menuHits = React.useMemo(() => 
+    sortProductsByPrice(initialProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'HIT')), 
+  [initialProducts]);
 
   const gradeSections = React.useMemo(() => {
     return GRADES.map(grade => {
@@ -326,7 +367,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-2"><Sparkles size={14} className="text-blue-400" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[170px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
+              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
             </div>
           </section>
         )}
@@ -335,7 +376,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-2"><Flame size={14} className="text-orange-400" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Menu Hits</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {menuHits.map((p, idx) => (<div key={p.id} className="w-[170px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
+              {menuHits.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} /></div>))}
             </div>
           </section>
         )}
@@ -358,7 +399,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                    {[1, 5, 10, 20].map(w => (
                      <div key={w} className="flex items-baseline gap-1">
                        <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">{w}g</span>
-                       <span className="text-[18px] font-black italic text-white tracking-tighter leading-none">
+                       <span className="text-[16px] font-black italic text-white tracking-tighter leading-none">
                          {Math.round(getInterpolatedPrice(w, priceRef.prices, false))}฿
                        </span>
                      </div>
