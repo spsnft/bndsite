@@ -333,9 +333,21 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     });
   };
 
-  const recentUpdates = React.useMemo(() => 
-    sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW')), 
-  [processedProducts]);
+  const recentUpdates = React.useMemo(() => {
+    const news = processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW');
+    return [...news].sort((a, b) => {
+      // Сортировка по дате (06.04 -> 04.06 для корректного сравнения строк или перевода в цифры)
+      const dateA = a.date ? a.date.split('.').reverse().join('') : '0000';
+      const dateB = b.date ? b.date.split('.').reverse().join('') : '0000';
+      
+      if (dateB !== dateA) return dateB.localeCompare(dateA);
+      
+      // Если дата одинаковая — по цене
+      const priceA = getFirstAvailablePrice(a).price;
+      const priceB = getFirstAvailablePrice(b).price;
+      return priceB - priceA;
+    });
+  }, [processedProducts]);
 
   const flashSales = React.useMemo(() => 
     sortProductsByPrice(processedProducts.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'SALE')), 
@@ -362,7 +374,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       const subLower = sub?.toLowerCase() || "";
       
       if (subLower.includes('old school')) color = "#C1C1C1";
-      if (subLower.includes('fresh frozen')) color = "#34D399"; // Premium Grade Color
+      if (subLower.includes('fresh frozen')) color = "#FEC107"; // Golden Grade Color
       if (subLower.includes('live rosin')) color = "#A855F7"; // Selected Grade Color
       
       return {
@@ -371,7 +383,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         items: allConcs.filter(p => p.subcategory === sub),
         color: color,
         icon: Droplets,
-        isList: subLower.includes('old school') // Check if should display as list
+        isList: subLower.includes('old school')
       };
     });
   }, [processedProducts]);
@@ -406,7 +418,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      {/* Родительский контейнер */}
       <div className="max-w-xl mx-auto space-y-3">
         {/* NEW HIGHLIGHTS SLIDER */}
         {recentUpdates.length > 0 && (
@@ -434,7 +445,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           </section>
         )}
 
-        {/* FLOWER MENU - Уменьшен отступ до 10px (pt-0.5) */}
         <div className="space-y-5 pt-0.5">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
@@ -487,7 +497,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
             </div>
           ))}
 
-          {/* CONCENTRATES SECTION */}
           {concentrateSections.length > 0 && (
             <>
               <div className="flex items-center gap-4 py-8">
