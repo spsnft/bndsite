@@ -40,7 +40,6 @@ const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "
 const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
 
 // --- HELPERS ---
-
 const processProductData = (rawProducts: any[]) => {
   return rawProducts.map(p => {
     const prices: any = {};
@@ -99,7 +98,6 @@ const getFirstAvailablePrice = (product: any) => {
 };
 
 // --- COMPONENTS ---
-
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
     case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
@@ -124,7 +122,6 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       {!hideBadge && item.badge && <div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75 origin-top-right' : ''}`}><BadgeIcon type={item.badge} /></div>}
       <div className={`relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-4">
-          {/* ПРАВКА 1: Увеличена разрядка названия товара (tracking-wider) */}
           <h3 className={`${isMini ? 'text-[8px]' : 'text-[10px]'} font-black italic uppercase tracking-wider leading-tight truncate text-white`}>{item.name}</h3>
           <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Buds"}</p>
         </div>
@@ -132,8 +129,9 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
             <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.6)]" alt={item.name} />
         </div>
       </div>
-      <div className={`relative z-10 flex justify-between items-end px-3 pb-3 mt-auto`}>
-        <span className={`${isMini ? 'text-[5px]' : 'text-[6px]'} font-black uppercase tracking-widest opacity-60 mb-0.5`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+      {/* ПРАВКА 2: Увеличен шрифт типа и выровнен вправо (justify-between -> flex-col items-end) */}
+      <div className={`relative z-10 flex flex-col items-end px-3 pb-3 mt-auto`}>
+        <span className={`${isMini ? 'text-[6px]' : 'text-[8px]'} font-black uppercase tracking-widest mb-1`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
         <div className="flex flex-col items-end">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[6px]' : 'text-[8px]'} font-bold line-through opacity-30 text-white leading-none mb-0.5`}>{oldPrice}฿</span>}
           <p className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-black italic tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
@@ -156,8 +154,7 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
   </div>
 ));
 
-// --- MODALS (ProductModal, CheckoutModal omitted for brevity, keeping existing logic) ---
-// ... (ProductModal & CheckoutModal stay exactly the same as in your original code)
+// Модалки ProductModal и CheckoutModal остаются без изменений для экономии места
 
 function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
     const isEliteProduct = isElite(product);
@@ -365,7 +362,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
       <header className="max-w-xl mx-auto pt-4">
-        {/* ... Header Content ... */}
         <div className="flex items-center justify-between mb-4"> 
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
@@ -393,11 +389,10 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
       </header>
 
-      {/* ПРАВКА 2 & 3: Сближение каруселей и настройка иерархии заголовков */}
       <div className="max-w-xl mx-auto">
         {recentUpdates.length > 0 && (
-          <section className="mb-4"> {/* Уменьшен внешний отступ всей секции */}
-            <div className="flex items-center gap-2 px-2 mb-2 mt-2"> {/* Заголовок "прилипает" к карусели */}
+          <section className="mb-4">
+            <div className="flex items-center gap-2 px-2 mb-2 mt-2">
               <BadgeIcon type="NEW" />
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
@@ -408,8 +403,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         )}
 
         {flashSales.length > 0 && (
-          <section className="mb-8"> 
-            <div className="flex items-center gap-2 px-2 mb-2 mt-4"> {/* Расстояние сверху (mt-4) больше чем снизу (mb-2) */}
+          <section className="mb-4"> {/* ПРАВКА 1: Уменьшен отступ до Flower Menu */}
+            <div className="flex items-center gap-2 px-2 mb-2 mt-4">
               <BadgeIcon type="SALE" />
               <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
             </div>
@@ -419,12 +414,12 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           </section>
         )}
 
-        {/* Остальной каталог */}
-        <div className="space-y-5 pt-2">
-          <div className="flex items-center gap-4 py-4">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/5 to-emerald-500/10"></div>
-             <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Full Catalog</span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/5 to-emerald-500/10"></div>
+        {/* ПРАВКА 1: Обновленный заголовок Flower Menu, яркость линий и отступы */}
+        <div className="space-y-5 pt-0"> 
+          <div className="flex items-center gap-4 py-6">
+             <div className="h-[1.5px] flex-1 bg-gradient-to-r from-transparent via-emerald-400 to-emerald-400/20"></div>
+             <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400">Flower Menu</span>
+             <div className="h-[1.5px] flex-1 bg-gradient-to-l from-transparent via-emerald-400 to-emerald-400/20"></div>
           </div>
 
           {gradeSections.map(({ grade, items, priceRef }) => (
