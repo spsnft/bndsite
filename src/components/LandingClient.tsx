@@ -48,7 +48,6 @@ const isElite = (product: any) => {
 
 const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boolean) => {
   if (!prices) return 0;
-  
   if (isEliteProduct) {
     const eliteMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
     const steps = [3.5, 7, 14, 28];
@@ -56,7 +55,6 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
     const priceAtTier = prices[eliteMap[baseTier]] || 0;
     return (priceAtTier / baseTier) * weight;
   }
-
   if (weight <= 1) return (prices[1] || 0) * weight;
   if (weight <= 5) return (prices[1] || 0) + ((prices[5] || 0) - (prices[1] || 0)) * ((weight - 1) / 4);
   if (weight <= 10) return (prices[5] || 0) + ((prices[10] || 0) - (prices[5] || 0)) * ((weight - 5) / 5);
@@ -126,16 +124,19 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
 });
 
 const ProductRow = React.memo(({ p, onClick, showFarm }: { p: any, onClick: () => void, showFarm?: boolean }) => (
-  <div onClick={onClick} className="flex flex-col gap-1 px-5 py-4 active:bg-white/5 transition-colors cursor-pointer group">
-    <div className="flex items-center justify-between min-w-0">
-      <div className="flex items-center gap-2 truncate flex-1">
-        <div className="w-5 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-        <div className="flex items-baseline gap-2 truncate">
-          <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
-          {showFarm && p.farm && <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest italic shrink-0 underline decoration-white/10 underline-offset-4">{p.farm}</span>}
-        </div>
-      </div>
-      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0 ml-2" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+  <div onClick={onClick} className="flex items-center justify-between gap-3 px-5 py-3 active:bg-white/5 transition-colors cursor-pointer group">
+    <div className="flex items-center gap-2 truncate flex-1">
+      <div className="w-4 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      <span className="text-[11px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+    </div>
+    
+    <div className="flex items-center gap-3 shrink-0">
+      {showFarm && p.farm && (
+        <span className="text-[7px] font-bold text-[#60A5FA] uppercase tracking-widest italic truncate max-w-[90px]">
+          {p.farm}
+        </span>
+      )}
+      <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 min-w-[32px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
     </div>
   </div>
 ));
@@ -166,45 +167,52 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <div className="relative w-full max-w-[440px] max-h-[90vh] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-y-auto no-scrollbar shadow-2xl" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-5 right-5 z-20 p-2 bg-black/40 rounded-full text-white/50 hover:text-white"><X size={20}/></button>
-        <div className="relative aspect-square w-full bg-black/10">
-          <BlurImage src={product?.image} width={500} height={500} className="w-full h-full object-contain p-12" alt={product?.name} />
-          <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/80 to-transparent">
-            <h2 className="text-3xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] mt-1 text-white/60">
+      <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50"><X size={18}/></button>
+        
+        <div className="relative aspect-[1.3/1] w-full bg-black/10">
+          <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
+          <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
+            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/60">
               <span style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
               <span className="mx-2 opacity-20">•</span>
               <span style={{ color: style?.color }}>{product?.subcategory} Grade</span>
             </p>
           </div>
         </div>
-        <div className="p-8 pt-0 space-y-6">
-          <div className="grid grid-cols-3 gap-4 border-b border-white/5 pb-6">
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><MapPin size={10}/><span className="text-[7px] font-black uppercase">Farm</span></div><p className="text-[10px] font-bold italic truncate text-white">{product?.farm || '-'}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Leaf size={10}/><span className="text-[7px] font-black uppercase">Taste</span></div><p className="text-[10px] font-bold italic truncate text-white">{product?.taste || '-'}</p></div>
-             <div className="space-y-1"><div className="flex items-center gap-1.5 opacity-20"><Wind size={10}/><span className="text-[7px] font-black uppercase">Terps</span></div><p className="text-[10px] font-bold italic truncate text-white">{product?.terpenes || '-'}</p></div>
+
+        <div className="px-6 pb-6 space-y-4">
+          <div className="grid grid-cols-3 gap-3 border-b border-white/5 pb-3">
+             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.farm || '-'}</p></div>
+             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.taste || '-'}</p></div>
+             <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product?.terpenes || '-'}</p></div>
           </div>
-          <div className="space-y-8">
+
+          <div className="space-y-4">
             <div className="flex justify-between items-end text-white">
-              <div><div className="text-4xl font-black italic tracking-tighter">{currentPrice}฿</div><div className="text-[9px] font-bold opacity-30 uppercase mt-1">Price per gram: {pricePerGram}฿</div></div>
-              <div className="text-[11px] font-black uppercase bg-white/10 px-4 py-1 rounded-full">{weight}g</div>
+              <div><div className="text-3xl font-black italic tracking-tighter">{currentPrice}฿</div><div className="text-[8px] font-bold opacity-30 uppercase">Per gram: {pricePerGram}฿</div></div>
+              <div className="text-[10px] font-black uppercase bg-white/10 px-3 py-0.5 rounded-full">{weight}g</div>
             </div>
-            <div className="relative py-2">
-              <input type="range" min={minW} max={maxW} step={0.5} value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
+
+            <div className="relative">
+              <input type="range" min={minW} max={maxW} step={0.5} value={weight} onChange={(e) => setWeight(parseFloat(e.target.value))} className="w-full h-1 bg-white/10 rounded-lg appearance-none cursor-pointer accent-white" />
             </div>
+
             <div className="grid grid-cols-4 gap-2">
               {steps.map(v => (
-                <button key={v} onClick={() => setWeight(v)} className={`py-3 text-[10px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
+                <button key={v} onClick={() => setWeight(v)} className={`py-2 text-[9px] font-black rounded-xl border transition-all ${weight === v ? "bg-white text-black border-white" : "border-white/10 text-white/40"}`}>{v}g</button>
               ))}
             </div>
+
             {upsell && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-center justify-center gap-3 animate-pulse">
-                <Flame size={14} className="text-emerald-400" />
-                <p className="text-[9px] font-black uppercase tracking-widest text-emerald-400 text-center">Add {upsell.diff}g more for {upsell.ppg}฿ per gram!</p>
+              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-2.5 flex items-center justify-center gap-2">
+                <Flame size={12} className="text-emerald-400" />
+                <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400">Add {upsell.diff}g for {upsell.ppg}฿ p/g!</p>
               </div>
             )}
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all shadow-xl active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
+
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-4 rounded-2xl font-black uppercase text-[11px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
           </div>
         </div>
       </div>
@@ -282,7 +290,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   ];
 
   return (
-    <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32">
       <header className="max-w-xl mx-auto pt-4">
         <div className="flex items-center justify-between mb-6">
            <div className="flex items-center gap-4">
@@ -339,18 +347,29 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
           {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[1.5rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-5 py-4 flex flex-col items-start active:bg-white/5 transition-colors">
-                <div className="w-full flex items-center justify-between mb-2">
+              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-5 py-5 flex flex-col items-start active:bg-white/5 transition-colors">
+                <div className="w-full flex items-center justify-between mb-4">
                   <div className="flex items-center"><grade.icon size={16} style={{ color: grade.color }} className="mr-3" /><h2 className="text-[12px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                   <ChevronDown size={14} className={`opacity-20 transition-transform ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
-                <div className="flex items-center gap-4 pl-[28px]">
+                <div className="w-full flex justify-between items-center opacity-90 px-1">
                    {[1, 5, 10, 20].map(w => (
-                     <div key={w} className="flex items-center gap-1.5"><span className="text-[7px] font-black opacity-30 uppercase tracking-widest">{w}g</span><span className="text-[12px] font-black italic text-white">{Math.round(getInterpolatedPrice(w, priceRef.prices, false))}฿</span></div>
+                     <div key={w} className="flex flex-col items-center">
+                       <span className="text-[7px] font-black opacity-30 uppercase tracking-widest mb-1.5">{w}g</span>
+                       <span className="text-[16px] font-black italic text-white leading-none">
+                         {Math.round(getInterpolatedPrice(w, priceRef.prices, false))}฿
+                       </span>
+                     </div>
                    ))}
                 </div>
               </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[2500px]' : 'max-h-0'}`}><div className="divide-y divide-white/5 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} showFarm={grade.id === 'premium' || grade.id === 'selected'} />))}</div></div>
+              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[2500px]' : 'max-h-0'}`}>
+                <div className="divide-y divide-white/5 bg-white/5">
+                  {items.map((p: any) => (
+                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} showFarm={true} />
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
 
@@ -378,7 +397,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       {selectedProduct && (
         <ProductModal 
           product={selectedProduct} 
-          style={GRADES.find(g => g.id === selectedProduct.subcategory) || { color: isElite(selectedProduct) ? (selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : '#FFF' }} 
+          style={isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })} 
           onClose={() => setSelectedProduct(null)} 
         />
       )}
