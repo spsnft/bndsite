@@ -15,7 +15,6 @@ import { BlurImage } from "@/components/blur-image"
 const SELECTED_COLOR = "#2DD4BF"; 
 const IMPORT_COLOR = "#60A5FA";
 
-// Строгий порядок категорий для рендеринга
 const GRADES = [
   { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
   { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Star },
@@ -48,7 +47,6 @@ const isElite = (product: any) => {
 
 const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boolean) => {
   if (!prices) return 0;
-  
   if (isEliteProduct) {
     const eliteMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
     const steps = [3.5, 7, 14, 28];
@@ -56,29 +54,24 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
     const priceAtTier = Number(prices[eliteMap[baseTier]]) || 0;
     return priceAtTier > 0 ? (priceAtTier / baseTier) * weight : 0;
   }
-  
-  const p1 = Number(prices[1]) || 0;
-  if (weight <= 1) return p1;
-
   const tiers = [1, 5, 10, 20];
   const lowerTier = [...tiers].reverse().find(t => t <= weight) || 1;
   const upperTier = tiers.find(t => t > weight) || 20;
-  
   const val1 = Number(prices[lowerTier]) || 0;
   const val2 = Number(prices[upperTier]) || val1; 
-  
   if (val1 === 0) return 0;
   if (lowerTier === upperTier) return val1;
-
   return val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
 };
 
 // --- COMPONENTS ---
+
+// 1. Возвращена иконка NEW как на скриншоте (синий круг)
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
   switch (type.toUpperCase()) {
     case "NEW": return (
-      <div className="px-1.5 py-0.5 rounded border border-blue-400/50 bg-blue-500/10 shrink-0">
-        <span className="text-[7px] font-black text-blue-400 uppercase leading-none tracking-tighter">NEW</span>
+      <div className="w-5 h-5 rounded-full bg-[#3B82F6] flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.5)]">
+        <span className="text-[6px] font-black text-white uppercase leading-none tracking-tighter">NEW</span>
       </div>
     );
     case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-400/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
@@ -87,33 +80,7 @@ const BadgeIcon = React.memo(({ type }: { type: string }) => {
   }
 });
 
-const ExclusiveCard = React.memo(({ item, onClick }: { item: any, onClick: () => void }) => {
-  const isImport = item.subcategory?.toLowerCase().includes('import');
-  const accentColor = isImport ? IMPORT_COLOR : SELECTED_COLOR;
-  const displayPrice = Math.round(getInterpolatedPrice(3.5, item.prices, true));
-
-  return (
-    <div onClick={onClick} className="flex items-center gap-4 p-4 active:bg-white/5 transition-colors cursor-pointer group border-b border-white/5 last:border-0">
-      <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/10 flex-shrink-0 overflow-hidden p-2 relative">
-        <BlurImage src={item.image} width={64} height={64} className="w-full h-full object-contain relative z-10" alt={item.name} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-0.5">
-           <h3 className="text-[11px] font-black italic uppercase tracking-tight text-white leading-tight truncate">{item.name}</h3>
-           <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded bg-white/5 shrink-0" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] }}>{TYPE_SHORT[item.type?.toLowerCase()]}</span>
-        </div>
-        <p className="text-[8px] font-bold text-white/30 uppercase tracking-widest truncate">
-          {item.farm && item.farm !== "-" ? item.farm : (isImport ? 'USA IMPORT' : 'LOCAL TOP SHELF')}
-        </p>
-      </div>
-      <div className="text-right shrink-0">
-        <p className="text-[14px] font-black italic tracking-tighter" style={{ color: accentColor }}>{displayPrice > 0 ? `${displayPrice}฿` : '—'}</p>
-        <p className="text-[7px] font-bold opacity-20 uppercase tracking-widest">3.5g</p>
-      </div>
-    </div>
-  );
-});
-
+// Красивая карточка (используется для хайлайтов и теперь для Local/Import)
 const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onClick: () => void, priority?: boolean }) => {
   const isImport = item.subcategory?.toLowerCase().includes('import');
   const gradeColor = GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR;
@@ -123,6 +90,9 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
 
   return (
     <div onClick={onClick} className="relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col h-[200px] overflow-hidden" style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}>
+      <div className="absolute top-3 left-3 z-20">
+        {item.badge && <BadgeIcon type={item.badge} />}
+      </div>
       <div className="relative z-10 p-4 pb-0 flex-1 flex flex-col">
         <div className="min-w-0">
           <h3 className="text-[10px] font-black italic uppercase tracking-tighter leading-tight truncate text-white">{item.name}</h3>
@@ -143,13 +113,12 @@ const HighlightCard = React.memo(({ item, onClick, priority }: { item: any, onCl
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
   <div onClick={onClick} className="flex items-center justify-between gap-3 px-6 py-3.5 active:bg-white/5 transition-colors cursor-pointer group">
     <div className="flex items-center gap-3 truncate flex-1">
-      <div className="w-8 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      <div className="w-6 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
       <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
-    
     <div className="flex items-center gap-4 shrink-0">
       {p.farm && p.farm !== "-" && (
-        <span className="text-[8px] font-bold text-white/70 uppercase tracking-widest italic truncate max-w-[100px]">{p.farm}</span>
+        <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest italic truncate max-w-[80px]">{p.farm}</span>
       )}
       <span className="text-[8px] font-black uppercase px-2 py-1 rounded bg-white/5 min-w-[36px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
     </div>
@@ -162,12 +131,10 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-
   const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
   const [weight, setWeight] = React.useState(firstAvailableWeight);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
-
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const pricePerGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
   const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
@@ -219,7 +186,6 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
-  
   const handleSubmit = async () => {
     if (!contact) return alert("Please enter contact info");
     setIsSending(true);
@@ -309,7 +275,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               ))}
            </div>
         </div>
-
         <div className="grid grid-cols-2 gap-3 mb-8">
           {INFO_CARDS.map((card) => (
             <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
@@ -327,7 +292,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         {recentUpdates.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center gap-2 px-2">
-              <div className="px-1.5 py-0.5 rounded border border-blue-400/50 bg-blue-500/10"><span className="text-[8px] font-black text-blue-400 uppercase tracking-tighter">NEW</span></div>
+              <BadgeIcon type="NEW" />
               <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
@@ -343,7 +308,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
-          {/* 1. Сначала выводим основные категории: Silver -> Golden -> Premium -> Selected */}
+          {/* 1. Основные категории */}
           {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
               <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-6 py-6 flex flex-col items-start active:bg-white/5 transition-colors">
@@ -373,14 +338,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
             </div>
           ))}
 
-          {/* 2. В конце выводим: Local Exclusives -> Import */}
+          {/* 2. Local Exclusives и Import теперь выводятся КРАСИВЫМИ КАРТОЧКАМИ */}
           {eliteSections.map(sec => sec.items.length > 0 && (
             <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
               <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
                 <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                 <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
               </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}><div className="bg-white/5">{sec.items.map(p => (<ExclusiveCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div></div>
+              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
+                  {sec.items.map(p => (
+                    <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
+                  ))}
+                </div>
+              </div>
             </div>
           ))}
         </div>
@@ -388,10 +359,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
       {items.length > 0 && (
         <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button 
-            onClick={() => setIsCheckoutOpen(true)} 
-            className="w-full bg-white/10 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all overflow-hidden"
-          >
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
             <div className="flex items-center gap-3 relative z-10">
               <ShoppingBag size={20} className="text-emerald-400"/>
