@@ -5,7 +5,8 @@ import Link from "next/link"
 import { 
   Sparkles, Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Gift, Info, Trash2, Headset, ChevronDown
+  SendHorizontal, Gift, Info, Trash2, Headset, ChevronDown,
+  Clock, Bike, ShoppingCart, Globe
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -28,6 +29,13 @@ const CONTACT_METHODS = [
   { id: "whatsapp", label: "WhatsApp", icon: MessageCircle, ph: "phone number" },
   { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
   { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
+];
+
+const INFO_CARDS = [
+  { id: 1, title: "Daily Support", value: "12:00—00:00", icon: Clock, color: "#A855F7" },
+  { id: 2, title: "Phuket Delivery", value: "60 Minutes", icon: Bike, color: "#2DD4BF" },
+  { id: 3, title: "Minimal Order", value: "1000฿", icon: ShoppingCart, color: "#FBBF24" },
+  { id: 4, title: "Thailand Shipping", value: "2-3 Days", icon: Globe, color: "#60A5FA" },
 ];
 
 const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
@@ -146,19 +154,6 @@ ProductRow.displayName = "ProductRow";
 
 // --- MODALS ---
 
-function StoryModal({ story, onClose }: { story: any, onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="w-full max-w-sm h-[85vh] px-4 relative flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute -top-10 right-4 p-2 text-white/50 hover:text-white"><X size={32}/></button>
-        <div className="w-full h-full rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl bg-black/20">
-          <BlurImage src={story.image || `/stories/${story.id}.webp`} width={600} height={1000} className="w-full h-full object-cover" alt="" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function ProductModal({ product, style, onClose, categoryBasePrices }: { product: any, style: any, onClose: () => void, categoryBasePrices?: any }) {
   const isEliteProduct = isElite(product);
   const weights = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
@@ -271,10 +266,8 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
 
 export default function LandingPage() {
   const [products, setProducts] = React.useState<any[]>([]);
-  const [stories, setStories] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
-  const [activeStory, setActiveStory] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
   const { items, getTotal } = useCart();
@@ -284,21 +277,14 @@ export default function LandingPage() {
       try {
         const data = await getProducts();
         setProducts(data.products || []);
-        setStories(data.stories || []);
       } catch (e) { console.error(e); } 
       finally { setIsLoading(false); }
     }
     fetchData();
   }, []);
 
-  // Готовим разделы (теперь берем ВСЕ товары с бейджами)
-  const recentUpdates = React.useMemo(() => {
-    return products.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW');
-  }, [products]);
-
-  const menuHits = React.useMemo(() => {
-    return products.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'HIT');
-  }, [products]);
+  const recentUpdates = React.useMemo(() => products.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'NEW'), [products]);
+  const menuHits = React.useMemo(() => products.filter(p => p.category === 'buds' && p.badge?.toUpperCase() === 'HIT'), [products]);
 
   const gradeSections = React.useMemo(() => {
     return GRADES.map(grade => {
@@ -315,17 +301,11 @@ export default function LandingPage() {
     setOpenGrades(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
-  const STORY_CONFIG = [
-    { id: "new", label: "New Arrivals", icon: Sparkles, color: "#2DD4BF" },
-    { id: "sale", label: "Gifts & Promos", icon: Gift, color: "#FEC107" },
-    { id: "info", label: "Service Info", icon: Info, color: "#A855F7" },
-  ];
-
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 md:p-8 pb-32">
       <header className="max-w-xl mx-auto mb-10 pt-4">
-        {/* LOGO */}
-        <div className="flex items-center justify-between mb-8">
+        {/* LOGO AREA */}
+        <div className="flex items-center justify-between mb-10">
            <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 flex items-center justify-center">
                 <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px] z-0"></div>
@@ -339,19 +319,18 @@ export default function LandingPage() {
            </div>
         </div>
 
-        {/* STORIES */}
-        <div className="flex gap-6 mb-10 overflow-x-auto w-full no-scrollbar justify-center">
-          {STORY_CONFIG.map((config) => {
-            const tableData = stories.find(s => s.id === config.id);
-            return (
-              <button key={config.id} onClick={() => setActiveStory({ ...config, image: tableData?.image })} className="flex flex-col items-center gap-3 shrink-0">
-                <div className="w-14 h-14 rounded-full bg-white/5 border flex items-center justify-center transition-all active:scale-90" style={{ borderColor: `${config.color}30` }}>
-                  <config.icon size={20} style={{ color: config.color }} />
-                </div>
-                <span className="text-[8px] font-black tracking-widest uppercase opacity-40">{config.label}</span>
-              </button>
-            );
-          })}
+        {/* TRUST INFO CARDS (ЗАМЕНА СТОРИСОВ) */}
+        <div className="grid grid-cols-2 gap-3 mb-12">
+          {INFO_CARDS.map((card) => (
+            <div key={card.id} className="relative p-5 rounded-[2rem] border border-white/5 bg-black/20 flex flex-col items-center text-center overflow-hidden group active:scale-[0.98] transition-all">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <card.icon size={20} style={{ color: card.color }} className="mb-3 opacity-80" />
+              <div className="space-y-1 relative z-10">
+                <p className="text-[14px] font-black italic tracking-tighter text-white">{card.value}</p>
+                <p className="text-[7px] font-black uppercase tracking-widest text-white/30">{card.title}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </header>
 
@@ -363,7 +342,7 @@ export default function LandingPage() {
           </div>
         ) : (
           <>
-            {/* --- 1. СЕКЦИЯ RECENT UPDATES (NEW) --- */}
+            {/* RECENT UPDATES */}
             {recentUpdates.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
@@ -383,7 +362,7 @@ export default function LandingPage() {
               </section>
             )}
 
-            {/* --- 2. СЕКЦИЯ MENU HITS (HIT) --- */}
+            {/* MENU HITS */}
             {menuHits.length > 0 && (
               <section className="space-y-4">
                 <div className="flex items-center justify-between px-2">
@@ -403,7 +382,7 @@ export default function LandingPage() {
               </section>
             )}
 
-            {/* --- FULL CATALOG --- */}
+            {/* CATALOG */}
             <div className="space-y-4 pt-4">
                 <div className="flex items-center gap-4 py-4 opacity-20">
                    <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent to-white"></div>
@@ -481,7 +460,6 @@ export default function LandingPage() {
       )}
 
       {/* MODALS */}
-      {activeStory && <StoryModal story={activeStory} onClose={() => setActiveStory(null)} />}
       {selectedProduct && (
         <ProductModal 
           product={selectedProduct} 
