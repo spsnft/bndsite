@@ -8,7 +8,7 @@ export const translations = {
     minOrder: "MINIMAL ORDER",
     delivery: "PHUKET DELIVERY",
     nationwide: "NATIONWIDE",
-    basket: "Basket",
+    basket: "Cart",
     yourBasket: "Your Basket",
     totalAmount: "Total Amount",
     confirmOrder: "Confirm Order",
