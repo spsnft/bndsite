@@ -10,7 +10,7 @@ import {
 
 import { useCart } from "@/lib/cart-store"
 import { BlurImage } from "@/components/blur-image"
-import { translations } from "@/lib/translations" // Импортируем ваш словарь
+import { translations } from "@/lib/translations"
 
 // --- КОНСТАНТЫ ---
 const SELECTED_COLOR = "#2DD4BF"; 
@@ -31,7 +31,6 @@ const CONTACT_METHODS = [
   { id: "instagram", label: "Instagram", icon: Instagram, phKey: "contactPh" },
 ];
 
-// Убираем сокращения, оставляем полный текст
 const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
 
 // --- HELPERS ---
@@ -96,10 +95,28 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
+  // ОПТИМИЗАЦИЯ: box-shadow вместо drop-shadow, убраны blur-фильтры.
+  const baseClasses = "w-6 h-6 rounded-full flex items-center justify-center border shrink-0";
+  
   switch (type.toUpperCase()) {
-    case "NEW": return <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.2)]"><span className="text-[8px] font-black text-blue-400 tracking-wider">NEW</span></div>;
-    case "HIT": return <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0 shadow-[0_0_10px_rgba(249,115,22,0.2)]"><Flame size={14} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.2)]"><Percent size={14} className="text-emerald-400" /></div>;
+    case "NEW": 
+      return (
+        <div className={`${baseClasses} bg-blue-600 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.5)]`}>
+          <span className="text-[7px] font-black text-white tracking-tighter">NEW</span>
+        </div>
+      );
+    case "HIT": 
+      return (
+        <div className={`${baseClasses} bg-orange-600 border-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.5)]`}>
+          <Flame size={11} className="text-white" />
+        </div>
+      );
+    case "SALE": 
+      return (
+        <div className={`${baseClasses} bg-emerald-600 border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]`}>
+          <Percent size={11} className="text-white" />
+        </div>
+      );
     default: return null;
   }
 });
@@ -119,7 +136,11 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden ${isMini ? 'h-[180px]' : 'h-[240px]'}`} 
       style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}
     >
-      {!hideBadge && item.badge && <div className={`absolute top-4 right-4 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}><BadgeIcon type={item.badge} /></div>}
+      {!hideBadge && item.badge && (
+        <div className={`absolute top-3 right-3 z-20 p-1 ${isMini ? 'scale-90' : 'scale-100'}`}>
+          <BadgeIcon type={item.badge} />
+        </div>
+      )}
       <div className={`relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black italic uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
@@ -273,7 +294,12 @@ function CheckoutModal({ items, total, onClose, t }: { items: any[], total: numb
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
           <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]">{t.confirmOrder}</button>
+          <button 
+            onClick={handleSubmit} 
+            className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] active:brightness-110 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]"
+          >
+            {t.confirmOrder}
+          </button>
         </div>
       </div>
     </div>
@@ -287,8 +313,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
   
-  const { items, getTotal, lang, setLang } = useCart(); // Подключаем язык из стора
-  const t = translations[lang as keyof typeof translations]; // Текущий перевод
+  const { items, getTotal, lang, setLang } = useCart();
+  const t = translations[lang as keyof typeof translations];
 
   const sortProductsByPrice = (prods: any[]) => {
     return [...prods].sort((a, b) => {
@@ -356,17 +382,18 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[35px]"></div>
               <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
            </div>
-           <div className="flex gap-3">
-              {/* Кнопка переключения языка */}
+           <div className="flex items-center flex-1 justify-end">
+              <div className="flex gap-3">
+                {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
+                  <Link key={i} href={soc.url} target="_blank" className="p-3.5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all active:scale-90"><soc.icon size={22} className="opacity-60"/></Link>
+                ))}
+              </div>
               <button 
                 onClick={() => setLang(lang === 'en' ? 'ru' : 'en')}
-                className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[10px] text-emerald-400 active:scale-90 transition-all"
+                className="ml-8 w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[10px] text-emerald-400 active:scale-90 transition-all shrink-0"
               >
-                {lang.toUpperCase()}
+                {lang === 'en' ? 'RU' : 'EN'}
               </button>
-              {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                <Link key={i} href={soc.url} target="_blank" className="p-3.5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all active:scale-90"><soc.icon size={22} className="opacity-60"/></Link>
-              ))}
            </div>
         </div>
 
@@ -503,18 +530,18 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
       {items.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-6">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-2xl text-white py-6 px-7 rounded-[2.5rem] border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
+          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-2xl text-white py-3 px-7 rounded-[2.5rem] border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
             <div className="flex items-center gap-4 relative z-10">
-              <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={24} className="text-emerald-400"/></div>
+              <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
               <div className="text-left">
-                 <span className="block font-black uppercase text-[20px] tracking-tight leading-none mb-0.5">{getTotal()}฿</span>
-                 <span className="block font-black uppercase text-[10px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
+                 <span className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}฿</span>
+                 <span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
               </div>
             </div>
             <div className="flex items-center gap-3 text-white relative z-10 opacity-70 hover:opacity-100 transition-opacity">
-              <span className="text-[13px] font-black uppercase tracking-widest italic">{t.basket}</span>
-              <Send size={20}/>
+              <span className="text-[12px] font-black uppercase tracking-widest italic">{t.basket}</span>
+              <Send size={18}/>
             </div>
           </button>
         </div>
