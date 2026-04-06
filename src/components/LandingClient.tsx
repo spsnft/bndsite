@@ -102,11 +102,11 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
-  // ПРАВКА: Возвращаем круглый значок NEW, как на скриншоте 1, но крупнее
+  // ПРАВКА: Исправлены тени (box-shadow вместо drop-shadow), которые вызывали баги на iPhone
   switch (type.toUpperCase()) {
-    case "NEW": return <div className="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0 shadow-[0_0_15px_rgba(59,130,246,0.3)]"><span className="text-[10px] font-black text-blue-400 tracking-wider">NEW</span></div>;
-    case "HIT": return <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0 shadow-[0_0_15px_rgba(249,115,22,0.3)]"><Flame size={18} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.3)]"><Percent size={18} className="text-emerald-400" /></div>;
+    case "NEW": return <div className="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0 shadow-[0_0_12px_rgba(59,130,246,0.25)]"><span className="text-[10px] font-black text-blue-400 tracking-wider">NEW</span></div>;
+    case "HIT": return <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0 shadow-[0_0_12px_rgba(249,115,22,0.25)]"><Flame size={18} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.25)]"><Percent size={18} className="text-emerald-400" /></div>;
     default: return null;
   }
 });
@@ -392,22 +392,20 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
-      <header className="max-w-xl mx-auto pt-4 mb-6">
-        <div className="flex items-center justify-between mb-4"> 
-           <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px]"></div>
-                <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={64} height={64} className="w-full h-full object-contain relative z-10" alt="Logo" />
-              </div>
-              <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none text-emerald-400/80">Premium Service</h1>
+      <header className="max-w-xl mx-auto pt-6 mb-8">
+        <div className="flex items-center justify-between px-2"> 
+           <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[35px]"></div>
+              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
            </div>
-           <div className="flex gap-2">
+           <div className="flex gap-3">
               {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                <Link key={i} href={soc.url} target="_blank" className="p-3 bg-white/5 rounded-xl border border-white/5 opacity-50 hover:opacity-100 transition-all active:scale-90"><soc.icon size={20}/></Link>
+                <Link key={i} href={soc.url} target="_blank" className="p-3.5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all active:scale-90"><soc.icon size={22} className="opacity-60"/></Link>
               ))}
            </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 mb-8">
+
+        <div className="grid grid-cols-2 gap-3 mt-10">
           {INFO_CARDS.map((card) => (
             <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
               <div className="space-y-1">
@@ -422,10 +420,10 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
       <div className="max-w-xl mx-auto space-y-3">
         {recentUpdates.length > 0 && (
-          <section className="space-y-3">
+          <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2">
               <BadgeIcon type="NEW" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">Updates</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar -mx-6 px-6 snap-x">
               {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
@@ -434,10 +432,10 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         )}
 
         {flashSales.length > 0 && (
-          <section className="space-y-3">
+          <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2">
               <BadgeIcon type="SALE" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">Sales</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar -mx-6 px-6 snap-x">
               {flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
