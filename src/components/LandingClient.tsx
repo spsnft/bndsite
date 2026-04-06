@@ -95,25 +95,25 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
-  // ОПТИМИЗАЦИЯ: box-shadow вместо drop-shadow, убраны blur-фильтры.
-  const baseClasses = "w-6 h-6 rounded-full flex items-center justify-center border shrink-0";
+  // ПРАВКА: Полностью удалено свечение, добавлена прозрачность 80%.
+  const baseClasses = "w-6 h-6 rounded-full flex items-center justify-center border shrink-0 opacity-80 transition-all";
   
   switch (type.toUpperCase()) {
     case "NEW": 
       return (
-        <div className={`${baseClasses} bg-blue-600 border-blue-400 shadow-[0_0_8px_rgba(59,130,246,0.5)]`}>
+        <div className={`${baseClasses} bg-blue-600 border-blue-400`}>
           <span className="text-[7px] font-black text-white tracking-tighter">NEW</span>
         </div>
       );
     case "HIT": 
       return (
-        <div className={`${baseClasses} bg-orange-600 border-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.5)]`}>
+        <div className={`${baseClasses} bg-orange-600 border-orange-400`}>
           <Flame size={11} className="text-white" />
         </div>
       );
     case "SALE": 
       return (
-        <div className={`${baseClasses} bg-emerald-600 border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]`}>
+        <div className={`${baseClasses} bg-emerald-600 border-emerald-400`}>
           <Percent size={11} className="text-white" />
         </div>
       );
@@ -137,7 +137,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}
     >
       {!hideBadge && item.badge && (
-        <div className={`absolute top-3 right-3 z-20 p-1 ${isMini ? 'scale-90' : 'scale-100'}`}>
+        <div className={`absolute top-3 right-3 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}>
           <BadgeIcon type={item.badge} />
         </div>
       )}
@@ -162,12 +162,14 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
 });
 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  <div onClick={onClick} className="flex items-center justify-between gap-3 px-8 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
+  // ПРАВКА: Изменено выравнивание. px-4 вместо px-8, чтобы бейдж был у края. 
+  // Gap-4 между бейджем и текстом для выравнивания текста по линии иконки категории.
+  <div onClick={onClick} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
     <div className="flex items-center gap-4 truncate flex-1">
-      <div className="w-8 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      <div className="w-6 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
       <span className="text-[14px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
-    <div className="flex items-center gap-5 shrink-0">
+    <div className="flex items-center gap-5 shrink-0 pr-4">
       {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest italic truncate max-w-[90px]">{p.farm}</span>}
       <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
     </div>
@@ -449,12 +451,13 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
           {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-8 py-8 flex flex-col items-start active:bg-white/5 transition-colors">
-                <div className="w-full flex items-center justify-between mb-6">
+              {/* ПРАВКА: px-4 вместо px-8 для выравнивания с контентом строк */}
+              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-4 py-8 flex flex-col items-start active:bg-white/5 transition-colors">
+                <div className="w-full flex items-center justify-between mb-6 px-4">
                   <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
-                <div className="w-full grid grid-cols-4 gap-2 opacity-90 px-1">
+                <div className="w-full grid grid-cols-4 gap-2 opacity-90 px-4">
                    {[1, 5, 10, 20].map(w => {
                      const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
                      return (
