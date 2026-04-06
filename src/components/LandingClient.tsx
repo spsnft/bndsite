@@ -10,6 +10,7 @@ import {
 
 import { useCart } from "@/lib/cart-store"
 import { BlurImage } from "@/components/blur-image"
+import { translations } from "@/lib/translations" // Импортируем ваш словарь
 
 // --- КОНСТАНТЫ ---
 const SELECTED_COLOR = "#2DD4BF"; 
@@ -24,17 +25,10 @@ const GRADES = [
 ];
 
 const CONTACT_METHODS = [
-  { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
-  { id: "whatsapp", label: "WhatsApp", icon: Phone, ph: "phone number" },
-  { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
-  { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
-];
-
-const INFO_CARDS = [
-  { id: 1, title: "DAILY SUPPORT", value: "12:00—00:00", color: "#A855F7" },
-  { id: 3, title: "MINIMAL ORDER", value: "1000฿", color: "#FBBF24" },
-  { id: 2, title: "PHUKET DELIVERY", value: "60 MINUTES", color: "#2DD4BF" },
-  { id: 4, title: "NATIONWIDE", value: "2-3 DAYS", color: "#60A5FA" },
+  { id: "telegram", label: "Telegram", icon: SendHorizontal, phKey: "contactPh" },
+  { id: "whatsapp", label: "WhatsApp", icon: Phone, phKey: "contactPh" },
+  { id: "line", label: "Line", icon: MessageCircle, phKey: "contactPh" },
+  { id: "instagram", label: "Instagram", icon: Instagram, phKey: "contactPh" },
 ];
 
 // Убираем сокращения, оставляем полный текст
@@ -102,7 +96,6 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
-  // ПРАВКА: Уменьшены размеры значков (w-8 h-8)
   switch (type.toUpperCase()) {
     case "NEW": return <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.2)]"><span className="text-[8px] font-black text-blue-400 tracking-wider">NEW</span></div>;
     case "HIT": return <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0 shadow-[0_0_10px_rgba(249,115,22,0.2)]"><Flame size={14} className="text-orange-400" /></div>;
@@ -162,7 +155,7 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
 
 // --- MODALS ---
 
-function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
+function ProductModal({ product, style, onClose, t }: { product: any, style: any, onClose: () => void, t: any }) {
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
@@ -175,16 +168,6 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
   const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
-
-  const getUpsellInfo = () => {
-    if (isEliteProduct) return null;
-    const nextWeight = steps.find(s => s > weight && (Number(product.prices?.[weightToKey[s]]) || 0) > 0);
-    if (!nextWeight) return null;
-    const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product.prices, false));
-    const nextPpg = Math.round(nextPrice / nextWeight);
-    return { next: nextWeight, diff: (nextWeight - weight).toFixed(1), ppg: nextPpg };
-  };
-  const upsell = getUpsellInfo();
 
   const hasValue = (val: string, placeholder?: string) => {
     if (!val) return false;
@@ -213,13 +196,13 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           {(hasValue(product?.farm) || hasValue(product?.taste, "Sweet, Earthy") || hasValue(product?.terpenes, "Myrcene, Limonene")) && (
             <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
                {hasValue(product?.farm) && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><span className="text-[6px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
+                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><span className="text-[6px] font-black uppercase tracking-widest">{t.farm}</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
                )}
                {hasValue(product?.taste, "Sweet, Earthy") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
+                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">{t.taste}</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
                )}
                {hasValue(product?.terpenes, "Myrcene, Limonene") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
+                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">{t.terps}</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
                )}
             </div>
           )}
@@ -242,35 +225,9 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
                   )
                 })}
               </div>
-              
-              {!isEliteProduct && (
-                <div className="px-1 space-y-2">
-                  <input 
-                    type="range" 
-                    min={steps[0]} 
-                    max={steps[steps.length-1]} 
-                    step="0.5" 
-                    value={weight} 
-                    onChange={(e) => setWeight(parseFloat(e.target.value))}
-                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
-                  />
-                  <div className="flex justify-between text-[7px] font-black uppercase opacity-10 tracking-[0.2em]">
-                    {steps.map(s => <span key={s}>{s}g</span>)}
-                  </div>
-                </div>
-              )}
             </div>
 
-            {upsell && (
-              <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-2xl p-3 flex items-center gap-3 animate-pulse">
-                <Flame size={14} className="text-emerald-400 shrink-0" />
-                <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
-                  Add {upsell.diff}g more for {upsell.ppg}฿ per gram!
-                </p>
-              </div>
-            )}
-
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
+            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? t.added : t.addToOrder}</button>
           </div>
         </div>
       </div>
@@ -278,25 +235,27 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
   );
 }
 
-function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
+function CheckoutModal({ items, total, onClose, t }: { items: any[], total: number, onClose: () => void, t: any }) {
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
+  
   const handleSubmit = async () => {
-    if (!contact) return alert("Please enter contact info");
+    if (!contact) return alert(t.contactPh);
     setIsSending(true);
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
-      alert("Order sent!"); clearCart(); onClose();
-    } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
+      alert(t.orderSent); clearCart(); onClose();
+    } catch (e) { alert(t.sendError); } finally { setIsSending(false); }
   };
+
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
+          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
@@ -312,9 +271,9 @@ function CheckoutModal({ items, total, onClose }: { items: any[], total: number,
           <div className="grid grid-cols-4 gap-2">
             {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
           </div>
-          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]">Confirm Order</button>
+          <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
+          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
+          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]">{t.confirmOrder}</button>
         </div>
       </div>
     </div>
@@ -327,7 +286,9 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
-  const { items, getTotal } = useCart();
+  
+  const { items, getTotal, lang, setLang } = useCart(); // Подключаем язык из стора
+  const t = translations[lang as keyof typeof translations]; // Текущий перевод
 
   const sortProductsByPrice = (prods: any[]) => {
     return [...prods].sort((a, b) => {
@@ -372,13 +333,10 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     return subs.map(sub => {
       let color = SELECTED_COLOR;
       const subLower = sub?.toLowerCase() || "";
-      
       if (subLower.includes('old school')) color = "#C1C1C1";
       if (subLower.includes('fresh frozen premium')) color = "#34D399"; 
       else if (subLower.includes('fresh frozen')) color = "#FEC107"; 
-      
       if (subLower.includes('live rosin')) color = "#A855F7"; 
-      
       return {
         id: sub,
         title: sub || "Concentrates",
@@ -399,6 +357,13 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex gap-3">
+              {/* Кнопка переключения языка */}
+              <button 
+                onClick={() => setLang(lang === 'en' ? 'ru' : 'en')}
+                className="w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[10px] text-emerald-400 active:scale-90 transition-all"
+              >
+                {lang.toUpperCase()}
+              </button>
               {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
                 <Link key={i} href={soc.url} target="_blank" className="p-3.5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all active:scale-90"><soc.icon size={22} className="opacity-60"/></Link>
               ))}
@@ -406,11 +371,16 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         </div>
 
         <div className="grid grid-cols-2 gap-3 mt-10">
-          {INFO_CARDS.map((card) => (
+          {[
+            { id: 1, titleKey: "dailySupport", value: "12:00—00:00", color: "#A855F7" },
+            { id: 3, titleKey: "minOrder", value: "1000฿", color: "#FBBF24" },
+            { id: 2, titleKey: "delivery", value: "60 MINUTES", color: "#2DD4BF" },
+            { id: 4, titleKey: "nationwide", value: "2-3 DAYS", color: "#60A5FA" },
+          ].map((card) => (
             <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
               <div className="space-y-1">
                 <p className="text-[15px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
-                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{card.title}</p>
+                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{(t as any)[card.titleKey]}</p>
               </div>
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full" style={{ backgroundColor: card.color }}></div>
             </div>
@@ -423,7 +393,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2">
               <BadgeIcon type="NEW" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">Updates</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.updates}</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar -mx-6 px-6 snap-x">
               {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
@@ -435,7 +405,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2">
               <BadgeIcon type="SALE" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">Sales</h2>
+              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.sales}</h2>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar -mx-6 px-6 snap-x">
               {flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
@@ -446,7 +416,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         <div className="space-y-6 pt-0.5">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Flower Menu</span>
+             <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
@@ -499,7 +469,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
             <>
               <div className="flex items-center gap-6 py-10">
                  <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/10 to-amber-500/30"></div>
-                 <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-amber-500/80">Concentrates</span>
+                 <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-amber-500/80">{t.concentrates}</span>
                  <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/10 to-amber-500/30"></div>
               </div>
 
@@ -539,11 +509,11 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
               <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={24} className="text-emerald-400"/></div>
               <div className="text-left">
                  <span className="block font-black uppercase text-[20px] tracking-tight leading-none mb-0.5">{getTotal()}฿</span>
-                 <span className="block font-black uppercase text-[10px] tracking-widest text-emerald-400 leading-none">{items.length} items</span>
+                 <span className="block font-black uppercase text-[10px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
               </div>
             </div>
             <div className="flex items-center gap-3 text-white relative z-10 opacity-70 hover:opacity-100 transition-opacity">
-              <span className="text-[13px] font-black uppercase tracking-widest italic">Basket</span>
+              <span className="text-[13px] font-black uppercase tracking-widest italic">{t.basket}</span>
               <Send size={20}/>
             </div>
           </button>
@@ -553,6 +523,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       {selectedProduct && (
         <ProductModal 
           product={selectedProduct} 
+          t={t}
           style={
             selectedProduct.category === 'concentrates' 
             ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR }
@@ -561,7 +532,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
           onClose={() => setSelectedProduct(null)} 
         />
       )}
-      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
+      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} t={t} onClose={() => setIsCheckoutOpen(false)} />}
     </div>
   );
 }
