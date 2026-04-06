@@ -37,7 +37,7 @@ const INFO_CARDS = [
   { id: 4, title: "NATIONWIDE", value: "2-3 DAYS", color: "#60A5FA" },
 ];
 
-const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
+// Убираем сокращения, оставляем полный текст
 const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
 
 // --- HELPERS ---
@@ -102,11 +102,11 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
-  // ПРАВКА: Исправлены тени (box-shadow вместо drop-shadow), которые вызывали баги на iPhone
+  // ПРАВКА: Уменьшены размеры значков (w-8 h-8)
   switch (type.toUpperCase()) {
-    case "NEW": return <div className="w-9 h-9 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0 shadow-[0_0_12px_rgba(59,130,246,0.25)]"><span className="text-[10px] font-black text-blue-400 tracking-wider">NEW</span></div>;
-    case "HIT": return <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0 shadow-[0_0_12px_rgba(249,115,22,0.25)]"><Flame size={18} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.25)]"><Percent size={18} className="text-emerald-400" /></div>;
+    case "NEW": return <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.2)]"><span className="text-[8px] font-black text-blue-400 tracking-wider">NEW</span></div>;
+    case "HIT": return <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0 shadow-[0_0_10px_rgba(249,115,22,0.2)]"><Flame size={14} className="text-orange-400" /></div>;
+    case "SALE": return <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0 shadow-[0_0_10px_rgba(16,185,129,0.2)]"><Percent size={14} className="text-emerald-400" /></div>;
     default: return null;
   }
 });
@@ -126,7 +126,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden ${isMini ? 'h-[180px]' : 'h-[240px]'}`} 
       style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}
     >
-      {!hideBadge && item.badge && <div className={`absolute top-4 right-4 z-20 ${isMini ? 'scale-90' : 'scale-110'}`}><BadgeIcon type={item.badge} /></div>}
+      {!hideBadge && item.badge && <div className={`absolute top-4 right-4 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}><BadgeIcon type={item.badge} /></div>}
       <div className={`relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black italic uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
@@ -137,7 +137,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
         </div>
       </div>
       <div className={`relative z-10 flex justify-between items-end px-5 pb-5 mt-auto`}>
-        <span className={`${isMini ? 'text-[10px]' : 'text-[11px]'} font-black uppercase tracking-widest`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
+        <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end gap-1">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}฿</span>}
           <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black italic tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
@@ -148,14 +148,14 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
 });
 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  <div onClick={onClick} className="flex items-center justify-between gap-3 px-8 py-5 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
+  <div onClick={onClick} className="flex items-center justify-between gap-3 px-8 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
     <div className="flex items-center gap-4 truncate flex-1">
-      <div className="w-10 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-      <span className="text-[16px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+      <div className="w-8 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      <span className="text-[14px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
     <div className="flex items-center gap-5 shrink-0">
-      {p.farm && p.farm !== "-" && <span className="text-[10px] font-bold text-white/20 uppercase tracking-widest italic truncate max-w-[100px]">{p.farm}</span>}
-      <span className="text-[11px] font-black uppercase px-3 py-1.5 rounded-lg bg-white/5 min-w-[45px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+      {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest italic truncate max-w-[90px]">{p.farm}</span>}
+      <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
     </div>
   </div>
 ));
@@ -213,7 +213,7 @@ function ProductModal({ product, style, onClose }: { product: any, style: any, o
           {(hasValue(product?.farm) || hasValue(product?.taste, "Sweet, Earthy") || hasValue(product?.terpenes, "Myrcene, Limonene")) && (
             <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
                {hasValue(product?.farm) && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
+                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><span className="text-[6px] font-black uppercase tracking-widest">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
                )}
                {hasValue(product?.taste, "Sweet, Earthy") && (
                  <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
@@ -374,10 +374,10 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
       const subLower = sub?.toLowerCase() || "";
       
       if (subLower.includes('old school')) color = "#C1C1C1";
-      if (subLower.includes('fresh frozen premium')) color = "#34D399"; // Premium Grade Color
-      else if (subLower.includes('fresh frozen')) color = "#FEC107"; // Golden Grade Color
+      if (subLower.includes('fresh frozen premium')) color = "#34D399"; 
+      else if (subLower.includes('fresh frozen')) color = "#FEC107"; 
       
-      if (subLower.includes('live rosin')) color = "#A855F7"; // Selected Grade Color
+      if (subLower.includes('live rosin')) color = "#A855F7"; 
       
       return {
         id: sub,
