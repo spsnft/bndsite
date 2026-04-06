@@ -95,26 +95,25 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
-  // ПРАВКА: Полностью удалено свечение, добавлена прозрачность 80%.
-  const baseClasses = "w-6 h-6 rounded-full flex items-center justify-center border shrink-0 opacity-80 transition-all";
+  const baseClasses = "w-[22px] h-[22px] rounded-full flex items-center justify-center border shrink-0 opacity-80 transition-all shadow-none";
   
   switch (type.toUpperCase()) {
     case "NEW": 
       return (
         <div className={`${baseClasses} bg-blue-600 border-blue-400`}>
-          <span className="text-[7px] font-black text-white tracking-tighter">NEW</span>
+          <span className="text-[6.5px] font-black text-white tracking-tighter">NEW</span>
         </div>
       );
     case "HIT": 
       return (
         <div className={`${baseClasses} bg-orange-600 border-orange-400`}>
-          <Flame size={11} className="text-white" />
+          <Flame size={10} className="text-white" />
         </div>
       );
     case "SALE": 
       return (
         <div className={`${baseClasses} bg-emerald-600 border-emerald-400`}>
-          <Percent size={11} className="text-white" />
+          <Percent size={10} className="text-white" />
         </div>
       );
     default: return null;
@@ -162,14 +161,18 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
 });
 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  // ПРАВКА: Изменено выравнивание. px-4 вместо px-8, чтобы бейдж был у края. 
-  // Gap-4 между бейджем и текстом для выравнивания текста по линии иконки категории.
+  // ПРАВКА: px-4 у родителя и gap-7 между шильдиком и текстом. 
+  // Это выравнивает начало текста точно по линии иконки из шапки категории.
   <div onClick={onClick} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
-    <div className="flex items-center gap-4 truncate flex-1">
-      <div className="w-6 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-      <span className="text-[14px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+    <div className="flex items-center gap-7 truncate flex-1">
+      <div className="w-[22px] flex justify-center shrink-0">
+        {p.badge && <BadgeIcon type={p.badge} />}
+      </div>
+      <span className="text-[14px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">
+        {p.name}
+      </span>
     </div>
-    <div className="flex items-center gap-5 shrink-0 pr-4">
+    <div className="flex items-center gap-5 shrink-0 pr-2">
       {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest italic truncate max-w-[90px]">{p.farm}</span>}
       <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
     </div>
@@ -451,8 +454,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
           {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              {/* ПРАВКА: px-4 вместо px-8 для выравнивания с контентом строк */}
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-4 py-8 flex flex-col items-start active:bg-white/5 transition-colors">
+              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full py-8 flex flex-col items-start active:bg-white/5 transition-colors">
+                {/* ПРАВКА: px-4 у заголовка секции, чтобы иконка была у края */}
                 <div className="w-full flex items-center justify-between mb-6 px-4">
                   <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
@@ -481,12 +484,12 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
           {eliteSections.map(sec => sec.items.length > 0 && (
             <div key={sec.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex items-center justify-between active:bg-white/5 transition-colors">
+              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-4 py-6 flex items-center justify-between active:bg-white/5 transition-colors">
                 <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                 <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
+                <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
                   {sec.items.map(p => (
                     <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
                   ))}
@@ -505,7 +508,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
               {concentrateSections.map(sec => (
                 <div key={sec.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-                  <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex items-center justify-between active:bg-white/5 transition-colors">
+                  <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-4 py-6 flex items-center justify-between active:bg-white/5 transition-colors">
                     <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                     <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                   </button>
@@ -517,7 +520,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
                         ))}
                       </div>
                     ) : (
-                      <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
+                      <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
                         {sec.items.map(p => (
                           <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
                         ))}
