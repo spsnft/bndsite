@@ -58,13 +58,13 @@ const processProductData = (rawProducts: any[]) => {
       }
       if (key.startsWith('oldprice_')) {
         const weight = key.replace('oldprice_', '').replace('g', '');
-        prices[weight] = p[key];
+        oldPrices[weight] = p[key];
       }
     });
     return {
       ...p,
       prices: Object.keys(prices).length ? prices : p.prices,
-      old_prices: Object.keys(oldPrices).length ? oldPrices : null
+      old_prices: Object.keys(oldPrices).length ? oldPrices : p.old_prices
     };
   });
 };
@@ -76,6 +76,8 @@ const isElite = (product: any) => {
 
 const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boolean) => {
   if (!prices) return 0;
+  
+  // Для элитных товаров маппинг веса в ключи (3.5g -> 1, 7g -> 5 и т.д. по твоей логике)
   if (isEliteProduct) {
     const eliteMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
     const steps = [3.5, 7, 14, 28];
@@ -83,14 +85,21 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
     const priceAtTier = Number(prices[eliteMap[baseTier]]) || 0;
     return priceAtTier > 0 ? (priceAtTier / baseTier) * weight : 0;
   }
+
+  // Стандартная логика для Buds/Concentrates
   const tiers = [1, 5, 10, 20];
   const lowerTier = [...tiers].reverse().find(t => t <= weight) || 1;
   const upperTier = tiers.find(t => t > weight) || 20;
+  
   const val1 = Number(prices[lowerTier]) || 0;
   const val2 = Number(prices[upperTier]) || val1; 
+
   if (val1 === 0) return 0;
-  if (lowerTier === upperTier) return val1;
-  return val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
+  if (lowerTier === upperTier || val1 === val2) return (val1 / lowerTier) * weight;
+
+  // Линейная интерполяция между ступенями цен
+  const pricePerG = val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
+  return pricePerG;
 };
 
 const getFirstAvailablePrice = (product: any) => {
@@ -365,7 +374,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
     triggerHaptic('medium');
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}<Baht />`).join("\n"), total }) });
+      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
       triggerHaptic('success');
       alert(t.orderSent); clearCart(); onClose();
     } catch (e) { alert(t.sendError); } finally { setIsSending(false); }
@@ -389,9 +398,9 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
                     <div>
                       <p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht />/г</span>!</>
+                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
                         ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht />/g</span> price!</>
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
                         )}
                       </p>
                     </div>
@@ -410,7 +419,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
                 >
                   <h3 className="text-[11px] font-black uppercase truncate">{item.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}<Baht /></p>
+                    <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
                     <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color || SELECTED_COLOR }}>{item.subcategory}</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
@@ -428,7 +437,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
             {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}<Baht className="opacity-40" /></p></div>
+          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿<span className="opacity-40 ml-1"></span></p></div>
           <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">{t.confirmOrder}</button>
         </div>
       </div>
@@ -536,7 +545,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               : 'Your trusted guide to a world of premium quality and service'}
           </p>
 
-          {/* --- МИНИ-УТП СЕТКА 2х2 --- */}
           <div className="grid grid-cols-2 gap-3 relative z-10">
              <div className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
@@ -565,7 +573,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        {/* --- БЛОК КАК ЗАКАЗАТЬ (С ОРАНЖЕВОЙ ПОДСВЕТКОЙ) --- */}
+        {/* --- БЛОК КАК ЗАКАЗАТЬ --- */}
         <div className="relative py-8 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-6">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-[#F59E0B]/5 rounded-full blur-[40px]"></div>
@@ -652,11 +660,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   {getDesc(grade.id) && (<p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
                   <div className="w-full grid grid-cols-4 gap-2 px-4">
                      {[1, 5, 10, 20].map(w => {
-                       const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
+                       const p = Math.round(Number(priceRef.prices?.[w]) || 0);
                        return (
                          <div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5">
                            <span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span>
-                           <span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<Baht /></>) : '—'}</span>
+                           <span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}฿</>) : '—'}</span>
                          </div>
                        )
                      })}
@@ -734,7 +742,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <div className="flex items-center gap-4 relative z-10">
               <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
               <div className="text-left">
-                 <div className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}<Baht /></div>
+                 <div className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}฿</div>
                  <span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
               </div>
             </div>
