@@ -165,12 +165,16 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
   
   const availableSteps = steps.filter(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0);
-  const [weight, setWeight] = React.useState(availableSteps[0] || steps[0]);
+  const minW = availableSteps[0];
+  const maxW = availableSteps[availableSteps.length - 1];
+
+  const [weight, setWeight] = React.useState(minW || steps[0]);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
   
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
+  const perGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
 
   const nextStep = availableSteps.find(w => w > weight);
   const promoInfo = React.useMemo(() => {
@@ -204,12 +208,13 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
                 {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
                 <span className="text-4xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
               </div>
-              <div className="text-[11px] font-black uppercase opacity-40 text-white tracking-widest">
-                {Math.round(currentPrice / weight)}฿/G
+              <div className="flex flex-col items-end">
+                <div className="text-[14px] font-black uppercase text-white tracking-tighter">{weight}G</div>
+                <div className="text-[9px] font-black uppercase opacity-40 text-white tracking-widest">{perGram}฿/G</div>
               </div>
             </div>
 
-            {/* СИНХРОННЫЕ КНОПКИ ВЫБОРА */}
+            {/* СИНХРОННЫЕ КНОПКИ */}
             <div className="grid grid-cols-4 gap-2">
               {availableSteps.map((v) => (
                 <button 
@@ -222,26 +227,32 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
               ))}
             </div>
 
-            {/* СЛАЙДЕР ВЫБОРА */}
-            <div className="relative h-10 flex items-center px-2">
-              <div className="absolute left-0 right-0 h-1 bg-white/5 rounded-full"></div>
-              <div 
-                className="absolute left-0 h-1 bg-white rounded-full transition-all duration-300" 
-                style={{ width: `${((availableSteps.indexOf(weight)) / (availableSteps.length - 1)) * 100}%` }}
-              ></div>
+            {/* ФУНКЦИОНАЛЬНЫЙ СЛАЙДЕР С ШАГОМ 0.5 */}
+            <div className="relative h-10 flex items-center px-1">
+              <div className="absolute left-0 right-0 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-white transition-all duration-100" 
+                  style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}
+                ></div>
+              </div>
               <input 
                 type="range" 
-                min="0" 
-                max={availableSteps.length - 1} 
-                step="1" 
-                value={availableSteps.indexOf(weight)} 
-                onChange={(e) => setWeight(availableSteps[parseInt(e.target.value)])}
+                min={minW} 
+                max={maxW} 
+                step="0.5" 
+                value={weight} 
+                onChange={(e) => setWeight(parseFloat(e.target.value))}
                 className="absolute w-full h-full opacity-0 cursor-pointer z-10"
               />
+              <div 
+                className="absolute w-5 h-5 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)] pointer-events-none transition-all duration-100 flex items-center justify-center"
+                style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 10px)` }}
+              >
+                 <div className="w-1.5 h-1.5 bg-[#193D2E] rounded-full"></div>
+              </div>
             </div>
           </div>
 
-          {/* ПУЛЬСИРУЮЩИЙ ПРИЗЫВ */}
           {promoInfo && (
             <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
               <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
@@ -333,12 +344,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     return lang === 'ru' ? data.description_ru : data.description_eng;
   };
 
-  const sortProductsByPrice = (prods: any[]) => {
-    return [...prods].sort((a, b) => {
-      const priceA = getFirstAvailablePrice(a).price;
-      const priceB = getFirstAvailablePrice(b).price;
-      return priceB - priceA;
-    });
+  const getFirstAvailablePrice = (product: any) => {
+    const isEliteProduct = isElite(product);
+    const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+    const keyMap: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
+    for (let w of steps) {
+      const price = Number(product.prices?.[keyMap[w]]) || 0;
+      if (price > 0) return { price: Math.round(price), weight: w };
+    }
+    return { price: 0, weight: 0 };
   };
 
   const recentUpdates = React.useMemo(() => {
@@ -347,14 +361,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       const dateA = a.date ? a.date.split('.').reverse().join('') : '0000';
       const dateB = b.date ? b.date.split('.').reverse().join('') : '0000';
       if (dateB !== dateA) return dateB.localeCompare(dateA);
-      const priceA = getFirstAvailablePrice(a).price;
-      const priceB = getFirstAvailablePrice(b).price;
-      return priceB - priceA;
+      return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
     });
   }, [processedProducts]);
 
   const flashSales = React.useMemo(() => 
-    sortProductsByPrice(processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')), 
+    [...processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')].sort((a, b) => getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price), 
   [processedProducts]);
 
   const gradeSections = React.useMemo(() => {
@@ -380,48 +392,42 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       if (subLower.includes('fresh frozen premium')) color = "#34D399"; 
       else if (subLower.includes('fresh frozen')) color = "#FEC107"; 
       if (subLower.includes('live rosin')) color = "#A855F7"; 
-      return {
-        id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon: Droplets, isList: subLower.includes('old school')
-      };
+      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon: Droplets, isList: subLower.includes('old school') };
     });
   }, [processedProducts]);
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
-      <header className="max-w-xl mx-auto pt-6 mb-8">
+      <header className="max-w-xl mx-auto pt-2 mb-4">
         <div className="flex items-center justify-between px-2"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[35px]"></div>
-              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
+              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={84} height={84} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                  <Link key={i} href={soc.url} target="_blank" className="p-3.5 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-all active:scale-90"><soc.icon size={22} className="opacity-60"/></Link>
+                  <Link key={i} href={soc.url} target="_blank" className="p-3 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all"><soc.icon size={20} className="opacity-60"/></Link>
                 ))}
               </div>
-              <button 
-                onClick={() => setLang(lang === 'en' ? 'ru' : 'en')}
-                className="ml-8 w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[10px] text-emerald-400 active:scale-90 transition-all shrink-0"
-              >
+              <button onClick={() => setLang(lang === 'en' ? 'ru' : 'en')} className="ml-6 w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[9px] text-emerald-400 active:scale-90 transition-all shrink-0">
                 {lang === 'en' ? 'RU' : 'EN'}
               </button>
            </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mt-10">
+        {/* УТП БЛОКИ - ПРИЖАТЫ МАКСИМАЛЬНО */}
+        <div className="grid grid-cols-2 gap-2 mt-4">
           {[
             { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
             { id: 3, titleKey: "minOrder", value: "1000฿" },
             { id: 2, titleKey: "delivery", value: "60 MINUTES" },
             { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
           ].map((card) => (
-            <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
-              <div className="space-y-1">
-                <p className="text-[15px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
-                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{(t as any)[card.titleKey]}</p>
-              </div>
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-emerald-400/80 shadow-[0_0_8px_rgba(52,211,153,0.4)]"></div>
+            <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center">
+              <p className="text-[13px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
+              <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/30 mt-1 leading-tight">{(t as any)[card.titleKey]}</p>
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-emerald-400/60 shadow-[0_0_8px_rgba(52,211,153,0.3)]"></div>
             </div>
           ))}
         </div>
@@ -430,29 +436,19 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       <div className="max-w-xl mx-auto space-y-3">
         {recentUpdates.length > 0 && (
           <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2">
-              <BadgeIcon type="NEW" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.updates}</h2>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
-            </div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.updates}</h2></div>
+            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}</div>
           </section>
         )}
 
         {flashSales.length > 0 && (
           <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2">
-              <BadgeIcon type="SALE" />
-              <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.sales}</h2>
-            </div>
-            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">
-              {flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
-            </div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.sales}</h2></div>
+            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}</div>
           </section>
         )}
 
-        <div className="space-y-6 pt-0.5">
+        <div className="space-y-6">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
              <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">{t.flowerMenu}</span>
@@ -461,13 +457,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
           {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-4 py-8 flex flex-col items-start active:bg-white/5 transition-colors">
+              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-4 py-8 flex flex-col active:bg-white/5 transition-colors">
                 <div className="w-full flex items-center justify-between mb-4 px-4">
                   <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
                 {getDesc(grade.id) && (<p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
-                <div className="w-full grid grid-cols-4 gap-2 opacity-90 px-4">
+                <div className="w-full grid grid-cols-4 gap-2 px-4">
                    {[1, 5, 10, 20].map(w => {
                      const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
                      return (
@@ -480,9 +476,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 </div>
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="divide-y divide-white/5 bg-white/5">
-                  {items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
-                </div>
+                <div className="divide-y divide-white/5 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
               </div>
             </div>
           ))}
@@ -497,9 +491,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
-                  {sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}
-                </div>
+                <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div>
               </div>
             </div>
           ))}
@@ -522,13 +514,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     {sec.isList ? (
-                      <div className="divide-y divide-white/5 bg-white/5">
-                        {sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
-                      </div>
+                      <div className="divide-y divide-white/5 bg-white/5">{sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                     ) : (
-                      <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
-                        {sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}
-                      </div>
+                      <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div>
                     )}
                   </div>
                 </div>
@@ -541,7 +529,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       {items.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-6">
           <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-2xl text-white py-3 px-7 rounded-[2.5rem] border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none"></div>
             <div className="flex items-center gap-4 relative z-10">
               <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
               <div className="text-left">
@@ -549,7 +536,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                  <span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
               </div>
             </div>
-            <div className="flex items-center gap-3 text-white relative z-10 opacity-70 hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-3 text-white relative z-10 opacity-70">
               <span className="text-[12px] font-black uppercase tracking-widest italic">{t.basket}</span>
               <Send size={18}/>
             </div>
