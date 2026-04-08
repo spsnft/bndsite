@@ -98,28 +98,12 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
   const sizeClasses = isSmall ? "w-4 h-4 opacity-60" : "w-6 h-6 opacity-100";
   const iconSize = isSmall ? 8 : 11;
   const textFontSize = isSmall ? "text-[5px]" : "text-[7px]";
-  
   const baseClasses = `${sizeClasses} rounded-full flex items-center justify-center border shrink-0 transition-all`;
   
   switch (type.toUpperCase()) {
-    case "NEW": 
-      return (
-        <div className={`${baseClasses} bg-blue-600 border-blue-400`}>
-          <span className={`${textFontSize} font-black text-white tracking-tighter`}>NEW</span>
-        </div>
-      );
-    case "HIT": 
-      return (
-        <div className={`${baseClasses} bg-orange-600 border-orange-400`}>
-          <Flame size={iconSize} className="text-white" />
-        </div>
-      );
-    case "SALE": 
-      return (
-        <div className={`${baseClasses} bg-emerald-600 border-emerald-400`}>
-          <Percent size={iconSize} className="text-white" />
-        </div>
-      );
+    case "NEW": return (<div className={`${baseClasses} bg-blue-600 border-blue-400`}><span className={`${textFontSize} font-black text-white tracking-tighter`}>NEW</span></div>);
+    case "HIT": return (<div className={`${baseClasses} bg-orange-600 border-orange-400`}><Flame size={iconSize} className="text-white" /></div>);
+    case "SALE": return (<div className={`${baseClasses} bg-emerald-600 border-emerald-400`}><Percent size={iconSize} className="text-white" /></div>);
     default: return null;
   }
 });
@@ -139,11 +123,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden ${isMini ? 'h-[180px]' : 'h-[240px]'}`} 
       style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}
     >
-      {!hideBadge && item.badge && (
-        <div className={`absolute top-3 right-3 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}>
-          <BadgeIcon type={item.badge} />
-        </div>
-      )}
+      {!hideBadge && item.badge && (<div className={`absolute top-3 right-3 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}><BadgeIcon type={item.badge} /></div>)}
       <div className={`relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black italic uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
@@ -183,73 +163,103 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-  const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
   
-  const [weight, setWeight] = React.useState(firstAvailableWeight);
+  const availableSteps = steps.filter(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0);
+  const [weight, setWeight] = React.useState(availableSteps[0] || steps[0]);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
   
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
-  const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
 
-  const hasValue = (val: string, placeholder?: string) => {
-    if (!val) return false;
-    const v = val.trim();
-    if (v === "" || v === "-" || v.toLowerCase() === "none") return false;
-    if (placeholder && v.toLowerCase() === placeholder.toLowerCase()) return false;
-    return true;
-  };
+  const nextStep = availableSteps.find(w => w > weight);
+  const promoInfo = React.useMemo(() => {
+    if (!nextStep) return null;
+    const nextPrice = Math.round(getInterpolatedPrice(nextStep, product.prices, isEliteProduct));
+    const nextPerGram = Math.round(nextPrice / nextStep);
+    return { diff: (nextStep - weight).toFixed(1).replace('.0', ''), perGram: nextPerGram };
+  }, [weight, nextStep, product.prices, isEliteProduct]);
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
-        <div className="relative aspect-[1.4/1] w-full bg-black/10">
+        
+        <div className="relative aspect-[1.3/1] w-full bg-black/10">
           <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
-          <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
             <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/60">
-              <span style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
-              <span className="mx-2 opacity-20">•</span>
-              <span style={{ color: style?.color }}>{product?.subcategory}</span>
-            </p>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
+              <span className="w-1 h-1 rounded-full bg-white/20"></span>
+              <span className="text-[9px] font-black uppercase tracking-widest opacity-60" style={{ color: style?.color }}>{product?.subcategory}</span>
+            </div>
           </div>
         </div>
-        <div className="px-6 pb-6 space-y-5">
-          {(hasValue(product?.farm) || hasValue(product?.taste, "Sweet, Earthy") || hasValue(product?.terpenes, "Myrcene, Limonene")) && (
-            <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
-               {hasValue(product?.farm) && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><span className="text-[6px] font-black uppercase tracking-widest">{t.farm}</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
-               )}
-               {hasValue(product?.taste, "Sweet, Earthy") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">{t.taste}</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
-               )}
-               {hasValue(product?.terpenes, "Myrcene, Limonene") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">{t.terps}</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
-               )}
-            </div>
-          )}
+
+        <div className="px-6 pb-8 space-y-6">
           <div className="space-y-5">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
-                 {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
-                 <span className="text-3xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
+                {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
+                <span className="text-4xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
               </div>
-              <div className="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-full border border-white/5 text-white/60 tracking-widest">{weight}g</div>
-            </div>
-            <div className="space-y-4">
-              <div className="grid grid-cols-4 gap-1.5">
-                {steps.map(v => {
-                  const available = isWeightAvailable(v);
-                  return (
-                    <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-3 text-[9px] font-black rounded-xl border transition-all ${!available ? "opacity-5 grayscale border-white/5" : weight === v ? "bg-white text-black border-white" : "border-white/5 text-white/30 active:bg-white/5"}`}>{v}g</button>
-                  )
-                })}
+              <div className="text-[11px] font-black uppercase opacity-40 text-white tracking-widest">
+                {Math.round(currentPrice / weight)}฿/G
               </div>
             </div>
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? t.added : t.addToOrder}</button>
+
+            {/* СИНХРОННЫЕ КНОПКИ ВЫБОРА */}
+            <div className="grid grid-cols-4 gap-2">
+              {availableSteps.map((v) => (
+                <button 
+                  key={v} 
+                  onClick={() => setWeight(v)}
+                  className={`py-3 rounded-xl text-[11px] font-black transition-all border ${weight === v ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5'}`}
+                >
+                  {v}G
+                </button>
+              ))}
+            </div>
+
+            {/* СЛАЙДЕР ВЫБОРА */}
+            <div className="relative h-10 flex items-center px-2">
+              <div className="absolute left-0 right-0 h-1 bg-white/5 rounded-full"></div>
+              <div 
+                className="absolute left-0 h-1 bg-white rounded-full transition-all duration-300" 
+                style={{ width: `${((availableSteps.indexOf(weight)) / (availableSteps.length - 1)) * 100}%` }}
+              ></div>
+              <input 
+                type="range" 
+                min="0" 
+                max={availableSteps.length - 1} 
+                step="1" 
+                value={availableSteps.indexOf(weight)} 
+                onChange={(e) => setWeight(availableSteps[parseInt(e.target.value)])}
+                className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+              />
+            </div>
           </div>
+
+          {/* ПУЛЬСИРУЮЩИЙ ПРИЗЫВ */}
+          {promoInfo && (
+            <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
+              <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
+                Add <span className="text-white">{promoInfo.diff}g</span> more for <span className="text-white">{promoInfo.perGram}฿</span> per gram!
+              </p>
+            </div>
+          )}
+
+          <button 
+            onClick={() => { 
+              addItem({ ...product, price: currentPrice, weight: `${weight}g` }); 
+              setIsAdded(true); 
+              setTimeout(() => {setIsAdded(false); onClose();}, 800); 
+            }} 
+            className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}
+          >
+            {isAdded ? t.added : t.addToOrder}
+          </button>
         </div>
       </div>
     </div>
@@ -294,12 +304,7 @@ function CheckoutModal({ items, total, onClose, t }: { items: any[], total: numb
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
           <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button 
-            onClick={handleSubmit} 
-            className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] active:brightness-110 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]"
-          >
-            {t.confirmOrder}
-          </button>
+          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] transition-all">{t.confirmOrder}</button>
         </div>
       </div>
     </div>
@@ -316,7 +321,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
 
-  // Карта описаний для быстрого доступа
   const descriptionsMap = React.useMemo(() => {
     const map: Record<string, any> = {};
     initialDescriptions.forEach(d => { if (d.subcategory) map[d.subcategory.toLowerCase().trim()] = d; });
@@ -377,12 +381,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       else if (subLower.includes('fresh frozen')) color = "#FEC107"; 
       if (subLower.includes('live rosin')) color = "#A855F7"; 
       return {
-        id: sub,
-        title: sub || "Concentrates",
-        items: allConcs.filter(p => p.subcategory === sub),
-        color: color,
-        icon: Droplets,
-        isList: subLower.includes('old school')
+        id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon: Droplets, isList: subLower.includes('old school')
       };
     });
   }, [processedProducts]);
@@ -422,7 +421,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <p className="text-[15px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
                 <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{(t as any)[card.titleKey]}</p>
               </div>
-              {/* Единая подсветка под цвет заголовка основного меню */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-emerald-400/80 shadow-[0_0_8px_rgba(52,211,153,0.4)]"></div>
             </div>
           ))}
@@ -468,11 +466,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
-                {getDesc(grade.id) && (
-                  <p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">
-                    {getDesc(grade.id)}
-                  </p>
-                )}
+                {getDesc(grade.id) && (<p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
                 <div className="w-full grid grid-cols-4 gap-2 opacity-90 px-4">
                    {[1, 5, 10, 20].map(w => {
                      const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
@@ -487,9 +481,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                 <div className="divide-y divide-white/5 bg-white/5">
-                  {items.map((p: any) => (
-                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
-                  ))}
+                  {items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
                 </div>
               </div>
             </div>
@@ -502,17 +494,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                 </div>
-                {getDesc(sec.id) && (
-                  <p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">
-                    {getDesc(sec.id)}
-                  </p>
-                )}
+                {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                 <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
-                  {sec.items.map(p => (
-                    <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
-                  ))}
+                  {sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}
                 </div>
               </div>
             </div>
@@ -525,7 +511,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                  <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-amber-500/80">{t.concentrates}</span>
                  <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/10 to-amber-500/30"></div>
               </div>
-
               {concentrateSections.map(sec => (
                 <div key={sec.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
                   <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
@@ -533,24 +518,16 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                     </div>
-                    {getDesc(sec.id) && (
-                      <p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">
-                        {getDesc(sec.id)}
-                      </p>
-                    )}
+                    {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     {sec.isList ? (
                       <div className="divide-y divide-white/5 bg-white/5">
-                        {sec.items.map(p => (
-                          <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
-                        ))}
+                        {sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
                       </div>
                     ) : (
                       <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
-                        {sec.items.map(p => (
-                          <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
-                        ))}
+                        {sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}
                       </div>
                     )}
                   </div>
@@ -582,8 +559,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
       {selectedProduct && (
         <ProductModal 
-          product={selectedProduct} 
-          t={t}
+          product={selectedProduct} t={t}
           style={
             selectedProduct.category === 'concentrates' 
             ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR }
