@@ -410,18 +410,20 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="flex flex-col gap-2 mt-10">
+        <div className="grid grid-cols-2 gap-3 mt-10">
           {[
             { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
             { id: 3, titleKey: "minOrder", value: "1000฿" },
             { id: 2, titleKey: "delivery", value: "60 MINUTES" },
             { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
           ].map((card) => (
-            <div key={card.id} className="relative px-6 py-4 rounded-3xl border border-white/5 bg-black/20 flex items-center justify-between group overflow-hidden">
-               {/* Единая подсветка под цвет заголовка меню */}
-              <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-emerald-400/60 shadow-[2px_0_10px_rgba(52,211,153,0.3)]"></div>
-              <p className="text-[8px] font-black uppercase tracking-[0.25em] text-white/30">{(t as any)[card.titleKey]}</p>
-              <p className="text-[14px] font-black italic tracking-wider text-white uppercase">{card.value}</p>
+            <div key={card.id} className="relative p-5 rounded-[2.2rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[80px]">
+              <div className="space-y-1">
+                <p className="text-[15px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
+                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{(t as any)[card.titleKey]}</p>
+              </div>
+              {/* Единая подсветка под цвет заголовка основного меню */}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-emerald-400/80 shadow-[0_0_8px_rgba(52,211,153,0.4)]"></div>
             </div>
           ))}
         </div>
