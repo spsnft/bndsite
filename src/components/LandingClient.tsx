@@ -108,7 +108,7 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
   }
 });
 
-const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean }) => {
+const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean, showSubcategory?: boolean }) => {
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
     : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR));
@@ -127,7 +127,9 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
       <div className={`relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black italic uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
-          <p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest`}>{item.subcategory || "Product"}</p>
+          {showSubcategory && (
+            <p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest`}>{item.subcategory || "Product"}</p>
+          )}
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-2">
             <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt={item.name} />
@@ -226,18 +228,14 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
               ))}
             </div>
 
-            {/* 2) ПОПРАВЛЕННЫЙ СЛАЙДЕР С ИДЕАЛЬНОЙ РЕАКЦИЕЙ НА ПАЛЕЦ */}
             <div className="relative h-14 flex items-center px-1 group">
-              {/* Трек */}
               <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
-                {/* Прогресс */}
                 <div 
                   className="h-full bg-white transition-all duration-100" 
                   style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}
                 ></div>
               </div>
               
-              {/* Реальный инпут с огромной невидимой хваталкой */}
               <input 
                 type="range" 
                 min={minW} 
@@ -250,7 +248,6 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
                            [&::-moz-range-thumb]:w-12 [&::-moz-range-thumb]:h-12 [&::-moz-range-thumb]:appearance-none"
               />
               
-              {/* Визуальный кружок, привязанный к позиции инпута */}
               <div 
                 className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-100 flex items-center justify-center border-4 border-[#193D2E] z-10"
                 style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)` }}
@@ -431,9 +428,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
           ].map((card) => (
             <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center">
-              {/* 1) ЗАГОЛОВОК УТП - 16 */}
               <p className="text-[16px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
-              {/* 1) ПОДПИСЬ УТП - 12 */}
               <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 mt-1 leading-tight">{(t as any)[card.titleKey]}</p>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-emerald-400/60 shadow-[0_0_8px_rgba(52,211,153,0.3)]"></div>
             </div>
@@ -445,14 +440,16 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         {recentUpdates.length > 0 && (
           <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.updates}</h2></div>
-            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}</div>
+            {/* Highlights Section: showSubcategory={true} */}
+            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
 
         {flashSales.length > 0 && (
           <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.sales}</h2></div>
-            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}</div>
+            {/* Highlights Section: showSubcategory={true} */}
+            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
 
@@ -499,7 +496,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                {/* Main Menu Grid: showSubcategory={false} */}
+                <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
               </div>
             </div>
           ))}
@@ -524,7 +522,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     {sec.isList ? (
                       <div className="divide-y divide-white/5 bg-white/5">{sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                     ) : (
-                      <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                      /* Main Menu Grid: showSubcategory={false} */
+                      <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
                     )}
                   </div>
                 </div>
