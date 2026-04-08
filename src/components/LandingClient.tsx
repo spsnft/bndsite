@@ -298,32 +298,31 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
     
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
+      if (isElite(item)) return; // Исключаем Local Exclusives и Import
+
       const w = parseFloat(item.weight) || 0;
       if (!groups[sub]) {
-        groups[sub] = { weight: 0, prices: item.prices, isElite: isElite(item), sub: item.subcategory };
+        groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
       }
       groups[sub].weight += w;
     });
 
     return Object.values(groups).map(group => {
-      const steps = group.isElite ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+      const steps = [1, 5, 10, 20];
       const nextStep = steps.find(s => s > group.weight);
       
       if (!nextStep || !group.prices) return null;
 
-      const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, group.isElite));
+      const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, false));
       const nextPerGram = Math.round(nextPrice / nextStep);
-      const currentPerGram = Math.round(getInterpolatedPrice(group.weight, group.prices, group.isElite) / group.weight);
       const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
       
-      const gradeInfo = GRADES.find(g => g.id === group.sub.toLowerCase()) || 
-                        (group.sub.toLowerCase().includes('import') ? { color: IMPORT_COLOR } : { color: SELECTED_COLOR });
+      const gradeInfo = GRADES.find(g => g.id === group.sub.toLowerCase()) || { color: SELECTED_COLOR };
 
       return {
         sub: group.sub,
         diff,
         nextPerGram,
-        currentPerGram,
         color: gradeInfo.color,
         nextStep
       };
@@ -349,7 +348,6 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
-          {/* Блок апсейла */}
           {categoryPromos.length > 0 && (
             <div className="space-y-2">
               {categoryPromos.map((promo: any) => (
@@ -357,13 +355,12 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
                   <div className="flex items-start gap-3">
                     <div className="p-2 rounded-xl bg-white/5" style={{ color: promo.color }}><Sparkles size={16} /></div>
                     <div>
-                      <p className="text-[11px] font-black uppercase tracking-tight text-white/90">
-                        {lang === 'ru' ? 'Почти у цели!' : 'Almost there!'}
-                      </p>
-                      <p className="text-[10px] font-medium text-white/50 leading-tight mt-1">
-                        {lang === 'ru' 
-                          ? `Добавь еще ${promo.diff}г любого сорта из категории ${promo.sub}, чтобы цена стала ${promo.nextPerGram}฿/г на всё!`
-                          : `Add ${promo.diff}g more of any ${promo.sub} strain to get ${promo.nextPerGram}฿/g for all!`}
+                      <p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
+                        {lang === 'ru' ? (
+                          <>Добавь еще <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из категории <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
+                        ) : (
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> more of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> to unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
+                        )}
                       </p>
                     </div>
                   </div>
@@ -376,7 +373,14 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
             {items.map((item: any) => (
               <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
                 <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
-                <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
+                    <span className="w-1 h-1 rounded-full bg-white/10"></span>
+                    <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color || SELECTED_COLOR }}>{item.subcategory}</p>
+                  </div>
+                </div>
                 <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
               </div>
             ))}
@@ -389,7 +393,7 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
           <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] transition-all">{t.confirmOrder}</button>
+          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">{t.confirmOrder}</button>
         </div>
       </div>
     </div>
