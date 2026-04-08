@@ -95,6 +95,32 @@ const getFirstAvailablePrice = (product: any) => {
 
 // --- COMPONENTS ---
 
+const InfoTicker = ({ text }: { text: string }) => {
+  if (!text) return null;
+  return (
+    <div className="relative w-full overflow-hidden bg-white/5 border-y border-white/5 py-2 mt-4 mb-2">
+      <style jsx>{`
+        @keyframes ticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .ticker-content {
+          display: inline-flex;
+          white-space: nowrap;
+          animation: ticker 30s linear infinite;
+        }
+      `}</style>
+      <div className="ticker-content flex gap-8">
+        {[...Array(4)].map((_, i) => (
+          <span key={i} className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/80 italic flex items-center gap-3">
+            {text} <Sparkles size={10} className="opacity-40" />
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boolean }) => {
   const sizeClasses = isSmall ? "w-4 h-4 opacity-60" : "w-6 h-6 opacity-100";
   const iconSize = isSmall ? 8 : 11;
@@ -272,7 +298,7 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
 
           <button 
             onClick={() => { 
-              addItem({ ...product, price: currentPrice, weight: `${weight}g`, subcategory: product.subcategory }); 
+              addItem({ ...product, price: currentPrice, weight: `${weight}g`, subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
               setIsAdded(true); 
               setTimeout(() => {setIsAdded(false); onClose();}, 800); 
             }} 
@@ -292,7 +318,6 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
 
-  // --- ЛОГИКА АПСЕЙЛА В КОРЗИНЕ ---
   const categoryPromos = React.useMemo(() => {
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     
@@ -426,6 +451,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     return lang === 'ru' ? data.description_ru : data.description_eng;
   };
 
+  const tickerText = React.useMemo(() => {
+    const data = descriptionsMap["info-block"];
+    if (!data) return "";
+    return lang === 'ru' ? data.description_ru : data.description_eng;
+  }, [descriptionsMap, lang]);
+
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
     return [...news].sort((a, b) => {
@@ -461,18 +492,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       let icon = Droplets;
       const subLower = sub?.toLowerCase() || "";
       
-      if (subLower.includes('old school')) {
-        color = "#C1C1C1";
-        icon = Box;
-      }
-      else if (subLower.includes('fresh frozen')) {
-        color = subLower.includes('premium') ? "#34D399" : "#FEC107";
-        icon = Snowflake;
-      }
-      else if (subLower.includes('live rosin')) {
-        color = "#A855F7";
-        icon = Droplets;
-      }
+      if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
+      else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
+      else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
       
       return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: subLower.includes('old school') };
     });
@@ -512,6 +534,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           ))}
         </div>
+        
+        <InfoTicker text={tickerText} />
       </header>
 
       <div className="max-w-xl mx-auto space-y-3">
