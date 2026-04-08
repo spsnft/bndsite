@@ -3,10 +3,10 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
+  Plus, Tag, Zap, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
   SendHorizontal, Trash2, ChevronDown, Star, Phone, 
-  Droplets, Snowflake, Box, Sparkles
+  Droplets, Snowflake, Box, Sparkles, Flame, Percent
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -96,15 +96,23 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boolean }) => {
-  const sizeClasses = isSmall ? "w-4 h-4 opacity-60" : "w-6 h-6 opacity-100";
-  const iconSize = isSmall ? 8 : 11;
-  const textFontSize = isSmall ? "text-[5px]" : "text-[7px]";
-  const baseClasses = `${sizeClasses} rounded-full flex items-center justify-center border shrink-0 transition-all`;
-  
+  const iconSize = isSmall ? 10 : 14;
+  const colorClass = {
+    NEW: "text-blue-400",
+    SALE: "text-emerald-400",
+    HIT: "text-orange-400"
+  }[type.toUpperCase()] || "text-white";
+
+  const iconWrapper = (icon: React.ReactNode) => (
+    <div className={`${isSmall ? '' : 'p-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-lg'}`}>
+      {icon}
+    </div>
+  );
+
   switch (type.toUpperCase()) {
-    case "NEW": return (<div className={`${baseClasses} bg-blue-600 border-blue-400`}><span className={`${textFontSize} font-black text-white tracking-tighter`}>NEW</span></div>);
-    case "HIT": return (<div className={`${baseClasses} bg-orange-600 border-orange-400`}><Flame size={iconSize} className="text-white" /></div>);
-    case "SALE": return (<div className={`${baseClasses} bg-emerald-600 border-emerald-400`}><Percent size={iconSize} className="text-white" /></div>);
+    case "NEW": return iconWrapper(<Plus size={iconSize} className={colorClass} strokeWidth={3} />);
+    case "SALE": return iconWrapper(<Tag size={iconSize} className={colorClass} strokeWidth={2.5} />);
+    case "HIT": return iconWrapper(<Zap size={iconSize} className={colorClass} strokeWidth={2.5} fill="currentColor" fillOpacity={0.2} />);
     default: return null;
   }
 });
@@ -639,3 +647,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
+
