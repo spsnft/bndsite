@@ -496,6 +496,47 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
+        {/* --- ВРЕМЕННЫЕ ВАРИАНТЫ "О НАС" ДЛЯ ВЫБОРА --- */}
+        <div className="space-y-6 my-8">
+          {/* Вариант 1: Цитата */}
+          <div className="px-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Option 1: Minimalist</p>
+            <div className="border-l-2 border-emerald-500/30 pl-4">
+              <p className="text-[13px] font-medium leading-relaxed text-white/70 italic uppercase tracking-wider">
+                {lang === 'ru' 
+                  ? "Твой надежный проводник в мире премиального качества на Пхукете. Только проверенные сорта и быстрая доставка."
+                  : "Your trusted premium quality guide in Phuket. Only hand-picked strains and lightning-fast delivery."}
+              </p>
+            </div>
+          </div>
+
+          {/* Вариант 2: Теги */}
+          <div className="px-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Option 2: Badges</p>
+            <div className="flex flex-wrap gap-2">
+              {['Premium Quality', 'Express Delivery', 'Phuket Based'].map((text) => (
+                <span key={text} className="text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/40">
+                  {text}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Вариант 3: Карточка */}
+          <div className="px-2">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Option 3: Card</p>
+            <div className="p-5 rounded-[2rem] bg-gradient-to-br from-white/5 to-transparent border border-white/5 backdrop-blur-sm">
+              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-2">Phuket BND</h2>
+              <p className="text-[12px] font-medium leading-relaxed text-white/60 uppercase tracking-tight">
+                {lang === 'ru' 
+                  ? "Мы объединили страсть к культуре и лучший сервис на острове, чтобы каждый заказ приносил исключительный опыт."
+                  : "We combined passion for the culture with the island's best service to ensure every order is an exceptional experience."}
+              </p>
+            </div>
+          </div>
+        </div>
+        {/* --- КОНЕЦ ВРЕМЕННЫХ ВАРИАНТОВ --- */}
+
         <div className="grid grid-cols-2 gap-2 mt-1">
           {[
             { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
@@ -647,4 +688,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
