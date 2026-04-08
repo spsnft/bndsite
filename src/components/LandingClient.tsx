@@ -192,10 +192,8 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
         <div className="relative aspect-[1.3/1] w-full bg-black/10">
           <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
-            {/* 5) ЗАГОЛОВОК ТОВАРА В ПОП АП - 20PX */}
             <h2 className="text-[20px] font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
             <div className="flex items-center gap-2 mt-1">
-              {/* 6) ТИП И КАТЕГОРИЯ В ПОП АП - 12PX */}
               <span className="text-[12px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
               <span className="w-1 h-1 rounded-full bg-white/20"></span>
               <span className="text-[12px] font-black uppercase tracking-widest opacity-60" style={{ color: style?.color }}>{product?.subcategory}</span>
@@ -208,7 +206,6 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
                 {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
-                {/* 7) ЦЕНА - 30PX */}
                 <span className="text-[30px] font-black italic tracking-tighter text-white leading-none">{currentPrice}฿</span>
               </div>
               <div className="flex flex-col items-end">
@@ -217,7 +214,6 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
               </div>
             </div>
 
-            {/* 8) КНОПКИ ВЫБОРА - 12PX */}
             <div className="grid grid-cols-4 gap-2">
               {availableSteps.map((v) => (
                 <button 
@@ -230,14 +226,18 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
               ))}
             </div>
 
-            {/* 3) УВЕЛИЧЕННЫЙ СЛАЙДЕР В ПОП-АП X2 */}
-            <div className="relative h-14 flex items-center px-1">
+            {/* 2) ПОПРАВЛЕННЫЙ СЛАЙДЕР С ИДЕАЛЬНОЙ РЕАКЦИЕЙ НА ПАЛЕЦ */}
+            <div className="relative h-14 flex items-center px-1 group">
+              {/* Трек */}
               <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
+                {/* Прогресс */}
                 <div 
                   className="h-full bg-white transition-all duration-100" 
                   style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}
                 ></div>
               </div>
+              
+              {/* Реальный инпут с огромной невидимой хваталкой */}
               <input 
                 type="range" 
                 min={minW} 
@@ -245,10 +245,14 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
                 step="0.5" 
                 value={weight} 
                 onChange={(e) => setWeight(parseFloat(e.target.value))}
-                className="absolute w-full h-full opacity-0 cursor-pointer z-10"
+                className="absolute w-full h-full opacity-0 cursor-pointer z-20 
+                           [&::-webkit-slider-thumb]:w-12 [&::-webkit-slider-thumb]:h-12 [&::-webkit-slider-thumb]:appearance-none
+                           [&::-moz-range-thumb]:w-12 [&::-moz-range-thumb]:h-12 [&::-moz-range-thumb]:appearance-none"
               />
+              
+              {/* Визуальный кружок, привязанный к позиции инпута */}
               <div 
-                className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-100 flex items-center justify-center border-4 border-[#193D2E]"
+                className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-100 flex items-center justify-center border-4 border-[#193D2E] z-10"
                 style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)` }}
               >
                  <div className="w-2 h-2 bg-[#193D2E] rounded-full"></div>
@@ -264,7 +268,6 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
             </div>
           )}
 
-          {/* 4) УМЕНЬШЕННАЯ ВЫСОТА КНОПКИ В КОРЗИНУ В ДВА РАЗА (py-2.5 вместо py-5) */}
           <button 
             onClick={() => { 
               addItem({ ...product, price: currentPrice, weight: `${weight}g` }); 
@@ -420,7 +423,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* 1) УВЕЛИЧЕННЫЕ ШРИФТЫ В УТП (x2) И 2) ОТСТУП mt-1 */}
         <div className="grid grid-cols-2 gap-2 mt-1">
           {[
             { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
@@ -429,9 +431,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
           ].map((card) => (
             <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center">
-              {/* Значение 13px -> 26px (text-[26px]) */}
-              <p className="text-[26px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
-              {/* Подпись 6px -> 12px (text-[12px]) */}
+              {/* 1) ЗАГОЛОВОК УТП - 16 */}
+              <p className="text-[16px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
+              {/* 1) ПОДПИСЬ УТП - 12 */}
               <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 mt-1 leading-tight">{(t as any)[card.titleKey]}</p>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-emerald-400/60 shadow-[0_0_8px_rgba(52,211,153,0.3)]"></div>
             </div>
