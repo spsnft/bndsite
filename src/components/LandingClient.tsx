@@ -228,14 +228,17 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
               ))}
             </div>
 
-            <div className="relative h-14 flex items-center px-1 group">
+            <div className="relative h-14 flex items-center group">
+              {/* Трек */}
               <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
+                {/* Прогресс */}
                 <div 
-                  className="h-full bg-white transition-all duration-100" 
+                  className="h-full bg-white transition-all duration-75" 
                   style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}
                 ></div>
               </div>
               
+              {/* Инпут по всей ширине без отступов */}
               <input 
                 type="range" 
                 min={minW} 
@@ -243,14 +246,20 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
                 step="0.5" 
                 value={weight} 
                 onChange={(e) => setWeight(parseFloat(e.target.value))}
-                className="absolute w-full h-full opacity-0 cursor-pointer z-20 
-                           [&::-webkit-slider-thumb]:w-12 [&::-webkit-slider-thumb]:h-12 [&::-webkit-slider-thumb]:appearance-none
-                           [&::-moz-range-thumb]:w-12 [&::-moz-range-thumb]:h-12 [&::-moz-range-thumb]:appearance-none"
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 
+                           appearance-none -webkit-appearance-none
+                           [&::-webkit-slider-thumb]:w-14 [&::-webkit-slider-thumb]:h-14 [&::-webkit-slider-thumb]:appearance-none
+                           [&::-moz-range-thumb]:w-14 [&::-moz-range-thumb]:h-14 [&::-moz-range-thumb]:appearance-none"
               />
               
+              {/* Визуальный кружок */}
               <div 
-                className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-100 flex items-center justify-center border-4 border-[#193D2E] z-10"
-                style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)` }}
+                className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-75 flex items-center justify-center border-4 border-[#193D2E] z-10"
+                style={{ 
+                  left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)`,
+                  /* Защита от вылета за края при 0% и 100% */
+                  marginLeft: weight === minW ? '16px' : weight === maxW ? '-16px' : '0px'
+                }}
               >
                  <div className="w-2 h-2 bg-[#193D2E] rounded-full"></div>
               </div>
@@ -440,7 +449,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         {recentUpdates.length > 0 && (
           <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.updates}</h2></div>
-            {/* Highlights Section: showSubcategory={true} */}
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
@@ -448,7 +456,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         {flashSales.length > 0 && (
           <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.sales}</h2></div>
-            {/* Highlights Section: showSubcategory={true} */}
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
@@ -496,7 +503,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                {/* Main Menu Grid: showSubcategory={false} */}
                 <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
               </div>
             </div>
@@ -522,7 +528,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     {sec.isList ? (
                       <div className="divide-y divide-white/5 bg-white/5">{sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                     ) : (
-                      /* Main Menu Grid: showSubcategory={false} */
                       <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
                     )}
                   </div>
