@@ -28,7 +28,7 @@ export const translations = {
     flowerMenu: "Основное меню",
     concentrates: "Меню концентратов",
     dailySupport: "ПОДДЕРЖКА",
-    minOrder: "МИНИМАЛЬНЫЙ ЗАКАЗ",
+    minOrder: "МИН.ЗАКАЗ",
     delivery: "ПО ПХУКЕТУ",
     nationwide: "ПО ТАИЛАНДУ",
     basket: "Корзина",
