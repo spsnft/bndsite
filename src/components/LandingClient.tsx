@@ -101,6 +101,12 @@ const getFirstAvailablePrice = (product: any) => {
   return { price: 0, weight: 0 };
 };
 
+// --- UI HELPERS ---
+
+const CurrencyLabel = ({ className = "" }: { className?: string }) => (
+  <span className={`ml-1 text-[0.65em] opacity-40 font-bold tracking-normal ${className}`}>THB</span>
+);
+
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boolean }) => {
@@ -156,8 +162,8 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       <div className={`relative z-10 flex justify-between items-end px-5 pb-5 mt-auto`}>
         <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end gap-1">
-          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}฿</span>}
-          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
+          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}<CurrencyLabel /></span>}
+          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? (<>{currentPrice}<CurrencyLabel className="opacity-60" /></>) : '—'}</p>
         </div>
       </div>
     </div>
@@ -225,12 +231,12 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
           <div className="space-y-5">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
-                {oldPrice > currentPrice && <span className="text-lg font-black line-through opacity-20 text-white">{oldPrice}฿</span>}
-                <span className="text-[30px] font-black tracking-tighter text-white leading-none">{currentPrice}฿</span>
+                {oldPrice > currentPrice && <span className="text-lg font-black line-through opacity-20 text-white">{oldPrice}<CurrencyLabel /></span>}
+                <span className="text-[30px] font-black tracking-tighter text-white leading-none">{currentPrice}<CurrencyLabel className="text-[0.4em] opacity-30" /></span>
               </div>
               <div className="flex flex-col items-end">
                 <div className="text-[14px] font-black uppercase text-white tracking-tighter">{weight}G</div>
-                <div className="text-[9px] font-black uppercase opacity-40 text-white tracking-widest">{perGram}฿/G</div>
+                <div className="text-[9px] font-black uppercase opacity-40 text-white tracking-widest">{perGram} THB/G</div>
               </div>
             </div>
 
@@ -286,7 +292,7 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
           {promoInfo && (
             <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
               <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
-                Add <span className="text-white">{promoInfo.diff}g</span> more for <span className="text-white">{promoInfo.perGram}฿</span> per gram!
+                Add <span className="text-white">{promoInfo.diff}g</span> more for <span className="text-white">{promoInfo.perGram} THB</span> per gram!
               </p>
             </div>
           )}
@@ -356,7 +362,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
     triggerHaptic('medium');
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
+      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity} THB`).join("\n"), total }) });
       triggerHaptic('success');
       alert(t.orderSent); clearCart(); onClose();
     } catch (e) { alert(t.sendError); } finally { setIsSending(false); }
@@ -380,9 +386,9 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
                     <div>
                       <p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
+                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} THB/г</span>!</>
                         ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} THB/g</span> price!</>
                         )}
                       </p>
                     </div>
@@ -401,7 +407,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
                 >
                   <h3 className="text-[11px] font-black uppercase truncate">{item.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
+                    <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price} THB</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
                     <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color || SELECTED_COLOR }}>{item.subcategory}</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
@@ -419,7 +425,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
             {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
+          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}<CurrencyLabel className="text-[0.4em] opacity-30" /></p></div>
           <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">{t.confirmOrder}</button>
         </div>
       </div>
@@ -525,7 +531,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         <div className="grid grid-cols-2 gap-2 mt-1">
           {[
             { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
-            { id: 3, titleKey: "minOrder", value: "1000฿" },
+            { id: 3, titleKey: "minOrder", value: "1000 THB" },
             { id: 2, titleKey: "delivery", value: "60 MINUTES" },
             { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
           ].map((card) => (
@@ -565,7 +571,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             return (
               <div 
                 key={grade.id} 
-                className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl ${isOpen ? 'border-emerald-500/50 shadow-[0_0_20px_rgba(52,211,153,0.1)]' : 'border-white/5'}`}
+                className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`}
+                style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${grade.color}15` : 'none' }}
               >
                 <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 py-8 flex flex-col active:bg-white/5 transition-colors">
                   <div className="w-full flex items-center justify-between mb-4 px-4">
@@ -579,7 +586,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                        return (
                          <div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5">
                            <span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span>
-                           <span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? `${p}฿` : '—'}</span>
+                           <span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? p : '—'}<CurrencyLabel className="text-[0.4em]" /></span>
                          </div>
                        )
                      })}
@@ -595,7 +602,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           {eliteSections.map(sec => {
             const isOpen = openGrades.includes(sec.id);
             return sec.items.length > 0 && (
-              <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl ${isOpen ? 'border-emerald-500/50 shadow-[0_0_20px_rgba(52,211,153,0.1)]' : 'border-white/5'}`}>
+              <div 
+                key={sec.id} 
+                className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`}
+                style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}
+              >
                 <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
                   <div className="w-full flex items-center justify-between">
                     <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
@@ -620,7 +631,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               {concentrateSections.map(sec => {
                 const isOpen = openGrades.includes(sec.id);
                 return (
-                  <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl ${isOpen ? 'border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.1)]' : 'border-white/5'}`}>
+                  <div 
+                    key={sec.id} 
+                    className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`}
+                    style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}
+                  >
                     <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
                       <div className="w-full flex items-center justify-between">
                         <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
@@ -649,7 +664,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <div className="flex items-center gap-4 relative z-10">
               <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
               <div className="text-left">
-                 <span className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}฿</span>
+                 <span className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}<CurrencyLabel className="text-[0.4em]" /></span>
                  <span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
               </div>
             </div>
