@@ -5,7 +5,8 @@ import Link from "next/link"
 import { 
   Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Trash2, ChevronDown, Star, Phone, Droplets
+  SendHorizontal, Trash2, ChevronDown, Star, Phone, 
+  Droplets, Snowflake, Box
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -229,16 +230,13 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
             </div>
 
             <div className="relative h-14 flex items-center group">
-              {/* Трек */}
               <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
-                {/* Прогресс */}
                 <div 
                   className="h-full bg-white transition-all duration-75" 
                   style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}
                 ></div>
               </div>
               
-              {/* Инпут по всей ширине без отступов */}
               <input 
                 type="range" 
                 min={minW} 
@@ -252,12 +250,10 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
                            [&::-moz-range-thumb]:w-14 [&::-moz-range-thumb]:h-14 [&::-moz-range-thumb]:appearance-none"
               />
               
-              {/* Визуальный кружок */}
               <div 
                 className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-75 flex items-center justify-center border-4 border-[#193D2E] z-10"
                 style={{ 
                   left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)`,
-                  /* Защита от вылета за края при 0% и 100% */
                   marginLeft: weight === minW ? '16px' : weight === maxW ? '-16px' : '0px'
                 }}
               >
@@ -400,12 +396,23 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     const subs = Array.from(new Set(allConcs.map(p => p.subcategory)));
     return subs.map(sub => {
       let color = SELECTED_COLOR;
+      let icon = Droplets;
       const subLower = sub?.toLowerCase() || "";
-      if (subLower.includes('old school')) color = "#C1C1C1";
-      if (subLower.includes('fresh frozen premium')) color = "#34D399"; 
-      else if (subLower.includes('fresh frozen')) color = "#FEC107"; 
-      if (subLower.includes('live rosin')) color = "#A855F7"; 
-      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon: Droplets, isList: subLower.includes('old school') };
+      
+      if (subLower.includes('old school')) {
+        color = "#C1C1C1";
+        icon = Box; // Кирпич/блок
+      }
+      else if (subLower.includes('fresh frozen')) {
+        color = subLower.includes('premium') ? "#34D399" : "#FEC107";
+        icon = Snowflake; // Снежинка
+      }
+      else if (subLower.includes('live rosin')) {
+        color = "#A855F7";
+        icon = Droplets; // Оставляем капли
+      }
+      
+      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: subLower.includes('old school') };
     });
   }, [processedProducts]);
 
