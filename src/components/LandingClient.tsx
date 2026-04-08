@@ -7,7 +7,7 @@ import {
   ShoppingBag, Send, MessageCircle, Instagram, 
   SendHorizontal, Trash2, ChevronDown, Star, Phone, 
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
-  ShieldCheck, Clock, CheckCircle2
+  ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -104,7 +104,6 @@ const getFirstAvailablePrice = (product: any) => {
 
 // --- UI HELPERS ---
 
-// Оптическое выравнивание символа бата
 const Baht = ({ className = "" }: { className?: string }) => (
   <span className={`inline-block text-[0.85em] -translate-y-[0.05em] ml-0.5 font-sans ${className}`}>฿</span>
 );
@@ -502,10 +501,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
-      <header className="max-w-xl mx-auto pt-2 mb-4">
-        <div className="flex items-center justify-between px-2"> 
+      <header className="max-w-xl mx-auto pt-2 mb-8">
+        <div className="flex items-center justify-between px-2 mb-8"> 
            <div className="relative">
-              <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[35px]"></div>
+              <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
               <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={84} height={84} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
@@ -520,50 +519,63 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* --- ВАРИАНТЫ БЛОКА "О НАС" --- */}
-        <div className="px-2 mt-12 space-y-16">
-          
-          {/* Вариант 1: Текстовый акцент (Минимализм) */}
-          <div className="border-l-2 border-emerald-500/30 pl-6">
-            <h3 className="text-[10px] font-black tracking-[0.3em] text-emerald-500/50 mb-3 uppercase">About BND</h3>
-            <p className="text-[15px] font-medium leading-relaxed text-white/80 uppercase tracking-wide">
-              {lang === 'ru' 
-                ? "Твой надежный проводник в мире премиального качества на Пхукете. Только проверенные сорта и быстрая доставка."
-                : "Your trusted premium quality guide in Phuket. Only hand-picked strains and lightning-fast delivery."}
-            </p>
+        {/* --- ГЛАВНЫЙ БЛОК О НАС (БЕЗ ЗАТЕМНЕНИЯ) --- */}
+        <div className="relative py-8 px-6 text-center">
+          <CheckCircle2 size={24} className="mx-auto mb-4 text-emerald-500 opacity-40" />
+          <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-3">
+            {lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}
+          </h1>
+          <p className="text-[13px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-6">
+            {lang === 'ru' 
+              ? 'Ваш надежный проводник в мире премиального качества и сервиса.' 
+              : 'Your trusted guide to a world of premium quality and service.'}
+          </p>
+          <div className="flex flex-col items-center gap-2">
+             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
+               {lang === 'ru' ? '• 3 года на рынке' : '• 3 years on market'}
+             </span>
+             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
+               {lang === 'ru' ? '• Тысячи счастливых клиентов' : '• Thousands of happy clients'}
+             </span>
+             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
+               {lang === 'ru' ? '• Регулярные обновления меню' : '• Regular menu updates'}
+             </span>
           </div>
-
-          {/* Вариант 2: Карточки преимуществ (Информативный) */}
-          <div className="grid grid-cols-1 gap-3">
-             <div className="bg-white/5 rounded-3xl p-6 border border-white/5 flex items-start gap-4">
-                <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400"><ShieldCheck size={20}/></div>
-                <div>
-                  <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Качество' : 'Quality Control'}</h4>
-                  <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase">{lang === 'ru' ? 'Личный отбор каждой партии и гарантия чистоты.' : 'Personal selection of every batch with purity guarantee.'}</p>
-                </div>
-             </div>
-             <div className="bg-white/5 rounded-3xl p-6 border border-white/5 flex items-start gap-4">
-                <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400"><Clock size={20}/></div>
-                <div>
-                  <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Сервис' : 'Express Delivery'}</h4>
-                  <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase">{lang === 'ru' ? 'Среднее время ожидания — до 60 минут в любую точку.' : 'Average wait time — under 60 minutes anywhere in Phuket.'}</p>
-                </div>
-             </div>
-          </div>
-
-          {/* Вариант 3: Эстетика бренда (Визуальный) */}
-          <div className="relative py-12 px-8 rounded-[3rem] overflow-hidden bg-black/40 border border-white/5 text-center">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-emerald-500/5 to-transparent"></div>
-            <CheckCircle2 size={32} className="mx-auto mb-6 text-emerald-500 opacity-50" />
-            <h3 className="text-[20px] font-black uppercase tracking-tighter text-white mb-3">BND Phuket Delivery</h3>
-            <p className="text-[11px] font-bold text-white/30 uppercase tracking-[0.2em] leading-loose">
-               {lang === 'ru' ? 'Стандарты качества • Честный вес • Прямые поставки' : 'Quality Standards • Fair Weight • Direct Supply'}
-            </p>
-          </div>
-
         </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-16">
+        {/* --- 4 УТП БЛОКА (СТИЛЬ 2 - ЖИДКОЕ СТЕКЛО) --- */}
+        <div className="grid grid-cols-1 gap-3 mt-10 px-2">
+           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 shrink-0"><ShieldCheck size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Качество' : 'Quality Control'}</h4>
+                <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-wide">{lang === 'ru' ? 'Личный отбор каждой партии и гарантия чистоты продукта.' : 'Personal selection of every batch with product purity guarantee.'}</p>
+              </div>
+           </div>
+           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400 shrink-0"><Clock size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Скорость' : 'Express Delivery'}</h4>
+                <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-wide">{lang === 'ru' ? 'Среднее время доставки — до 60 минут в любую точку Пхукета.' : 'Average delivery time — under 60 minutes anywhere in Phuket.'}</p>
+              </div>
+           </div>
+           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-400 shrink-0"><Trophy size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Репутация' : 'Market Expert'}</h4>
+                <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-wide">{lang === 'ru' ? 'Более 3-х лет безупречной работы на локальном рынке.' : 'Over 3 years of impeccable work in the local market.'}</p>
+              </div>
+           </div>
+           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-400 shrink-0"><RefreshCcw size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Ассортимент' : 'Fresh Stocks'}</h4>
+                <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-wide">{lang === 'ru' ? 'Еженедельные обновления и эксклюзивные сорта.' : 'Weekly updates and exclusive strains in our collection.'}</p>
+              </div>
+           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 mt-8">
           {[
             { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
             { id: 3, titleKey: "minOrder", value: (<>1000<Baht /></>) },
@@ -705,7 +717,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
             <div className="flex items-center gap-3 text-white relative z-10 opacity-70">
               <span className="text-[12px] font-black uppercase tracking-widest">{t.basket}</span>
-              <Send size={18}/>
+              <span className="p-2 bg-white/10 rounded-full animate-pulse"><Send size={18}/></span>
             </div>
           </button>
         </div>
