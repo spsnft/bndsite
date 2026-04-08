@@ -94,25 +94,30 @@ const getFirstAvailablePrice = (product: any) => {
 
 // --- COMPONENTS ---
 
-const BadgeIcon = React.memo(({ type }: { type: string }) => {
-  const baseClasses = "w-6 h-6 rounded-full flex items-center justify-center border shrink-0 opacity-80 transition-all";
+const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boolean }) => {
+  const sizeClasses = isSmall ? "w-4 h-4 opacity-60" : "w-6 h-6 opacity-100";
+  const iconSize = isSmall ? 8 : 11;
+  const textFontSize = isSmall ? "text-[5px]" : "text-[7px]";
+  
+  const baseClasses = `${sizeClasses} rounded-full flex items-center justify-center border shrink-0 transition-all`;
+  
   switch (type.toUpperCase()) {
     case "NEW": 
       return (
         <div className={`${baseClasses} bg-blue-600 border-blue-400`}>
-          <span className="text-[7px] font-black text-white tracking-tighter">NEW</span>
+          <span className={`${textFontSize} font-black text-white tracking-tighter`}>NEW</span>
         </div>
       );
     case "HIT": 
       return (
         <div className={`${baseClasses} bg-orange-600 border-orange-400`}>
-          <Flame size={11} className="text-white" />
+          <Flame size={iconSize} className="text-white" />
         </div>
       );
     case "SALE": 
       return (
         <div className={`${baseClasses} bg-emerald-600 border-emerald-400`}>
-          <Percent size={11} className="text-white" />
+          <Percent size={iconSize} className="text-white" />
         </div>
       );
     default: return null;
@@ -162,7 +167,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
   <div onClick={onClick} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
     <div className="flex items-center gap-4 truncate flex-1">
-      <div className="w-6 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
+      <div className="w-6 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
       <span className="text-[14px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
     <div className="flex items-center gap-5 shrink-0 pr-4">
@@ -356,7 +361,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     }).filter(g => g.items.length > 0);
   }, [processedProducts]);
 
-  // ID для Local Exclusives изменен на полное соответствие таблице
   const eliteSections = [
     { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
     { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
