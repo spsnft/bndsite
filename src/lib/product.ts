@@ -5,7 +5,8 @@ export async function getProducts() {
     const response = await fetch(SCRIPT_URL, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      cache: 'no-store'
+      // Убираем no-store и ставим кэширование
+      next: { revalidate: 60 } 
     });
 
     if (!response.ok) throw new Error("Ошибка сети");
@@ -42,7 +43,6 @@ export async function getProducts() {
       price: Number(item.price_1g) || Number(item.price) || 0
     }));
 
-    // Возвращаем объект, содержащий ВСЕ данные для page.tsx
     return { 
       products: formattedProducts, 
       stories: stories, 
