@@ -286,7 +286,7 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
   );
 }
 
-function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total: number, onClose: () => void, t: any, lang: string }) {
+function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: any[], total: number, onClose: () => void, t: any, lang: string, onEditItem: (p: any) => void }) {
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
@@ -298,7 +298,7 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
     
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
-      if (isElite(item)) return; // Исключаем Local Exclusives и Import
+      if (isElite(item)) return;
 
       const w = parseFloat(item.weight) || 0;
       if (!groups[sub]) {
@@ -357,9 +357,9 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
                     <div>
                       <p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <>Добавь еще <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из категории <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
+                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
                         ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> more of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> to unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
                         )}
                       </p>
                     </div>
@@ -372,15 +372,19 @@ function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total
           <div className="space-y-2">
             {items.map((item: any) => (
               <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-                <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
-                <div className="flex-1 min-w-0">
+                <button 
+                  onClick={() => onEditItem(item)}
+                  className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity"
+                >
                   <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
-                  <div className="flex items-center gap-2 mt-0.5">
+                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
-                    <span className="w-1 h-1 rounded-full bg-white/10"></span>
+                    <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
                     <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color || SELECTED_COLOR }}>{item.subcategory}</p>
+                    <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
+                    <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</p>
                   </div>
-                </div>
+                </button>
                 <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
               </div>
             ))}
@@ -632,7 +636,16 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           onClose={() => setSelectedProduct(null)} 
         />
       )}
-      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} />}
+      {isCheckoutOpen && (
+        <CheckoutModal 
+          items={items} 
+          total={getTotal()} 
+          t={t} 
+          lang={lang} 
+          onClose={() => setIsCheckoutOpen(false)} 
+          onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }}
+        />
+      )}
     </div>
   );
 }
