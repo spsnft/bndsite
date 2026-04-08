@@ -130,7 +130,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
           <p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest`}>{item.subcategory || "Product"}</p>
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-2">
-            <BlurImage src={item.image} priority={priority} width={isMini ? 140 : 200} height={isMini ? 140 : 200} className="max-w-full max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt={item.name} />
         </div>
       </div>
       <div className={`relative z-10 flex justify-between items-end px-5 pb-5 mt-auto`}>
@@ -192,11 +192,13 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
         <div className="relative aspect-[1.3/1] w-full bg-black/10">
           <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
+            {/* 5) ЗАГОЛОВОК ТОВАРА В ПОП АП - 20PX */}
+            <h2 className="text-[20px] font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
             <div className="flex items-center gap-2 mt-1">
-              <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
+              {/* 6) ТИП И КАТЕГОРИЯ В ПОП АП - 12PX */}
+              <span className="text-[12px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
               <span className="w-1 h-1 rounded-full bg-white/20"></span>
-              <span className="text-[9px] font-black uppercase tracking-widest opacity-60" style={{ color: style?.color }}>{product?.subcategory}</span>
+              <span className="text-[12px] font-black uppercase tracking-widest opacity-60" style={{ color: style?.color }}>{product?.subcategory}</span>
             </div>
           </div>
         </div>
@@ -206,7 +208,8 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
                 {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
-                <span className="text-4xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
+                {/* 7) ЦЕНА - 30PX */}
+                <span className="text-[30px] font-black italic tracking-tighter text-white leading-none">{currentPrice}฿</span>
               </div>
               <div className="flex flex-col items-end">
                 <div className="text-[14px] font-black uppercase text-white tracking-tighter">{weight}G</div>
@@ -214,22 +217,22 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
               </div>
             </div>
 
-            {/* СИНХРОННЫЕ КНОПКИ */}
+            {/* 8) КНОПКИ ВЫБОРА - 12PX */}
             <div className="grid grid-cols-4 gap-2">
               {availableSteps.map((v) => (
                 <button 
                   key={v} 
                   onClick={() => setWeight(v)}
-                  className={`py-3 rounded-xl text-[11px] font-black transition-all border ${weight === v ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5'}`}
+                  className={`py-3 rounded-xl text-[12px] font-black transition-all border ${weight === v ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5'}`}
                 >
                   {v}G
                 </button>
               ))}
             </div>
 
-            {/* ФУНКЦИОНАЛЬНЫЙ СЛАЙДЕР С ШАГОМ 0.5 */}
-            <div className="relative h-10 flex items-center px-1">
-              <div className="absolute left-0 right-0 h-1.5 bg-white/5 rounded-full overflow-hidden">
+            {/* 3) УВЕЛИЧЕННЫЙ СЛАЙДЕР В ПОП-АП X2 */}
+            <div className="relative h-14 flex items-center px-1">
+              <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
                 <div 
                   className="h-full bg-white transition-all duration-100" 
                   style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}
@@ -245,10 +248,10 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
                 className="absolute w-full h-full opacity-0 cursor-pointer z-10"
               />
               <div 
-                className="absolute w-5 h-5 bg-white rounded-full shadow-[0_0_15px_rgba(255,255,255,0.5)] pointer-events-none transition-all duration-100 flex items-center justify-center"
-                style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 10px)` }}
+                className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-100 flex items-center justify-center border-4 border-[#193D2E]"
+                style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)` }}
               >
-                 <div className="w-1.5 h-1.5 bg-[#193D2E] rounded-full"></div>
+                 <div className="w-2 h-2 bg-[#193D2E] rounded-full"></div>
               </div>
             </div>
           </div>
@@ -261,13 +264,14 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
             </div>
           )}
 
+          {/* 4) УМЕНЬШЕННАЯ ВЫСОТА КНОПКИ В КОРЗИНУ В ДВА РАЗА (py-2.5 вместо py-5) */}
           <button 
             onClick={() => { 
               addItem({ ...product, price: currentPrice, weight: `${weight}g` }); 
               setIsAdded(true); 
               setTimeout(() => {setIsAdded(false); onClose();}, 800); 
             }} 
-            className={`w-full py-5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}
+            className={`w-full py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}
           >
             {isAdded ? t.added : t.addToOrder}
           </button>
@@ -416,8 +420,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* УТП БЛОКИ - ПРИЖАТЫ МАКСИМАЛЬНО */}
-        <div className="grid grid-cols-2 gap-2 mt-4">
+        {/* 1) УВЕЛИЧЕННЫЕ ШРИФТЫ В УТП (x2) И 2) ОТСТУП mt-1 */}
+        <div className="grid grid-cols-2 gap-2 mt-1">
           {[
             { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
             { id: 3, titleKey: "minOrder", value: "1000฿" },
@@ -425,8 +429,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
           ].map((card) => (
             <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center">
-              <p className="text-[13px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
-              <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/30 mt-1 leading-tight">{(t as any)[card.titleKey]}</p>
+              {/* Значение 13px -> 26px (text-[26px]) */}
+              <p className="text-[26px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
+              {/* Подпись 6px -> 12px (text-[12px]) */}
+              <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 mt-1 leading-tight">{(t as any)[card.titleKey]}</p>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-emerald-400/60 shadow-[0_0_8px_rgba(52,211,153,0.3)]"></div>
             </div>
           ))}
