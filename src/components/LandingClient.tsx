@@ -95,6 +95,7 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type }: { type: string }) => {
+  // ПРАВКА: Полностью удалено свечение, добавлена прозрачность 80%.
   const baseClasses = "w-6 h-6 rounded-full flex items-center justify-center border shrink-0 opacity-80 transition-all";
   
   switch (type.toUpperCase()) {
@@ -161,6 +162,8 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
 });
 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
+  // ПРАВКА: Изменено выравнивание. px-4 вместо px-8, чтобы бейдж был у края. 
+  // Gap-4 между бейджем и текстом для выравнивания текста по линии иконки категории.
   <div onClick={onClick} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
     <div className="flex items-center gap-4 truncate flex-1">
       <div className="w-6 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
@@ -343,33 +346,14 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     return GRADES.map(grade => {
       const items = processedProducts.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
       const priceRef = items.find(p => p.badge?.toUpperCase() !== 'SALE') || items[0];
-      // Подтягиваем описание из первого товара категории
-      const desc_ru = items[0]?.description_ru || "";
-      const desc_en = items[0]?.description_en || "";
-      return { grade, items, priceRef, desc_ru, desc_en };
+      return { grade, items, priceRef };
     }).filter(g => g.items.length > 0);
   }, [processedProducts]);
 
-  const eliteSections = React.useMemo(() => [
-    { 
-      id: 'local', 
-      title: 'Local Exclusives', 
-      items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), 
-      color: SELECTED_COLOR, 
-      icon: MapPin,
-      desc_ru: processedProducts.find(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive'))?.description_ru || "",
-      desc_en: processedProducts.find(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive'))?.description_en || ""
-    },
-    { 
-      id: 'import', 
-      title: 'Import', 
-      items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), 
-      color: IMPORT_COLOR, 
-      icon: Star,
-      desc_ru: processedProducts.find(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import'))?.description_ru || "",
-      desc_en: processedProducts.find(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import'))?.description_en || ""
-    }
-  ], [processedProducts]);
+  const eliteSections = [
+    { id: 'local', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
+    { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
+  ];
 
   const concentrateSections = React.useMemo(() => {
     const allConcs = processedProducts.filter(p => p.category === 'concentrates');
@@ -377,7 +361,6 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
     return subs.map(sub => {
       let color = SELECTED_COLOR;
       const subLower = sub?.toLowerCase() || "";
-      const representative = allConcs.find(p => p.subcategory === sub);
       if (subLower.includes('old school')) color = "#C1C1C1";
       if (subLower.includes('fresh frozen premium')) color = "#34D399"; 
       else if (subLower.includes('fresh frozen')) color = "#FEC107"; 
@@ -388,9 +371,7 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
         items: allConcs.filter(p => p.subcategory === sub),
         color: color,
         icon: Droplets,
-        isList: subLower.includes('old school'),
-        desc_ru: representative?.description_ru || "",
-        desc_en: representative?.description_en || ""
+        isList: subLower.includes('old school')
       };
     });
   }, [processedProducts]);
@@ -468,25 +449,15 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
-          {gradeSections.map(({ grade, items, priceRef, desc_ru, desc_en }) => (
+          {gradeSections.map(({ grade, items, priceRef }) => (
             <div key={grade.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-8 py-8 flex flex-col items-start active:bg-white/5 transition-colors text-left">
-                <div className="w-full flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <grade.icon size={22} style={{ color: grade.color }} />
-                    <div className="flex flex-col">
-                      <h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2>
-                      {/* Описание категории */}
-                      {(lang === 'ru' ? desc_ru : desc_en) && (
-                        <p className="text-[10px] font-bold text-white/40 leading-tight mt-1">
-                          {lang === 'ru' ? desc_ru : desc_en}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+              {/* ПРАВКА: px-4 вместо px-8 для выравнивания с контентом строк */}
+              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-4 py-8 flex flex-col items-start active:bg-white/5 transition-colors">
+                <div className="w-full flex items-center justify-between mb-6 px-4">
+                  <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
-                <div className="w-full grid grid-cols-4 gap-2 opacity-90">
+                <div className="w-full grid grid-cols-4 gap-2 opacity-90 px-4">
                    {[1, 5, 10, 20].map(w => {
                      const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
                      return (
@@ -510,18 +481,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
           {eliteSections.map(sec => sec.items.length > 0 && (
             <div key={sec.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex items-center justify-between active:bg-white/5 transition-colors text-left">
-                <div className="flex items-center gap-3">
-                  <sec.icon size={22} style={{ color: sec.color }} />
-                  <div className="flex flex-col">
-                    <h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2>
-                    {(lang === 'ru' ? sec.desc_ru : sec.desc_en) && (
-                      <p className="text-[10px] font-bold text-white/40 leading-tight mt-1">
-                        {lang === 'ru' ? sec.desc_ru : sec.desc_en}
-                      </p>
-                    )}
-                  </div>
-                </div>
+              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex items-center justify-between active:bg-white/5 transition-colors">
+                <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                 <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
               </button>
               <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
@@ -544,18 +505,8 @@ export default function LandingClient({ initialProducts }: { initialProducts: an
 
               {concentrateSections.map(sec => (
                 <div key={sec.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-                  <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex items-center justify-between active:bg-white/5 transition-colors text-left">
-                    <div className="flex items-center gap-3">
-                      <sec.icon size={22} style={{ color: sec.color }} />
-                      <div className="flex flex-col">
-                        <h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2>
-                        {(lang === 'ru' ? sec.desc_ru : sec.desc_en) && (
-                          <p className="text-[10px] font-bold text-white/40 leading-tight mt-1">
-                            {lang === 'ru' ? sec.desc_ru : sec.desc_en}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                  <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex items-center justify-between active:bg-white/5 transition-colors">
+                    <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                     <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
