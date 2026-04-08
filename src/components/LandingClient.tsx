@@ -96,7 +96,8 @@ const getFirstAvailablePrice = (product: any) => {
 // --- COMPONENTS ---
 
 const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boolean }) => {
-  const iconSize = isSmall ? 10 : 14;
+  // Увеличили размер на 30% (было 14 -> стало ~18, было 10 -> стало 13)
+  const iconSize = isSmall ? 13 : 18;
   const colorClass = {
     NEW: "text-blue-400",
     SALE: "text-emerald-400",
@@ -104,7 +105,7 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
   }[type.toUpperCase()] || "text-white";
 
   const iconWrapper = (icon: React.ReactNode) => (
-    <div className={`${isSmall ? '' : 'p-1.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-lg'}`}>
+    <div className={`${isSmall ? '' : 'p-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-lg'}`}>
       {icon}
     </div>
   );
@@ -135,7 +136,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       {!hideBadge && item.badge && (<div className={`absolute top-3 right-3 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}><BadgeIcon type={item.badge} /></div>)}
       <div className={`relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0`}>
         <div className="min-w-0 pr-6">
-          <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black italic uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
+          <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
           {showSubcategory && (
             <p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest`}>{item.subcategory || "Product"}</p>
           )}
@@ -148,7 +149,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
         <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end gap-1">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}฿</span>}
-          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black italic tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
+          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
         </div>
       </div>
     </div>
@@ -158,11 +159,11 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
   <div onClick={onClick} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
     <div className="flex items-center gap-4 truncate flex-1">
-      <div className="w-6 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
-      <span className="text-[14px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+      <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
+      <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
     <div className="flex items-center gap-5 shrink-0 pr-4">
-      {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest italic truncate max-w-[90px]">{p.farm}</span>}
+      {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>}
       <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
     </div>
   </div>
@@ -203,7 +204,7 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
         <div className="relative aspect-[1.3/1] w-full bg-black/10">
           <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
-            <h2 className="text-[20px] font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
+            <h2 className="text-[20px] font-black uppercase tracking-tighter text-white">{product?.name}</h2>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-[12px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
               <span className="w-1 h-1 rounded-full bg-white/20"></span>
@@ -216,8 +217,8 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
           <div className="space-y-5">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
-                {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
-                <span className="text-[30px] font-black italic tracking-tighter text-white leading-none">{currentPrice}฿</span>
+                {oldPrice > currentPrice && <span className="text-lg font-black line-through opacity-20 text-white">{oldPrice}฿</span>}
+                <span className="text-[30px] font-black tracking-tighter text-white leading-none">{currentPrice}฿</span>
               </div>
               <div className="flex flex-col items-end">
                 <div className="text-[14px] font-black uppercase text-white tracking-tighter">{weight}G</div>
@@ -350,7 +351,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
+          <div><h2 className="text-xl font-black uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
 
@@ -383,7 +384,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
                   onClick={() => onEditItem(item)}
                   className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity"
                 >
-                  <h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3>
+                  <h3 className="text-[11px] font-black uppercase truncate">{item.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
@@ -403,7 +404,7 @@ function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: 
             {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
+          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
           <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">{t.confirmOrder}</button>
         </div>
       </div>
@@ -496,46 +497,16 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* --- ВРЕМЕННЫЕ ВАРИАНТЫ "О НАС" ДЛЯ ВЫБОРА --- */}
-        <div className="space-y-6 my-8">
-          {/* Вариант 1: Цитата */}
-          <div className="px-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Option 1: Minimalist</p>
-            <div className="border-l-2 border-emerald-500/30 pl-4">
-              <p className="text-[13px] font-medium leading-relaxed text-white/70 italic uppercase tracking-wider">
-                {lang === 'ru' 
-                  ? "Твой надежный проводник в мире премиального качества на Пхукете. Только проверенные сорта и быстрая доставка."
-                  : "Your trusted premium quality guide in Phuket. Only hand-picked strains and lightning-fast delivery."}
-              </p>
-            </div>
-          </div>
-
-          {/* Вариант 2: Теги */}
-          <div className="px-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Option 2: Badges</p>
-            <div className="flex flex-wrap gap-2">
-              {['Premium Quality', 'Express Delivery', 'Phuket Based'].map((text) => (
-                <span key={text} className="text-[9px] font-black uppercase tracking-[0.2em] px-3 py-1.5 bg-white/5 border border-white/10 rounded-full text-white/40">
-                  {text}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Вариант 3: Карточка */}
-          <div className="px-2">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/20 mb-2">Option 3: Card</p>
-            <div className="p-5 rounded-[2rem] bg-gradient-to-br from-white/5 to-transparent border border-white/5 backdrop-blur-sm">
-              <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-2">Phuket BND</h2>
-              <p className="text-[12px] font-medium leading-relaxed text-white/60 uppercase tracking-tight">
-                {lang === 'ru' 
-                  ? "Мы объединили страсть к культуре и лучший сервис на острове, чтобы каждый заказ приносил исключительный опыт."
-                  : "We combined passion for the culture with the island's best service to ensure every order is an exceptional experience."}
-              </p>
-            </div>
+        {/* --- ВЫБРАННЫЙ ВАРИАНТ "О НАС" --- */}
+        <div className="px-2 my-8">
+          <div className="border-l-2 border-emerald-500/30 pl-4">
+            <p className="text-[13px] font-medium leading-relaxed text-white/70 uppercase tracking-wider">
+              {lang === 'ru' 
+                ? "Твой надежный проводник в мире премиального качества на Пхукете. Только проверенные сорта и быстрая доставка."
+                : "Your trusted premium quality guide in Phuket. Only hand-picked strains and lightning-fast delivery."}
+            </p>
           </div>
         </div>
-        {/* --- КОНЕЦ ВРЕМЕННЫХ ВАРИАНТОВ --- */}
 
         <div className="grid grid-cols-2 gap-2 mt-1">
           {[
@@ -545,7 +516,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
           ].map((card) => (
             <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center">
-              <p className="text-[16px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
+              <p className="text-[16px] font-black tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
               <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 mt-1 leading-tight">{(t as any)[card.titleKey]}</p>
               <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-emerald-400/60 shadow-[0_0_8px_rgba(52,211,153,0.3)]"></div>
             </div>
@@ -556,14 +527,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       <div className="max-w-xl mx-auto space-y-3">
         {recentUpdates.length > 0 && (
           <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80 italic">{t.updates}</h2></div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
 
         {flashSales.length > 0 && (
           <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80 italic">{t.sales}</h2></div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
@@ -571,76 +542,88 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         <div className="space-y-6">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] italic text-emerald-400/80">{t.flowerMenu}</span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
-          {gradeSections.map(({ grade, items, priceRef }) => (
-            <div key={grade.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-4 py-8 flex flex-col active:bg-white/5 transition-colors">
-                <div className="w-full flex items-center justify-between mb-4 px-4">
-                  <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
-                  <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
+          {gradeSections.map(({ grade, items, priceRef }) => {
+            const isOpen = openGrades.includes(grade.id);
+            return (
+              <div 
+                key={grade.id} 
+                className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-black/20 ${isOpen ? 'border-emerald-500/50' : 'border-white/5'}`}
+              >
+                <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-4 py-8 flex flex-col active:bg-white/5 transition-colors">
+                  <div className="w-full flex items-center justify-between mb-4 px-4">
+                    <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
+                    <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                  {getDesc(grade.id) && (<p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
+                  <div className="w-full grid grid-cols-4 gap-2 px-4">
+                     {[1, 5, 10, 20].map(w => {
+                       const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
+                       return (
+                         <div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5">
+                           <span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span>
+                           <span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? `${p}฿` : '—'}</span>
+                         </div>
+                       )
+                     })}
+                  </div>
+                </button>
+                <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                  <div className="divide-y divide-white/5 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                 </div>
-                {getDesc(grade.id) && (<p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
-                <div className="w-full grid grid-cols-4 gap-2 px-4">
-                   {[1, 5, 10, 20].map(w => {
-                     const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
-                     return (
-                       <div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5">
-                         <span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span>
-                         <span className="text-[18px] font-black italic text-white tracking-tighter leading-none">{p > 0 ? `${p}฿` : '—'}</span>
-                       </div>
-                     )
-                   })}
-                </div>
-              </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="divide-y divide-white/5 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
-          {eliteSections.map(sec => sec.items.length > 0 && (
-            <div key={sec.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                <div className="w-full flex items-center justify-between">
-                  <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                  <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+          {eliteSections.map(sec => {
+            const isOpen = openGrades.includes(sec.id);
+            return sec.items.length > 0 && (
+              <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-black/20 ${isOpen ? 'border-emerald-500/50' : 'border-white/5'}`}>
+                <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
+                  <div className="w-full flex items-center justify-between">
+                    <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                    <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                  {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
+                </button>
+                <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                  <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
                 </div>
-                {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
-              </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {concentrateSections.length > 0 && (
             <>
               <div className="flex items-center gap-6 py-10">
                  <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/10 to-amber-500/30"></div>
-                 <span className="text-[16px] font-black uppercase tracking-[0.3em] italic text-amber-500/80">{lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES'}</span>
+                 <span className="text-[16px] font-black uppercase tracking-[0.3em] text-amber-500/80">{lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES'}</span>
                  <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/10 to-amber-500/30"></div>
               </div>
-              {concentrateSections.map(sec => (
-                <div key={sec.id} className="rounded-[2rem] overflow-hidden border border-white/5 bg-black/20">
-                  <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                    <div className="w-full flex items-center justify-between">
-                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+              {concentrateSections.map(sec => {
+                const isOpen = openGrades.includes(sec.id);
+                return (
+                  <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-black/20 ${isOpen ? 'border-amber-500/50' : 'border-white/5'}`}>
+                    <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
+                      <div className="w-full flex items-center justify-between">
+                        <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                        <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                      {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
+                    </button>
+                    <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                      {sec.isList ? (
+                        <div className="divide-y divide-white/5 bg-white/5">{sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                      ) : (
+                        <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
+                      )}
                     </div>
-                    {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    {sec.isList ? (
-                      <div className="divide-y divide-white/5 bg-white/5">{sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
-                    ) : (
-                      <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
-                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </>
           )}
         </div>
@@ -657,7 +640,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               </div>
             </div>
             <div className="flex items-center gap-3 text-white relative z-10 opacity-70">
-              <span className="text-[12px] font-black uppercase tracking-widest italic">{t.basket}</span>
+              <span className="text-[12px] font-black uppercase tracking-widest">{t.basket}</span>
               <Send size={18}/>
             </div>
           </button>
