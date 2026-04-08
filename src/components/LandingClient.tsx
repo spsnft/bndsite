@@ -6,7 +6,7 @@ import {
   Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
   SendHorizontal, Trash2, ChevronDown, Star, Phone, 
-  Droplets, Snowflake, Box
+  Droplets, Snowflake, Box, Sparkles
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -272,7 +272,7 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
 
           <button 
             onClick={() => { 
-              addItem({ ...product, price: currentPrice, weight: `${weight}g` }); 
+              addItem({ ...product, price: currentPrice, weight: `${weight}g`, subcategory: product.subcategory }); 
               setIsAdded(true); 
               setTimeout(() => {setIsAdded(false); onClose();}, 800); 
             }} 
@@ -286,12 +286,50 @@ function ProductModal({ product, style, onClose, t }: { product: any, style: any
   );
 }
 
-function CheckoutModal({ items, total, onClose, t }: { items: any[], total: number, onClose: () => void, t: any }) {
+function CheckoutModal({ items, total, onClose, t, lang }: { items: any[], total: number, onClose: () => void, t: any, lang: string }) {
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
-  
+
+  // --- ЛОГИКА АПСЕЙЛА В КОРЗИНЕ ---
+  const categoryPromos = React.useMemo(() => {
+    const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
+    
+    items.forEach(item => {
+      const sub = item.subcategory?.toLowerCase() || "other";
+      const w = parseFloat(item.weight) || 0;
+      if (!groups[sub]) {
+        groups[sub] = { weight: 0, prices: item.prices, isElite: isElite(item), sub: item.subcategory };
+      }
+      groups[sub].weight += w;
+    });
+
+    return Object.values(groups).map(group => {
+      const steps = group.isElite ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
+      const nextStep = steps.find(s => s > group.weight);
+      
+      if (!nextStep || !group.prices) return null;
+
+      const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, group.isElite));
+      const nextPerGram = Math.round(nextPrice / nextStep);
+      const currentPerGram = Math.round(getInterpolatedPrice(group.weight, group.prices, group.isElite) / group.weight);
+      const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
+      
+      const gradeInfo = GRADES.find(g => g.id === group.sub.toLowerCase()) || 
+                        (group.sub.toLowerCase().includes('import') ? { color: IMPORT_COLOR } : { color: SELECTED_COLOR });
+
+      return {
+        sub: group.sub,
+        diff,
+        nextPerGram,
+        currentPerGram,
+        color: gradeInfo.color,
+        nextStep
+      };
+    }).filter(Boolean);
+  }, [items]);
+
   const handleSubmit = async () => {
     if (!contact) return alert(t.contactPh);
     setIsSending(true);
@@ -309,15 +347,42 @@ function CheckoutModal({ items, total, onClose, t }: { items: any[], total: numb
           <div><h2 className="text-xl font-black italic uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
-          {items.map((item: any) => (
-            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
-              <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
-              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
+
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+          {/* Блок апсейла */}
+          {categoryPromos.length > 0 && (
+            <div className="space-y-2">
+              {categoryPromos.map((promo: any) => (
+                <div key={promo.sub} className="relative p-4 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-white/5" style={{ color: promo.color }}><Sparkles size={16} /></div>
+                    <div>
+                      <p className="text-[11px] font-black uppercase tracking-tight text-white/90">
+                        {lang === 'ru' ? 'Почти у цели!' : 'Almost there!'}
+                      </p>
+                      <p className="text-[10px] font-medium text-white/50 leading-tight mt-1">
+                        {lang === 'ru' 
+                          ? `Добавь еще ${promo.diff}г любого сорта из категории ${promo.sub}, чтобы цена стала ${promo.nextPerGram}฿/г на всё!`
+                          : `Add ${promo.diff}g more of any ${promo.sub} strain to get ${promo.nextPerGram}฿/g for all!`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
+
+          <div className="space-y-2">
+            {items.map((item: any) => (
+              <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
+                <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
+                <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
+                <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
+              </div>
+            ))}
+          </div>
         </div>
+
         <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
           <div className="grid grid-cols-4 gap-2">
             {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
@@ -351,17 +416,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     const data = descriptionsMap[id.toLowerCase().trim()];
     if (!data) return null;
     return lang === 'ru' ? data.description_ru : data.description_eng;
-  };
-
-  const getFirstAvailablePrice = (product: any) => {
-    const isEliteProduct = isElite(product);
-    const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
-    const keyMap: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-    for (let w of steps) {
-      const price = Number(product.prices?.[keyMap[w]]) || 0;
-      if (price > 0) return { price: Math.round(price), weight: w };
-    }
-    return { price: 0, weight: 0 };
   };
 
   const recentUpdates = React.useMemo(() => {
@@ -401,15 +455,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       
       if (subLower.includes('old school')) {
         color = "#C1C1C1";
-        icon = Box; // Кирпич/блок
+        icon = Box;
       }
       else if (subLower.includes('fresh frozen')) {
         color = subLower.includes('premium') ? "#34D399" : "#FEC107";
-        icon = Snowflake; // Снежинка
+        icon = Snowflake;
       }
       else if (subLower.includes('live rosin')) {
         color = "#A855F7";
-        icon = Droplets; // Оставляем капли
+        icon = Droplets;
       }
       
       return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: subLower.includes('old school') };
@@ -574,7 +628,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           onClose={() => setSelectedProduct(null)} 
         />
       )}
-      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} t={t} onClose={() => setIsCheckoutOpen(false)} />}
+      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} />}
     </div>
   );
 }
