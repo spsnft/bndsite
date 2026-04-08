@@ -95,32 +95,6 @@ const getFirstAvailablePrice = (product: any) => {
 
 // --- COMPONENTS ---
 
-const InfoTicker = ({ text }: { text: string }) => {
-  if (!text) return null;
-  return (
-    <div className="relative w-full overflow-hidden bg-white/5 border-y border-white/5 py-2 mt-4 mb-2">
-      <style jsx>{`
-        @keyframes ticker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .ticker-content {
-          display: inline-flex;
-          white-space: nowrap;
-          animation: ticker 30s linear infinite;
-        }
-      `}</style>
-      <div className="ticker-content flex gap-8">
-        {[...Array(4)].map((_, i) => (
-          <span key={i} className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-400/80 italic flex items-center gap-3">
-            {text} <Sparkles size={10} className="opacity-40" />
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boolean }) => {
   const sizeClasses = isSmall ? "w-4 h-4 opacity-60" : "w-6 h-6 opacity-100";
   const iconSize = isSmall ? 8 : 11;
@@ -451,12 +425,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     return lang === 'ru' ? data.description_ru : data.description_eng;
   };
 
-  const tickerText = React.useMemo(() => {
-    const data = descriptionsMap["info-block"];
-    if (!data) return "";
-    return lang === 'ru' ? data.description_ru : data.description_eng;
-  }, [descriptionsMap, lang]);
-
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
     return [...news].sort((a, b) => {
@@ -534,21 +502,19 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           ))}
         </div>
-        
-        <InfoTicker text={tickerText} />
       </header>
 
       <div className="max-w-xl mx-auto space-y-3">
         {recentUpdates.length > 0 && (
           <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.updates}</h2></div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80 italic">{t.updates}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
 
         {flashSales.length > 0 && (
           <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.sales}</h2></div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80 italic">{t.sales}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
@@ -556,7 +522,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         <div className="space-y-6">
           <div className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">{t.flowerMenu}</span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] italic text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
 
@@ -573,7 +539,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                      const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
                      return (
                        <div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5">
-                         <span className="text-[10px] font-black opacity-30 uppercase tracking-widest">{w}g</span>
+                         <span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span>
                          <span className="text-[18px] font-black italic text-white tracking-tighter leading-none">{p > 0 ? `${p}฿` : '—'}</span>
                        </div>
                      )
@@ -605,7 +571,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <>
               <div className="flex items-center gap-6 py-10">
                  <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/10 to-amber-500/30"></div>
-                 <span className="text-[13px] font-black uppercase tracking-[0.6em] italic text-amber-500/80">{t.concentrates}</span>
+                 <span className="text-[16px] font-black uppercase tracking-[0.3em] italic text-amber-500/80">{lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES'}</span>
                  <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/10 to-amber-500/30"></div>
               </div>
               {concentrateSections.map(sec => (
