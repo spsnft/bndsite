@@ -314,12 +314,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   // Карта описаний для быстрого доступа
   const descriptionsMap = React.useMemo(() => {
     const map: Record<string, any> = {};
-    initialDescriptions.forEach(d => { if (d.subcategory) map[d.subcategory.toLowerCase()] = d; });
+    initialDescriptions.forEach(d => { if (d.subcategory) map[d.subcategory.toLowerCase().trim()] = d; });
     return map;
   }, [initialDescriptions]);
 
   const getDesc = (id: string) => {
-    const data = descriptionsMap[id.toLowerCase()];
+    const data = descriptionsMap[id.toLowerCase().trim()];
     if (!data) return null;
     return lang === 'ru' ? data.description_ru : data.description_eng;
   };
@@ -356,8 +356,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     }).filter(g => g.items.length > 0);
   }, [processedProducts]);
 
+  // ID для Local Exclusives изменен на полное соответствие таблице
   const eliteSections = [
-    { id: 'local', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
+    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
     { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
   ];
 
@@ -430,7 +431,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <BadgeIcon type="NEW" />
               <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.updates}</h2>
             </div>
-            {/* ИСПРАВЛЕНИЕ: Убраны конфликтующие отрицательные отступы */}
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">
               {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
             </div>
@@ -443,7 +443,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <BadgeIcon type="SALE" />
               <h2 className="text-[11px] font-black uppercase tracking-[0.3em] text-white/50 italic">{t.sales}</h2>
             </div>
-            {/* ИСПРАВЛЕНИЕ: Убраны конфликтующие отрицательные отступы */}
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">
               {flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
             </div>
@@ -464,7 +463,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
                 </div>
-                {/* ОПИСАНИЕ КАТЕГОРИИ */}
                 {getDesc(grade.id) && (
                   <p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">
                     {getDesc(grade.id)}
@@ -499,7 +497,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                   <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                 </div>
-                {/* ОПИСАНИЕ КАТЕГОРИИ */}
                 {getDesc(sec.id) && (
                   <p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">
                     {getDesc(sec.id)}
@@ -531,7 +528,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
                     </div>
-                    {/* ОПИСАНИЕ КАТЕГОРИИ */}
                     {getDesc(sec.id) && (
                       <p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">
                         {getDesc(sec.id)}
