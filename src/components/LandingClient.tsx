@@ -7,7 +7,8 @@ import {
   ShoppingBag, Send, MessageCircle, Instagram, 
   SendHorizontal, Trash2, ChevronDown, Star, Phone, 
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
-  ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw
+  ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
+  Bike, Wallet, Globe, Timer
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -56,7 +57,7 @@ const processProductData = (rawProducts: any[]) => {
       }
       if (key.startsWith('oldprice_')) {
         const weight = key.replace('oldprice_', '').replace('g', '');
-        oldPrices[weight] = p[key];
+        prices[weight] = p[key];
       }
     });
     return {
@@ -519,54 +520,66 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* --- ГЛАВНЫЙ БЛОК О НАС (БЕЗ ЗАТЕМНЕНИЯ) --- */}
-        <div className="relative py-8 px-6 text-center">
-          <CheckCircle2 size={24} className="mx-auto mb-4 text-emerald-500 opacity-40" />
-          <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-3">
+        {/* --- ГЛАВНЫЙ БЛОК О НАС (ЖИДКОЕ СТЕКЛО) --- */}
+        <div className="relative py-10 px-8 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-4">
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
+          <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
+          
+          <CheckCircle2 size={24} className="mx-auto mb-4 text-emerald-500 opacity-60" />
+          <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-3 relative z-10">
             {lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}
           </h1>
-          <p className="text-[13px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-6">
+          <p className="text-[13px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-8 relative z-10">
             {lang === 'ru' 
               ? 'Ваш надежный проводник в мире премиального качества и сервиса.' 
               : 'Your trusted guide to a world of premium quality and service.'}
           </p>
-          <div className="flex flex-col items-center gap-2">
-             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
-               {lang === 'ru' ? '• 3 года на рынке' : '• 3 years on market'}
-             </span>
-             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
-               {lang === 'ru' ? '• Тысячи счастливых клиентов' : '• Thousands of happy clients'}
-             </span>
-             <span className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
-               {lang === 'ru' ? '• Регулярные обновления меню' : '• Regular menu updates'}
-             </span>
+          <div className="flex flex-col items-center gap-3 relative z-10">
+             <div className="flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">
+                  {lang === 'ru' ? '3 года на рынке' : '3 years on market'}
+                </span>
+             </div>
+             <div className="flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">
+                  {lang === 'ru' ? 'Тысячи счастливых клиентов' : 'Thousands of happy clients'}
+                </span>
+             </div>
+             <div className="flex items-center gap-2 px-4 py-1.5 bg-white/5 rounded-full border border-white/5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-white/80">
+                  {lang === 'ru' ? 'Регулярные обновления меню' : 'Regular menu updates'}
+                </span>
+             </div>
           </div>
         </div>
 
-        {/* --- 4 УТП БЛОКА (СТИЛЬ 2 - ЖИДКОЕ СТЕКЛО) --- */}
-        <div className="grid grid-cols-1 gap-3 mt-10 px-2">
-           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+        {/* --- ПЕРВАЯ СЕТКА УТП (БРЕНДОВЫЕ) --- */}
+        <div className="grid grid-cols-1 gap-3 px-2">
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
               <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 shrink-0"><ShieldCheck size={20}/></div>
               <div>
                 <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Качество' : 'Quality Control'}</h4>
                 <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-wide">{lang === 'ru' ? 'Личный отбор каждой партии и гарантия чистоты продукта.' : 'Personal selection of every batch with product purity guarantee.'}</p>
               </div>
            </div>
-           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
               <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400 shrink-0"><Clock size={20}/></div>
               <div>
                 <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Скорость' : 'Express Delivery'}</h4>
                 <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-wide">{lang === 'ru' ? 'Среднее время доставки — до 60 минут в любую точку Пхукета.' : 'Average delivery time — under 60 minutes anywhere in Phuket.'}</p>
               </div>
            </div>
-           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
               <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-400 shrink-0"><Trophy size={20}/></div>
               <div>
                 <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Репутация' : 'Market Expert'}</h4>
                 <p className="text-[10px] font-medium text-white/40 leading-relaxed uppercase tracking-wide">{lang === 'ru' ? 'Более 3-х лет безупречной работы на локальном рынке.' : 'Over 3 years of impeccable work in the local market.'}</p>
               </div>
            </div>
-           <div className="bg-white/5 rounded-3xl p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
               <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-400 shrink-0"><RefreshCcw size={20}/></div>
               <div>
                 <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{lang === 'ru' ? 'Ассортимент' : 'Fresh Stocks'}</h4>
@@ -575,19 +588,36 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 mt-8">
-          {[
-            { id: 1, titleKey: "dailySupport", value: "12:00—00:00" },
-            { id: 3, titleKey: "minOrder", value: (<>1000<Baht /></>) },
-            { id: 2, titleKey: "delivery", value: "60 MINUTES" },
-            { id: 4, titleKey: "nationwide", value: "2-3 DAYS" },
-          ].map((card) => (
-            <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-[#1d4837]/60 backdrop-blur-xl flex flex-col items-center justify-center text-center">
-              <div className="text-[16px] font-black tracking-[0.05em] text-white uppercase leading-tight">{card.value}</div>
-              <p className="text-[12px] font-black uppercase tracking-[0.2em] text-white/30 mt-1 leading-tight">{(t as any)[card.titleKey]}</p>
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full bg-emerald-400/60 shadow-[0_0_8px_rgba(52,211,153,0.3)]"></div>
-            </div>
-          ))}
+        {/* --- ВТОРАЯ СЕТКА УТП (ТЕХНИЧЕСКИЕ - В НОВОМ СТИЛЕ) --- */}
+        <div className="grid grid-cols-1 gap-3 mt-3 px-2">
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 shrink-0"><Timer size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{t.dailySupport}</h4>
+                <p className="text-[14px] font-black text-white tracking-tighter uppercase leading-none mt-1">12:00 — 00:00</p>
+              </div>
+           </div>
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400 shrink-0"><Wallet size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{t.minOrder}</h4>
+                <p className="text-[14px] font-black text-white tracking-tighter uppercase leading-none mt-1">1000<Baht /></p>
+              </div>
+           </div>
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-400 shrink-0"><Bike size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{t.delivery}</h4>
+                <p className="text-[14px] font-black text-white tracking-tighter uppercase leading-none mt-1">60 MINUTES</p>
+              </div>
+           </div>
+           <div className="bg-white/5 rounded-[2rem] p-5 border border-white/5 flex items-start gap-4 backdrop-blur-md">
+              <div className="p-3 bg-purple-500/10 rounded-2xl text-purple-400 shrink-0"><Globe size={20}/></div>
+              <div>
+                <h4 className="text-[12px] font-black uppercase tracking-widest mb-1">{t.nationwide}</h4>
+                <p className="text-[14px] font-black text-white tracking-tighter uppercase leading-none mt-1">2-3 DAYS</p>
+              </div>
+           </div>
         </div>
       </header>
 
@@ -747,3 +777,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
+
