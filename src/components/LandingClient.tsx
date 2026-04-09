@@ -234,32 +234,32 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <div className="space-y-5 pl-3">
              <div className="flex items-center gap-4">
                 <Timer size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">12:00 — 00:00</p></div>
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div>
              </div>
              <div className="flex items-center gap-4">
                 <Plus size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
              </div>
              <div className="flex items-center gap-4">
                 <Laptop size={18} className="text-[#F59E0B] shrink-0" />
                 <div>
                   <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p>
-                  <p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-tight">
+                  <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
                     {lang === 'ru' ? (
-                      <>Онлайн на сайте или через <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B] underline">оператора telegram</a></>
+                      <>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>
                     ) : (
-                      <>Online on website or via <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B] underline">telegram operator</a></>
+                      <>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>
                     )}
                   </p>
                 </div>
              </div>
              <div className="flex items-center gap-4">
                 <Wallet size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
              </div>
              <div className="flex items-center gap-4">
                 <Bike size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
              </div>
           </div>
         </div>
