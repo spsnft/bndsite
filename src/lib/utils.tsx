@@ -3,8 +3,19 @@ import { twMerge } from "tailwind-merge"
 import * as React from "react"
 import { Percent, Star, Flame, Crown, SendHorizontal, Phone, MessageCircle, Instagram } from "lucide-react"
 
+/**
+ * Утилита для объединения Tailwind классов
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+/**
+ * Функция генерации абсолютных URL для robots.ts и sitemap
+ */
+export function absoluteUrl(path: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://bnd.delivery"
+  return `${baseUrl}${path.startsWith("/") ? path : `/${path}`}`
 }
 
 // --- КОНСТАНТЫ ---
@@ -76,6 +87,7 @@ export const getFirstAvailablePrice = (product: any) => {
   return { price: 0, weight: 0 };
 };
 
+// Компонент иконки бата. Работает только в .tsx файлах
 export const Baht = ({ className = "" }: { className?: string }) => (
   <span className={`inline-block text-[0.85em] -translate-y-[0.05em] ml-0.5 font-sans ${className}`}>฿</span>
 );
