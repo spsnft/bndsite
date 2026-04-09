@@ -8,7 +8,7 @@ import {
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
   ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
   Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
-  ZapOff, FlameKindling
+  ZapOff, FlameKindling, Gem
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -74,7 +74,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
           {showSubcategory && (<p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest`}>{item.subcategory || "Product"}</p>)}
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-2">
-            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_10px_20_rgba(0,0,0,0.9)]" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt={item.name} />
         </div>
       </div>
       <div className="relative z-10 flex justify-between items-end px-5 pb-5 mt-auto">
@@ -196,18 +196,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
 
         <div className="flex flex-wrap gap-2 px-2 -mt-4 mb-4 relative z-20">
-          <button onClick={() => scrollToSection('buds-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">Flower</button>
-          <button onClick={() => scrollToSection('concentrates-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">Concentrates</button>
-          <button onClick={() => scrollToSection('joints-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">Joints</button>
-          <button onClick={() => scrollToSection('order-info')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">Delivery</button>
+          <button onClick={() => scrollToSection('buds-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'основное меню' : 'flowers'}</button>
+          <button onClick={() => scrollToSection('concentrates-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'концентраты' : 'concentrates'}</button>
+          <button onClick={() => scrollToSection('joints-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
         <div className="relative pt-2 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
-          <CheckCircle2 size={24} className="mx-auto mb-4 text-emerald-500 opacity-60" />
+          <Gem size={24} className="mx-auto mb-4 text-emerald-500 opacity-60" />
           <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-3 relative z-10">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
-          <p className="text-[12px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-6 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
+          <p className="text-[10px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-6 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
           <div className="grid grid-cols-2 gap-3 relative z-10">
              {[ 
                {ru: '3 года на рынке', en: '3 years on market'}, 
@@ -239,7 +238,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              </div>
              <div className="flex items-start gap-4">
                 <Wallet size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
-                <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[12px] font-bold text-white/90 uppercase leading-relaxed">{lang === 'ru' ? 'Cash, Transfer, Crypto, Rubles' : 'Cash Baht, transfer, crypto or Rubles'}</p></div>
+                <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[12px] font-bold text-white/90 uppercase leading-relaxed">{lang === 'ru' ? 'наличка, перевод, крипта, рубли' : 'cash, transfer, crypto'}</p></div>
              </div>
              <div className="flex items-start gap-4">
                 <Bike size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
