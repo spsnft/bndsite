@@ -208,8 +208,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         <div className="relative pt-4 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
-          <h1 className="text-[26px] font-black uppercase tracking-normal text-white relative z-10">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
-          <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto my-4 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
+          <h1 className="text-[26px] font-black uppercase tracking-normal text-white relative z-10 mb-4">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
+          <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-4 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
           <div className="grid grid-cols-2 gap-3 relative z-10">
              {[ 
                {ru: '3 года на рынке', en: '3 years on market'}, 
@@ -227,7 +227,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
         <div id="order-info" className="relative pt-4 pb-6 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-4">
             <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><HelpCircle size={20}/></div>
             <h3 className="text-[16px] font-black uppercase tracking-[0.25em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
           </div>
