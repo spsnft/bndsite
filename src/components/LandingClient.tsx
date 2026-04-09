@@ -172,7 +172,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-3 relative z-10">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
           <p className="text-[13px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-8 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
           <div className="grid grid-cols-2 gap-3 relative z-10">
-             {[ {ru: '3 года на рынке', en: '3 years on market'}, {ru: 'сотни отзывов', en: 'hundreds of reviews'}, {ru: 'гарантия качества', en: 'quality guarantee'}, {ru: 'меню обновляется', en: 'menu updates'} ].map((item, i) => (
+             {[ 
+               {ru: '3 года на рынке', en: '3 years on market'}, 
+               {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
+               {ru: 'гарантия качества', en: 'quality guarantee'}, 
+               {ru: 'регулярные обновления меню', en: 'regular menu updates'} 
+             ].map((item, i) => (
                <div key={i} className="flex items-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
                   <span className="text-[8px] font-black uppercase tracking-tight text-white/80 text-left">{lang === 'ru' ? item.ru : item.en}</span>
@@ -186,17 +191,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <div className="p-2 bg-[#F59E0B]/10 rounded-xl text-[#F59E0B]"><HelpCircle size={18}/></div>
             <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-white/90">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
           </div>
-          <div className="space-y-5 px-10">
+          <div className="space-y-5">
              <div className="flex items-start gap-4">
                 <Timer size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
                 <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[12px] font-bold text-white/90 uppercase">12:00 — 00:00</p></div>
              </div>
              <div className="flex items-start gap-4">
-                <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={16} height={16} className="mt-0.5 shrink-0 opacity-60" alt="LogoIcon" />
+                <Plus size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
                 <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[12px] font-bold text-white/90 uppercase">{lang === 'ru' ? 'От 1000฿, доставка бесплатная' : 'From 1000฿, free delivery'}</p></div>
              </div>
              <div className="flex items-start gap-4">
-                <CreditCard size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
+                <Wallet size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
                 <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[12px] font-bold text-white/90 uppercase leading-relaxed">{lang === 'ru' ? 'Cash, Transfer, Crypto, Rubles' : 'Cash Baht, transfer, crypto or Rubles'}</p></div>
              </div>
              <div className="flex items-start gap-4">
