@@ -178,7 +178,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   };
 
   return (
-    <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
         <div className="flex items-center justify-between px-2 mb-0"> 
            <div className="relative">
@@ -195,13 +195,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* СКОРРЕКТИРОВАННЫЕ ИНТЕРВАЛЫ ЯКОРЕЙ ДЛЯ ВИЗУАЛЬНОЙ СИММЕТРИИ */}
+        {/* ЯКОРЯ: ИДЕАЛЬНАЯ СИММЕТРИЯ */}
         <div className="flex flex-wrap gap-2 px-2 mt-[2px] mb-[8px] relative z-20">
           <button onClick={() => scrollToSection('buds-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'основное меню' : 'flowers'}</button>
           <button onClick={() => scrollToSection('concentrates-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'концентраты' : 'concentrates'}</button>
           <button onClick={() => scrollToSection('joints-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
+        {/* БЛОК "О НАС" */}
         <div className="relative pt-2 pb-4 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
@@ -222,6 +223,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              ))}
           </div>
         </div>
+
+        {/* БЛОК "КАК ЗАКАЗАТЬ" */}
         <div id="order-info" className="relative pt-2 pb-4 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="flex items-center gap-3 mb-5">
@@ -248,6 +251,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
       </header>
+
       <div className="max-w-xl mx-auto space-y-3">
         {recentUpdates.length > 0 && (
           <section className="space-y-3 overflow-hidden">
@@ -261,12 +265,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
+        
         <div className="space-y-6">
           <div id="buds-menu" className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
+          
           {gradeSections.map(({ grade, items, priceRef }) => {
             const isOpen = openGrades.includes(grade.id);
             return (
@@ -290,6 +296,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               </div>
             );
           })}
+
           {eliteSections.map(sec => {
             const isOpen = openGrades.includes(sec.id);
             return sec.items.length > 0 && (
@@ -310,6 +317,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{lang === 'ru' ? 'Экстракты' : 'Extracts'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
+          
           {concentrateSections.map(sec => {
             const isOpen = openGrades.includes(sec.id);
             return (
@@ -334,6 +342,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
           </div>
+          
           {jointSections.map(sec => {
             const isOpen = openGrades.includes(sec.id);
             return (
@@ -349,14 +358,25 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           })}
         </div>
       </div>
+
       {items.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-6">
           <button onClick={() => { triggerHaptic('medium'); setIsCheckoutOpen(true); }} className="w-full bg-white/10 backdrop-blur-2xl text-white py-3 px-7 rounded-[2.5rem] border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
-            <div className="flex items-center gap-4 relative z-10"><div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div><div className="text-left"><div className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}฿</div><span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span></div></div>
-            <div className="flex items-center gap-3 text-white relative z-10 opacity-70"><span className="text-[12px] font-black uppercase tracking-widest">{t.basket}</span><span className="p-2 bg-white/10 rounded-full animate-pulse"><Send size={18}/></span></div>
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
+              <div className="text-left">
+                <div className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}฿</div>
+                <span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 text-white relative z-10 opacity-70">
+              <span className="text-[12px] font-black uppercase tracking-widest">{t.basket}</span>
+              <span className="p-2 bg-white/10 rounded-full animate-pulse"><Send size={18}/></span>
+            </div>
           </button>
         </div>
       )}
+      
       {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: '#F87171' } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
       {isCheckoutOpen && (<CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }} />)}
     </div>
