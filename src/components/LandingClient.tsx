@@ -165,12 +165,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-6 w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[9px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
         </div>
-        <div className="relative pt-8 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-2 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <CheckCircle2 size={24} className="mx-auto mb-4 text-emerald-500 opacity-60" />
           <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-3 relative z-10">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
-          <p className="text-[13px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-6 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
+          <p className="text-[12px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-6 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
           <div className="grid grid-cols-2 gap-3 relative z-10">
              {[ 
                {ru: '3 года на рынке', en: '3 years on market'}, 
@@ -185,7 +185,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              ))}
           </div>
         </div>
-        <div className="relative py-8 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-2 pb-8 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="flex items-center gap-3 mb-5">
             <div className="p-2 bg-[#F59E0B]/10 rounded-xl text-[#F59E0B]"><HelpCircle size={18}/></div>
