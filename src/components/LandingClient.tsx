@@ -77,7 +77,6 @@ const isElite = (product: any) => {
 const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boolean) => {
   if (!prices) return 0;
   
-  // Для элитных товаров маппинг веса в ключи (3.5g -> 1, 7g -> 5 и т.д. по твоей логике)
   if (isEliteProduct) {
     const eliteMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
     const steps = [3.5, 7, 14, 28];
@@ -86,7 +85,6 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
     return priceAtTier > 0 ? (priceAtTier / baseTier) * weight : 0;
   }
 
-  // Стандартная логика для Buds/Concentrates
   const tiers = [1, 5, 10, 20];
   const lowerTier = [...tiers].reverse().find(t => t <= weight) || 1;
   const upperTier = tiers.find(t => t > weight) || 20;
@@ -97,7 +95,6 @@ const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boole
   if (val1 === 0) return 0;
   if (lowerTier === upperTier || val1 === val2) return (val1 / lowerTier) * weight;
 
-  // Линейная интерполяция между ступенями цен
   const pricePerG = val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
   return pricePerG;
 };
@@ -530,8 +527,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* --- ГЛАВНЫЙ БЛОК О НАС --- */}
-        <div className="relative py-10 px-8 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-4">
+        {/* --- ГЛАВНЫЙ БЛОК О НАС (правки отступов) --- */}
+        <div className="relative py-7 px-8 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-6">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
@@ -573,19 +570,19 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        {/* --- БЛОК КАК ЗАКАЗАТЬ --- */}
-        <div className="relative py-8 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-6">
+        {/* --- БЛОК КАК ЗАКАЗАТЬ (правки отступов) --- */}
+        <div className="relative py-7 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-6">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-[#F59E0B]/5 rounded-full blur-[40px]"></div>
           
-          <div className="flex items-center gap-3 mb-6">
+          <div className="flex items-center gap-3 mb-5 px-2">
             <div className="p-2 bg-[#F59E0B]/10 rounded-xl text-[#F59E0B]"><HelpCircle size={18}/></div>
             <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-white/90">
               {lang === 'ru' ? 'Как заказать' : 'How to order'}
             </h3>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-5 px-2">
              <div className="flex items-start gap-4">
                 <Timer size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
                 <div>
@@ -612,169 +609,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              <div className="flex items-start gap-4">
                 <Bike size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
                 <div>
-                   <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p>
-                   <p className="text-[12px] font-bold text-white/90 uppercase">
-                     {lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}
-                   </p>
-                </div>
-             </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-xl mx-auto space-y-3">
-        {recentUpdates.length > 0 && (
-          <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
-            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
-          </section>
-        )}
-
-        {flashSales.length > 0 && (
-          <section className="space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
-            <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
-          </section>
-        )}
-
-        <div className="space-y-6">
-          <div className="flex items-center gap-4 py-4">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-          </div>
-
-          {gradeSections.map(({ grade, items, priceRef }) => {
-            const isOpen = openGrades.includes(grade.id);
-            return (
-              <div 
-                key={grade.id} 
-                className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`}
-                style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${grade.color}15` : 'none' }}
-              >
-                <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 py-8 flex flex-col active:bg-white/5 transition-colors">
-                  <div className="w-full flex items-center justify-between mb-4 px-4">
-                    <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
-                    <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                  </div>
-                  {getDesc(grade.id) && (<p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
-                  <div className="w-full grid grid-cols-4 gap-2 px-4">
-                     {[1, 5, 10, 20].map(w => {
-                       const p = Math.round(Number(priceRef.prices?.[w]) || 0);
-                       return (
-                         <div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5">
-                           <span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span>
-                           <span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}฿</>) : '—'}</span>
-                         </div>
-                       )
-                     })}
-                  </div>
-                </button>
-                <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                  <div className="divide-y divide-white/5 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
-                </div>
-              </div>
-            );
-          })}
-
-          {eliteSections.map(sec => {
-            const isOpen = openGrades.includes(sec.id);
-            return sec.items.length > 0 && (
-              <div 
-                key={sec.id} 
-                className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`}
-                style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}
-              >
-                <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                  <div className="w-full flex items-center justify-between">
-                    <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                    <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                  </div>
-                  {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
-                </button>
-                <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                  <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
-                </div>
-              </div>
-            );
-          })}
-
-          {concentrateSections.length > 0 && (
-            <>
-              <div className="flex items-center gap-6 py-10">
-                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/10 to-amber-500/30"></div>
-                 <span className="text-[16px] font-black uppercase tracking-[0.3em] text-amber-500/80">{lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES'}</span>
-                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/10 to-amber-500/30"></div>
-              </div>
-              {concentrateSections.map(sec => {
-                const isOpen = openGrades.includes(sec.id);
-                return (
-                  <div 
-                    key={sec.id} 
-                    className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`}
-                    style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}
-                  >
-                    <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                      <div className="w-full flex items-center justify-between">
-                        <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                        <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                      </div>
-                      {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
-                    </button>
-                    <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                      {sec.isList ? (
-                        <div className="divide-y divide-white/5 bg-white/5">{sec.items.map(p => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
-                      ) : (
-                        <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </>
-          )}
-        </div>
-      </div>
-
-      {items.length > 0 && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-6">
-          <button onClick={() => { triggerHaptic('medium'); setIsCheckoutOpen(true); }} className="w-full bg-white/10 backdrop-blur-2xl text-white py-3 px-7 rounded-[2.5rem] border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
-            <div className="flex items-center gap-4 relative z-10">
-              <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
-              <div className="text-left">
-                 <div className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}฿</div>
-                 <span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
-              </div>
-            </div>
-            <div className="flex items-center gap-3 text-white relative z-10 opacity-70">
-              <span className="text-[12px] font-black uppercase tracking-widest">{t.basket}</span>
-              <span className="p-2 bg-white/10 rounded-full animate-pulse"><Send size={18}/></span>
-            </div>
-          </button>
-        </div>
-      )}
-
-      {selectedProduct && (
-        <ProductModal 
-          product={selectedProduct} t={t}
-          style={
-            selectedProduct.category === 'concentrates' 
-            ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR }
-            : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }))
-          } 
-          onClose={() => setSelectedProduct(null)} 
-        />
-      )}
-      {isCheckoutOpen && (
-        <CheckoutModal 
-          items={items} 
-          total={getTotal()} 
-          t={t} 
-          lang={lang} 
-          onClose={() => setIsCheckoutOpen(false)} 
-          onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }}
-        />
-      )}
-    </div>
-  );
-}
+                   <p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p
