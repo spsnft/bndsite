@@ -17,7 +17,7 @@ import { translations } from "@/lib/translations"
 import { ProductModal, CheckoutModal } from "@/components/modals"
 import { 
   triggerHaptic, getFirstAvailablePrice, getInterpolatedPrice, isElite,
-  TYPE_COLORS, GRADES, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR, Baht 
+  TYPE_COLORS, GRADES, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR 
 } from "@/lib/utils"
 
 // --- INTERNAL HELPERS ---
@@ -57,6 +57,11 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
   }
 });
 
+// Кастомный компонент Бата, который мы правили ранее, с уменьшенным знаком
+const BahtSymbol = React.memo(() => (
+  <span className="font-sans text-[0.9em] ml-0.5">฿</span>
+));
+
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean, showSubcategory?: boolean }) => {
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
@@ -80,8 +85,8 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       <div className="relative z-10 flex justify-between items-end px-5 pb-5 mt-auto">
         <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end gap-1">
-          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}<Baht /></span>}
-          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? (<>{currentPrice}<Baht /></>) : '—'}</p>
+          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}<BahtSymbol /></span>}
+          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? (<>{currentPrice}<BahtSymbol /></>) : '—'}</p>
         </div>
       </div>
     </div>
@@ -201,6 +206,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
+        {/* БЛОК "О НАС" */}
         <div className="relative pt-4 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
@@ -213,6 +219,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                {ru: 'гарантия качества', en: 'quality guarantee'}, 
                {ru: 'регулярные обновления меню', en: 'regular menu updates'} 
              ].map((item, i) => (
+               // ДОБАВЛЕН ITEMS-CENTER ДЛЯ ИДЕАЛЬНОЙ ВЕРТИКАЛЬНОЙ ЦЕНТРОВКИ
                <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
                   <span className="text-[8px] font-black uppercase tracking-widest leading-tight text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
@@ -221,6 +228,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
+        {/* БЛОК "КАК ЗАКАЗАТЬ" - ИКОНКИ ОТЦЕНТРОВАНЫ */}
         <div id="order-info" className="relative pt-4 pb-6 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="flex items-center gap-3 mb-6">
@@ -228,21 +236,23 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <h3 className="text-[16px] font-black uppercase tracking-[0.25em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
           </div>
           <div className="space-y-5">
-             <div className="flex items-start gap-4">
-                <Timer size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div>
+             {/* ДОБАВЛЕН ITEMS-CENTER К СТРОКАМ */}
+             <div className="flex items-center gap-4">
+                <Timer size={18} className="text-[#F59E0B] shrink-0" />
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">12:00 — 00:00</p></div>
              </div>
-             <div className="flex items-start gap-4">
-                <Plus size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, доставка бесплатная' : 'From 1000฿, free delivery'}</p></div>
+             <div className="flex items-center gap-4">
+                <Plus size={18} className="text-[#F59E0B] shrink-0" />
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, доставка бесплатная' : 'From 1000฿, free delivery'}</p></div>
              </div>
-             <div className="flex items-start gap-4">
-                <Wallet size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'наличка, перевод, крипта, рубли' : 'cash, transfer, crypto'}</p></div>
+             <div className="flex items-center gap-4">
+                <Wallet size={18} className="text-[#F59E0B] shrink-0" />
+                {/* ИСПРАВЛЕНО "Наличка" С БОЛЬШОЙ БУКВЫ */}
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'cash, transfer, crypto'}</p></div>
              </div>
-             <div className="flex items-start gap-4">
-                <Bike size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
+             <div className="flex items-center gap-4">
+                <Bike size={18} className="text-[#F59E0B] shrink-0" />
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
              </div>
           </div>
         </div>
@@ -282,7 +292,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <div className="w-full grid grid-cols-4 gap-2 px-4">
                      {[1, 5, 10, 20].map(w => {
                        const p = Math.round(Number(priceRef.prices?.[w]) || 0);
-                       return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}฿</>) : '—'}</span></div>)
+                       {/* ЗДЕСЬ ТАКЖЕ ОБНОВЛЕН БАТ */}
+                       return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
                      })}
                   </div>
                 </button>
@@ -378,4 +389,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
