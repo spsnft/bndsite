@@ -93,7 +93,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
 });
 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/5 last:border-none">
+  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/10 last:border-b last:border-white/10">
     <div className="flex items-center gap-4 truncate flex-1">
       <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
       <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
@@ -295,7 +295,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         )}
         
         <div className="space-y-1">
-          <div id="buds-menu" className="flex items-center gap-4 pt-2 pb-2">
+          <div id="buds-menu" className="flex items-center gap-4 pt-1 pb-2">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/30 to-emerald-500/60"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/30 to-emerald-500/60"></div>
@@ -306,13 +306,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               const isOpen = openGrades.includes(grade.id);
               return (
                 <div key={grade.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${grade.color}15` : 'none' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 py-8 flex flex-col active:bg-white/5 transition-colors">
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 pt-8 pb-3 flex flex-col active:bg-white/5 transition-colors">
                     <div className="w-full flex items-center justify-between mb-4 px-4">
                       <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                       <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </div>
-                    {getDesc(grade.id) && (<p className="px-4 mb-6 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
-                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                    {getDesc(grade.id) && (<p className="px-4 mb-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
+                    <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(priceRef.prices?.[w]) || 0);
                          return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-2 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
@@ -320,7 +320,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="divide-y divide-white/5 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                    <div className="divide-y divide-white/10 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                   </div>
                 </div>
               );
@@ -342,7 +342,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="concentrates-menu" className="flex items-center gap-4 pt-2 pb-2 mt-4">
+          <div id="concentrates-menu" className="flex items-center gap-4 pt-1 pb-2 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80">{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
@@ -359,7 +359,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     {sec.isList ? (
-                      <div className="divide-y divide-white/5 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                      <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                     ) : (
                       <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
                     )}
@@ -369,7 +369,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="joints-menu" className="flex items-center gap-4 pt-2 pb-2 mt-4">
+          <div id="joints-menu" className="flex items-center gap-4 pt-1 pb-2 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#F59E0B]/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
@@ -384,7 +384,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="divide-y divide-white/5 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                    <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                   </div>
                 </div>
               );
