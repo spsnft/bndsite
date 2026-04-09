@@ -4,27 +4,30 @@
 
 @layer base {
   :root {
-    color-scheme: dark; /* Говорим браузеру на системном уровне, что мы в dark mode */
+    color-scheme: dark;
   }
 
   body {
-    /* Убираем !important, если в layout.tsx цвет уже стоит. 
-       Добавляем bg-fixed, чтобы при скролле на мобилках фон не "дергался" */
-    @apply bg-[#193D2E] text-white antialiased;
+    @apply bg-[#193D2E] text-white antialiased font-sans;
     background-color: #193D2E;
+    /* Включаем качественную отрисовку шрифта */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Форсируем правильное отображение знака бата для Inter Tight */
+  span, p, div, h1, h2, h3 {
+    font-variant-numeric: tabular-nums;
   }
 }
 
 @layer utilities {
-  /* Твое стекло */
   .backdrop-blur-3xl {
-    /* 60px — это очень тяжелый блюр для мобильных процессоров. 
-       Если в PSI будет жалоба на "Long Tasks", попробуй снизить до 40px. */
     -webkit-backdrop-filter: blur(60px);
     backdrop-filter: blur(60px);
   }
   
-  /* Скрываем скроллбар правильно */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
