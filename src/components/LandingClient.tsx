@@ -180,36 +180,38 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
-        <div className="flex items-center justify-between px-2 mb-0"> 
+        <div className="flex items-center justify-between px-2 mb-2"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
-              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={84} height={84} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
+              {/* УВЕЛИЧЕННЫЙ ЛОГОТИП */}
+              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
-              <div className="flex gap-2">
+              <div className="flex gap-3">
+                {/* УВЕЛИЧЕННЫЕ КНОПКИ СОЦСЕТЕЙ */}
                 {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                  <Link key={i} href={soc.url} target="_blank" className="p-3 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all"><soc.icon size={20} className="opacity-60"/></Link>
+                  <Link key={i} href={soc.url} target="_blank" className="p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl"><soc.icon size={22} className="opacity-80"/></Link>
                 ))}
               </div>
-              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-6 w-10 h-10 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[9px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
+              {/* УВЕЛИЧЕННЫЙ ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА */}
+              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-6 w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
         </div>
 
-        {/* ЯКОРЯ: ИДЕАЛЬНАЯ СИММЕТРИЯ */}
-        <div className="flex flex-wrap gap-2 px-2 mt-[2px] mb-[8px] relative z-20">
-          <button onClick={() => scrollToSection('buds-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'основное меню' : 'flowers'}</button>
-          <button onClick={() => scrollToSection('concentrates-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'концентраты' : 'concentrates'}</button>
-          <button onClick={() => scrollToSection('joints-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
+        {/* ЯКОРЯ: БОЛЕЕ ЗАМЕТНЫЕ И КЛИКАБЕЛЬНЫЕ */}
+        <div className="flex flex-wrap gap-2 px-2 mt-2 mb-4 relative z-20">
+          <button onClick={() => scrollToSection('buds-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'основное меню' : 'flowers'}</button>
+          <button onClick={() => scrollToSection('concentrates-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'концентраты' : 'concentrates'}</button>
+          <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        {/* БЛОК "О НАС" */}
-        <div className="relative pt-2 pb-4 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        {/* БЛОК "О НАС" БЕЗ АЛМАЗА С УВЕЛИЧЕННОЙ РАЗРЯДКОЙ */}
+        <div className="relative pt-6 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
-          <Gem size={24} className="mx-auto mb-2 text-emerald-500 opacity-60" />
-          <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-2 relative z-10">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
+          <h1 className="text-[26px] font-black uppercase tracking-normal text-white mb-2 relative z-10">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
           <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto my-4 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
-          <div className="grid grid-cols-2 gap-3 relative z-10 pb-4">
+          <div className="grid grid-cols-2 gap-3 relative z-10">
              {[ 
                {ru: '3 года на рынке', en: '3 years on market'}, 
                {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
@@ -224,29 +226,29 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        {/* БЛОК "КАК ЗАКАЗАТЬ" */}
-        <div id="order-info" className="relative pt-2 pb-4 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        {/* БЛОК "КАК ЗАКАЗАТЬ" С УВЕЛИЧЕННЫМ ЗАГОЛОВКОМ И РАЗРЯДКОЙ */}
+        <div id="order-info" className="relative pt-4 pb-6 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
-          <div className="flex items-center gap-3 mb-5">
-            <div className="p-2 bg-[#F59E0B]/10 rounded-xl text-[#F59E0B]"><HelpCircle size={18}/></div>
-            <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-white/90">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><HelpCircle size={20}/></div>
+            <h3 className="text-[16px] font-black uppercase tracking-[0.25em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
           </div>
-          <div className="space-y-4 pb-4">
+          <div className="space-y-5">
              <div className="flex items-start gap-4">
-                <Timer size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
-                <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[12px] font-bold text-white/90 uppercase">12:00 — 00:00</p></div>
+                <Timer size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">12:00 — 00:00</p></div>
              </div>
              <div className="flex items-start gap-4">
-                <Plus size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
-                <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[12px] font-bold text-white/90 uppercase">{lang === 'ru' ? 'От 1000฿, доставка бесплатная' : 'From 1000฿, free delivery'}</p></div>
+                <Plus size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, доставка бесплатная' : 'From 1000฿, free delivery'}</p></div>
              </div>
              <div className="flex items-start gap-4">
-                <Wallet size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
-                <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[12px] font-bold text-white/90 uppercase leading-relaxed">{lang === 'ru' ? 'наличка, перевод, крипта, рубли' : 'cash, transfer, crypto'}</p></div>
+                <Wallet size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'наличка, перевод, крипта, рубли' : 'cash, transfer, crypto'}</p></div>
              </div>
              <div className="flex items-start gap-4">
-                <Bike size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
-                <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[12px] font-bold text-white/90 uppercase">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
+                <Bike size={18} className="text-[#F59E0B] mt-0.5 shrink-0" />
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
              </div>
           </div>
         </div>
