@@ -6,8 +6,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        // Устанавливаем Montserrat как шрифт по умолчанию для класса font-sans
-        sans: ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
+        // Заменяем Montserrat на Inter Tight
+        sans: ['var(--font-inter-tight)', 'system-ui', 'sans-serif'],
       },
       colors: {
         brand: {
