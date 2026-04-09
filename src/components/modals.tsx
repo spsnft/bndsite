@@ -1,7 +1,6 @@
 "use client"
-
 import * as React from "react"
-import { X, Sparkles, Trash2, SendHorizontal, Phone, MessageCircle, Instagram } from "lucide-react"
+import { X, Sparkles, Trash2, SendHorizontal } from "lucide-react"
 import { BlurImage } from "@/components/blur-image"
 import { useCart } from "@/lib/cart-store"
 import { 
@@ -13,19 +12,15 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
   const isEliteProduct = isElite(product);
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-  
   const availableSteps = steps.filter(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0);
   const minW = availableSteps[0];
   const maxW = availableSteps[availableSteps.length - 1];
-
   const [weight, setWeight] = React.useState(minW || steps[0]);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
-  
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
   const perGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
-
   const nextStep = availableSteps.find(w => w > weight);
   const promoInfo = React.useMemo(() => {
     if (!nextStep) return null;
@@ -110,7 +105,6 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
-
   const categoryPromos = React.useMemo(() => {
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
