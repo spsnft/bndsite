@@ -8,7 +8,7 @@ import {
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
   ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
   Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
-  ZapOff, FlameKindling, Gem
+  ZapOff, FlameKindling, Gem, Laptop
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -57,7 +57,6 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
   }
 });
 
-// Кастомный компонент Бата, который мы правили ранее, с уменьшенным знаком
 const BahtSymbol = React.memo(() => (
   <span className="font-sans text-[0.9em] ml-0.5">฿</span>
 ));
@@ -206,7 +205,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        {/* БЛОК "О НАС" */}
         <div className="relative pt-4 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
@@ -219,7 +217,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                {ru: 'гарантия качества', en: 'quality guarantee'}, 
                {ru: 'регулярные обновления меню', en: 'regular menu updates'} 
              ].map((item, i) => (
-               // УВЕЛИЧЕН РАЗМЕР ШРИФТА С text-[8px] ДО text-[9px]
                <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
                   <span className="text-[9px] font-black uppercase tracking-widest leading-tight text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
@@ -228,15 +225,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        {/* БЛОК "КАК ЗАКАЗАТЬ" - СДВИНУТ ВПРАВО pl-3 */}
         <div id="order-info" className="relative pt-4 pb-6 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="flex items-center gap-3 mb-6">
-            {/* ИКОНКА ВОПРОСА В ЗАГОЛОВКЕ */}
             <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><HelpCircle size={20}/></div>
             <h3 className="text-[16px] font-black uppercase tracking-[0.25em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
           </div>
-          {/* ДОБАВЛЕН pl-3 ДЛЯ ВЫРАВНИВАНИЯ ИКОНОК С ЗАГОЛОВКОМ */}
           <div className="space-y-5 pl-3">
              <div className="flex items-center gap-4">
                 <Timer size={18} className="text-[#F59E0B] shrink-0" />
@@ -244,11 +238,24 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              </div>
              <div className="flex items-center gap-4">
                 <Plus size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, доставка бесплатная' : 'From 1000฿, free delivery'}</p></div>
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
+             </div>
+             <div className="flex items-center gap-4">
+                <Laptop size={18} className="text-[#F59E0B] shrink-0" />
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p>
+                  <p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-tight">
+                    {lang === 'ru' ? (
+                      <>Онлайн на сайте или через <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B] underline">оператора telegram</a></>
+                    ) : (
+                      <>Online on website or via <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B] underline">telegram operator</a></>
+                    )}
+                  </p>
+                </div>
              </div>
              <div className="flex items-center gap-4">
                 <Wallet size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'cash, transfer, crypto'}</p></div>
+                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
              </div>
              <div className="flex items-center gap-4">
                 <Bike size={18} className="text-[#F59E0B] shrink-0" />
