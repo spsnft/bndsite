@@ -205,12 +205,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        <div className="relative pt-12 pb-10 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-1 pb-10 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
-          <h2 className="text-[18px] font-black uppercase tracking-[0.1em] leading-tight text-white mb-8 relative z-10 px-2">
-            {lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}
+          <h2 className="text-[18px] font-black uppercase tracking-[0.1em] leading-tight text-white mb-2 relative z-10 px-2">
+            {lang === 'ru' ? 'Ваш проводник в мир премиального качества' : 'Your trusted guide to a world of premium quality'}
           </h2>
 
           <div className="grid grid-cols-2 gap-3 relative z-10">
@@ -221,7 +221,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                {ru: 'регулярные обновления меню', en: 'regular menu updates'} 
              ].map((item, i) => (
                <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
                   <span className="text-[9px] font-black uppercase tracking-widest leading-tight text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
                </div>
              ))}
@@ -404,4 +403,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
