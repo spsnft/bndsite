@@ -1,9 +1,8 @@
-// src/components/landing/ProductCards.tsx
 import * as React from "react"
 import { Plus, Tag, Zap } from "lucide-react"
 import { BlurImage } from "@/components/blur-image"
 import { GRADES, TYPE_COLORS, SELECTED_COLOR, IMPORT_COLOR } from "./constants"
-import { triggerHaptic, getFirstAvailablePrice, getInterpolatedPrice, isElite } from "@/lib/utils/product-helpers"
+import { triggerHaptic, getFirstAvailablePrice, getInterpolatedPrice, isElite } from "@/lib/utils"
 
 export const Baht = ({ className = "" }: { className?: string }) => (
   <span className={`inline-block text-[0.85em] -translate-y-[0.05em] ml-0.5 font-sans ${className}`}>฿</span>
@@ -70,3 +69,8 @@ export const ProductRow = React.memo(({ p, onClick }: any) => (
     </div>
   </div>
 ));
+
+export const ProductCards = {
+  Highlight: HighlightCard,
+  Row: ProductRow
+};
