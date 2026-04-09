@@ -1,12 +1,12 @@
 import "@/styles/globals.css"
 import type { Metadata, Viewport } from "next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Montserrat } from 'next/font/google'
+import { Inter_Tight } from 'next/font/google'
 
-const montserrat = Montserrat({
+const interTight = Inter_Tight({
   subsets: ['latin', 'cyrillic'],
-  weight: ['400', '500', '600', '700', '800', '900'],
-  variable: '--font-montserrat',
+  // Вариативный шрифт подгружает все веса автоматически, если не указывать конкретные
+  variable: '--font-inter-tight',
 })
 
 export const viewport: Viewport = {
@@ -28,11 +28,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${montserrat.variable}`} style={{ colorScheme: 'dark' }}>
+    <html lang="en" className={`dark ${interTight.variable}`} style={{ colorScheme: 'dark' }}>
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
       </head>
-      {/* Класс font-sans здесь — это ключ к тому, чтобы Montserrat стал основным везде */}
       <body className="font-sans min-h-screen bg-[#193D2E] text-white antialiased selection:bg-emerald-500/30">
         {children}
         <SpeedInsights />
