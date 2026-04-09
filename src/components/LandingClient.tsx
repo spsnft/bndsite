@@ -64,7 +64,7 @@ const BahtSymbol = React.memo(() => (
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean, showSubcategory?: boolean }) => {
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR));
+    : (item.category === 'joints' ? "#F59E0B" : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
@@ -163,7 +163,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       id: sub,
       title: sub || "Joints",
       items: allJoints.filter(p => p.subcategory === sub),
-      color: "#F87171",
+      color: "#F59E0B",
       icon: FlameKindling
     }));
   }, [processedProducts]);
@@ -205,11 +205,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        <div className="relative pt-4 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-12 pb-10 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
-          <h1 className="text-[26px] font-black uppercase tracking-normal text-white relative z-10 mb-3">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
-          <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto mb-4 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
+          
+          <h2 className="text-[18px] font-black uppercase tracking-[0.1em] leading-tight text-white mb-8 relative z-10 px-2">
+            {lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}
+          </h2>
+
           <div className="grid grid-cols-2 gap-3 relative z-10">
              {[ 
                {ru: '3 года на рынке', en: '3 years on market'}, 
@@ -328,9 +331,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
 
           <div id="concentrates-menu" className="flex items-center gap-4 pt-2 pb-1 mt-4">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{lang === 'ru' ? 'Экстракты' : 'Extracts'}</span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
+             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/10 to-[#A855F7]/30"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80">{lang === 'ru' ? 'Экстракты' : 'Extracts'}</span>
+             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/10 to-[#A855F7]/30"></div>
           </div>
           
           <div className="space-y-3">
@@ -355,9 +358,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
 
           <div id="joints-menu" className="flex items-center gap-4 pt-2 pb-1 mt-4">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
+             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/10 to-[#F59E0B]/30"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#F59E0B]/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
+             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/10 to-[#F59E0B]/30"></div>
           </div>
           
           <div className="space-y-3">
@@ -396,7 +399,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       )}
       
-      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: '#F87171' } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
+      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: '#F59E0B' } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
       {isCheckoutOpen && (<CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }} />)}
     </div>
   );
