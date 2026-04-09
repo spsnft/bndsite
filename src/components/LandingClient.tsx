@@ -219,24 +219,25 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                {ru: 'гарантия качества', en: 'quality guarantee'}, 
                {ru: 'регулярные обновления меню', en: 'regular menu updates'} 
              ].map((item, i) => (
-               // ДОБАВЛЕН ITEMS-CENTER ДЛЯ ИДЕАЛЬНОЙ ВЕРТИКАЛЬНОЙ ЦЕНТРОВКИ
+               // УВЕЛИЧЕН РАЗМЕР ШРИФТА С text-[8px] ДО text-[9px]
                <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0"></span>
-                  <span className="text-[8px] font-black uppercase tracking-widest leading-tight text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest leading-tight text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
                </div>
              ))}
           </div>
         </div>
 
-        {/* БЛОК "КАК ЗАКАЗАТЬ" - ИКОНКИ ОТЦЕНТРОВАНЫ */}
+        {/* БЛОК "КАК ЗАКАЗАТЬ" - СДВИНУТ ВПРАВО pl-3 */}
         <div id="order-info" className="relative pt-4 pb-6 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="flex items-center gap-3 mb-6">
+            {/* ИКОНКА ВОПРОСА В ЗАГОЛОВКЕ */}
             <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><HelpCircle size={20}/></div>
             <h3 className="text-[16px] font-black uppercase tracking-[0.25em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
           </div>
-          <div className="space-y-5">
-             {/* ДОБАВЛЕН ITEMS-CENTER К СТРОКАМ */}
+          {/* ДОБАВЛЕН pl-3 ДЛЯ ВЫРАВНИВАНИЯ ИКОНОК С ЗАГОЛОВКОМ */}
+          <div className="space-y-5 pl-3">
              <div className="flex items-center gap-4">
                 <Timer size={18} className="text-[#F59E0B] shrink-0" />
                 <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em]">12:00 — 00:00</p></div>
@@ -247,7 +248,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              </div>
              <div className="flex items-center gap-4">
                 <Wallet size={18} className="text-[#F59E0B] shrink-0" />
-                {/* ИСПРАВЛЕНО "Наличка" С БОЛЬШОЙ БУКВЫ */}
                 <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white uppercase tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'cash, transfer, crypto'}</p></div>
              </div>
              <div className="flex items-center gap-4">
@@ -292,7 +292,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <div className="w-full grid grid-cols-4 gap-2 px-4">
                      {[1, 5, 10, 20].map(w => {
                        const p = Math.round(Number(priceRef.prices?.[w]) || 0);
-                       {/* ЗДЕСЬ ТАКЖЕ ОБНОВЛЕН БАТ */}
                        return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-3.5 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
                      })}
                   </div>
