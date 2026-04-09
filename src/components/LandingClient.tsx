@@ -179,7 +179,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
-      <header className="max-w-xl mx-auto pt-2 mb-0">
+      <header className="max-w-xl mx-auto pt-0 mb-0">
         <div className="flex items-center justify-between px-2 mb-0"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
@@ -195,19 +195,20 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 px-2 mt-[6px] mb-[6px] relative z-20">
+        {/* СКОРРЕКТИРОВАННЫЕ ИНТЕРВАЛЫ ЯКОРЕЙ ДЛЯ ВИЗУАЛЬНОЙ СИММЕТРИИ */}
+        <div className="flex flex-wrap gap-2 px-2 mt-[2px] mb-[8px] relative z-20">
           <button onClick={() => scrollToSection('buds-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'основное меню' : 'flowers'}</button>
           <button onClick={() => scrollToSection('concentrates-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'концентраты' : 'concentrates'}</button>
           <button onClick={() => scrollToSection('joints-menu')} className="px-4 py-2 bg-white/5 rounded-full border border-white/5 text-[9px] font-black uppercase tracking-widest text-white/60 active:bg-emerald-500/20 active:text-emerald-400 transition-all">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        <div className="relative pt-2 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-2 pb-4 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <Gem size={24} className="mx-auto mb-2 text-emerald-500 opacity-60" />
           <h1 className="text-[26px] font-black uppercase tracking-tighter text-white mb-2 relative z-10">{lang === 'ru' ? 'БошкуНаДорожку' : 'BND delivery service'}</h1>
           <p className="text-[11px] font-bold text-white/60 uppercase tracking-widest leading-relaxed max-w-[280px] mx-auto my-4 relative z-10">{lang === 'ru' ? 'Ваш надежный проводник в мире премиального качества и сервиса' : 'Your trusted guide to a world of premium quality and service'}</p>
-          <div className="grid grid-cols-2 gap-3 relative z-10 pb-6">
+          <div className="grid grid-cols-2 gap-3 relative z-10 pb-4">
              {[ 
                {ru: '3 года на рынке', en: '3 years on market'}, 
                {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
@@ -221,13 +222,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              ))}
           </div>
         </div>
-        <div id="order-info" className="relative pt-2 pb-6 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div id="order-info" className="relative pt-2 pb-4 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
           <div className="flex items-center gap-3 mb-5">
             <div className="p-2 bg-[#F59E0B]/10 rounded-xl text-[#F59E0B]"><HelpCircle size={18}/></div>
             <h3 className="text-[14px] font-black uppercase tracking-[0.2em] text-white/90">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
           </div>
-          <div className="space-y-4 pb-6">
+          <div className="space-y-4 pb-4">
              <div className="flex items-start gap-4">
                 <Timer size={16} className="text-[#F59E0B] mt-0.5 shrink-0 opacity-60" />
                 <div><p className="text-[10px] font-black uppercase tracking-widest text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[12px] font-bold text-white/90 uppercase">12:00 — 00:00</p></div>
