@@ -265,15 +265,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-1">
+      <div className="max-w-xl mx-auto space-y-0">
         {recentUpdates.length > 0 && (
-          <section className="space-y-3 overflow-hidden">
+          <section className="space-y-3 overflow-hidden mb-0">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
         {flashSales.length > 0 && (
-          <section className="space-y-3 overflow-hidden">
+          <section className="space-y-3 overflow-hidden mb-0">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-6 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
