@@ -44,7 +44,7 @@ export const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, i
         <h3 className="text-[14px] font-black uppercase text-white leading-tight">{item.name}</h3>
         {showSubcategory && <p className="text-[10px] font-bold mt-1 text-white/40 uppercase">{item.subcategory}</p>}
         <div className="flex-1 flex items-center justify-center my-2">
-            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-h-full object-contain" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt={item.name} />
         </div>
       </div>
       <div className="relative z-10 flex justify-between items-end px-5 pb-5">
@@ -69,8 +69,3 @@ export const ProductRow = React.memo(({ p, onClick }: any) => (
     </div>
   </div>
 ));
-
-export const ProductCards = {
-  Highlight: HighlightCard,
-  Row: ProductRow
-};
