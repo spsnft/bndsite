@@ -75,7 +75,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       <div className="relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
-          {showSubcategory && (<p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest`}>{item.subcategory || "Product"}</p>)}
+          {showSubcategory && (<p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest italic`}>{item.subcategory || "Product"}</p>)}
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-2">
             <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt={item.name} />
@@ -85,7 +85,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
         <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end gap-1">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}<BahtSymbol /></span>}
-          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? (<>{currentPrice}<BahtSymbol /></>) : '—'}</p>
+          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none text-white`}>{currentPrice > 0 ? (<>{currentPrice}<BahtSymbol /></>) : '—'}</p>
         </div>
       </div>
     </div>
@@ -265,7 +265,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-3">
+      <div className="max-w-xl mx-auto space-y-1">
         {recentUpdates.length > 0 && (
           <section className="space-y-3 overflow-hidden">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
@@ -279,7 +279,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </section>
         )}
         
-        <div className="space-y-6">
+        <div className="space-y-6 pt-4">
           <div id="buds-menu" className="flex items-center gap-4 py-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
