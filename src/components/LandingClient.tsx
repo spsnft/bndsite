@@ -280,9 +280,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-1">
+      <div className="max-w-xl mx-auto space-y-0">
         {recentUpdates.length > 0 && (
-          <section className="space-y-3 overflow-hidden mb-0">
+          <section className="space-y-3 overflow-hidden mb-4">
             <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
@@ -294,8 +294,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </section>
         )}
         
-        <div className="space-y-1 pt-4">
-          <div id="buds-menu" className="flex items-center gap-4 pt-2 pb-1">
+        <div className="space-y-1">
+          <div id="buds-menu" className="flex items-center gap-4 pt-2 pb-2">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
@@ -342,9 +342,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="concentrates-menu" className="flex items-center gap-4 pt-2 pb-1 mt-4">
+          <div id="concentrates-menu" className="flex items-center gap-4 pt-2 pb-2 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/10 to-[#A855F7]/30"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80">{lang === 'ru' ? 'Экстракты' : 'Extracts'}</span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80">{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/10 to-[#A855F7]/30"></div>
           </div>
           
@@ -369,7 +369,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="joints-menu" className="flex items-center gap-4 pt-2 pb-1 mt-4">
+          <div id="joints-menu" className="flex items-center gap-4 pt-2 pb-2 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/10 to-[#F59E0B]/30"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#F59E0B]/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/10 to-[#F59E0B]/30"></div>
@@ -416,3 +416,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
+
