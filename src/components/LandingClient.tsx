@@ -8,7 +8,7 @@ import {
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
   ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
   Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
-  ZapOff, FlameKindling, Gem, Laptop
+  ZapOff, FlameKindling, Gem, Laptop, Info
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -110,6 +110,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
+  const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
   const descriptionsMap = React.useMemo(() => {
@@ -205,7 +206,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        <div className="relative pt-2 pb-2 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-4 pb-4 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
@@ -227,42 +228,54 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        <div id="order-info" className="relative pt-4 pb-6 px-6 bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3 transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><HelpCircle size={20}/></div>
-            <h3 className="text-[16px] font-black uppercase tracking-[0.25em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3>
-          </div>
-          <div className="space-y-5 pl-3">
-             <div className="flex items-center gap-4">
-                <Timer size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div>
-             </div>
-             <div className="flex items-center gap-4">
-                <Plus size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
-             </div>
-             <div className="flex items-center gap-4">
-                <Laptop size={18} className="text-[#F59E0B] shrink-0" />
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p>
-                  <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
-                    {lang === 'ru' ? (
-                      <>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>
-                    ) : (
-                      <>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>
-                    )}
-                  </p>
-                </div>
-             </div>
-             <div className="flex items-center gap-4">
-                <Wallet size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
-             </div>
-             <div className="flex items-center gap-4">
-                <Bike size={18} className="text-[#F59E0B] shrink-0" />
-                <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
-             </div>
+          
+          <button 
+            onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }}
+            className="w-full pt-4 pb-4 px-6 flex items-center justify-between active:bg-white/5 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><Info size={20}/></div>
+              <h3 className="text-[15px] font-black uppercase tracking-[0.15em] text-white">
+                {lang === 'ru' ? 'Общая информация' : 'General info'}
+              </h3>
+            </div>
+            <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
+          </button>
+
+          <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="space-y-5 pl-9 pb-2">
+               <div className="flex items-center gap-4">
+                  <Timer size={18} className="text-[#F59E0B] shrink-0" />
+                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div>
+               </div>
+               <div className="flex items-center gap-4">
+                  <Plus size={18} className="text-[#F59E0B] shrink-0" />
+                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
+               </div>
+               <div className="flex items-center gap-4">
+                  <Laptop size={18} className="text-[#F59E0B] shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p>
+                    <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
+                      {lang === 'ru' ? (
+                        <>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>
+                      ) : (
+                        <>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>
+                      )}
+                    </p>
+                  </div>
+               </div>
+               <div className="flex items-center gap-4">
+                  <Wallet size={18} className="text-[#F59E0B] shrink-0" />
+                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
+               </div>
+               <div className="flex items-center gap-4">
+                  <Bike size={18} className="text-[#F59E0B] shrink-0" />
+                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
+               </div>
+            </div>
           </div>
         </div>
       </header>
@@ -317,7 +330,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               const isOpen = openGrades.includes(sec.id);
               return sec.items.length > 0 && (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, grade.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
                     <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
                     {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
                   </button>
@@ -403,4 +416,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
