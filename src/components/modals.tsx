@@ -29,8 +29,10 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
     return { diff: (nextStep - weight).toFixed(1).replace('.0', ''), perGram: nextPerGram };
   }, [weight, nextStep, product.prices, isEliteProduct]);
 
+  const showSlider = availableSteps.length === 4;
+
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
+    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
         <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
         <div className="relative aspect-[1.3/1] w-full bg-black/10">
@@ -63,19 +65,22 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
                 </button>
               ))}
             </div>
-            <div className="relative h-14 flex items-center group">
-              <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
-                <div className="h-full bg-white transition-all duration-75" style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}></div>
+            
+            {showSlider && (
+              <div className="relative h-14 flex items-center group">
+                <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-white transition-all duration-75" style={{ width: `${((weight - minW) / (maxW - minW)) * 100}%` }}></div>
+                </div>
+                <input type="range" min={minW} max={maxW} step="0.5" value={weight} 
+                  onChange={(e) => { const newW = parseFloat(e.target.value); if (newW !== weight) triggerHaptic('light'); setWeight(newW); }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 appearance-none -webkit-appearance-none"
+                />
+                <div className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-75 flex items-center justify-center border-4 border-[#193D2E] z-10"
+                  style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)`, marginLeft: weight === minW ? '16px' : weight === maxW ? '-16px' : '0px' }}>
+                   <div className="w-2 h-2 bg-[#193D2E] rounded-full"></div>
+                </div>
               </div>
-              <input type="range" min={minW} max={maxW} step="0.5" value={weight} 
-                onChange={(e) => { const newW = parseFloat(e.target.value); if (newW !== weight) triggerHaptic('light'); setWeight(newW); }}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20 appearance-none -webkit-appearance-none"
-              />
-              <div className="absolute w-8 h-8 bg-white rounded-full shadow-[0_0_20px_rgba(255,255,255,0.6)] pointer-events-none transition-all duration-75 flex items-center justify-center border-4 border-[#193D2E] z-10"
-                style={{ left: `calc(${((weight - minW) / (maxW - minW)) * 100}% - 16px)`, marginLeft: weight === minW ? '16px' : weight === maxW ? '-16px' : '0px' }}>
-                 <div className="w-2 h-2 bg-[#193D2E] rounded-full"></div>
-              </div>
-            </div>
+            )}
           </div>
           {promoInfo && (
             <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
