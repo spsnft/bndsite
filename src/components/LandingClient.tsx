@@ -75,8 +75,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       onClick={() => { triggerHaptic('light'); onClick(); }} 
       className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border ${isMini ? 'h-[180px]' : 'h-[240px]'} bg-[#1d4837]/80 backdrop-blur-2xl`} 
       style={{ 
-        borderColor: `${accentColor}40`,
-        boxShadow: `inset 0 0 20px ${accentColor}10, 0 10px 30px -10px ${accentColor}20`
+        borderColor: `${accentColor}80`, // 80 в hex это 50% непрозрачности
       }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
@@ -227,7 +226,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
-          <h2 className="text-[14px] font-black uppercase tracking-[0.1em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[240px] mx-auto">
+          <h2 className="text-[10px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[240px] mx-auto">
             {lang === 'ru' 
               ? <>Ваш проводник в мир премиального качества и сервиса</> 
               : <>Your trusted guide to a world of premium quality and service</>}
