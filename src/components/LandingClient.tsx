@@ -226,7 +226,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
-          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[280px] mx-auto">
+          <h2 className="text-[15px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[280px] mx-auto">
             {lang === 'ru' 
               ? <>Ваш проводник в мир премиального качества</> 
               : <>Your trusted guide to a world of premium quality</>}
@@ -251,15 +251,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           
           <button 
             onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }}
-            className="w-full pt-4 pb-4 px-6 flex items-center justify-between active:bg-white/5 transition-colors"
+            className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors"
           >
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><Info size={20}/></div>
+              <div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div>
               <h3 className="text-[8px] font-black uppercase tracking-[0.15em] text-white">
                 {lang === 'ru' ? 'Общая информация' : 'General info'}
               </h3>
             </div>
-            <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
           </button>
 
           <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
@@ -315,7 +315,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         <div className="space-y-1">
           <div id="buds-menu" className="flex items-center gap-4 pt-3 pb-3">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/30 to-emerald-500/60"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
+             <span className="text-[15px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/30 to-emerald-500/60"></div>
           </div>
           
@@ -326,7 +326,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <div key={grade.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${grade.color}15` : 'none' }}>
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
-                      <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
+                      <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                       <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </div>
                     {getDesc(grade.id) && (<p className="px-4 mb-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(grade.id)}</p>)}
@@ -349,7 +349,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               return sec.items.length > 0 && (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
                     {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
@@ -362,7 +362,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
           <div id="concentrates-menu" className="flex items-center gap-4 pt-3 pb-3 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80">{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
+             <span className="text-[15px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80">{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
           </div>
           
@@ -372,7 +372,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
                     {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
@@ -389,7 +389,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
           <div id="joints-menu" className="flex items-center gap-4 pt-3 pb-3 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#F59E0B]/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
+             <span className="text-[15px] font-black uppercase tracking-[0.3em] text-[#F59E0B]/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
           </div>
           
@@ -399,7 +399,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[16px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
@@ -434,4 +434,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
