@@ -10,26 +10,39 @@ import {
 
 export function ProductModal({ product, style, onClose, t }: { product: any, style: any, onClose: () => void, t: any }) {
   const isEliteProduct = isElite(product);
+  const isPrerolls = product.category === 'joints';
+  
+  // Для прероллов шаги 1, 5, 10, 20 соответствуют 1, 3, 5, 10 шт согласно логике цен
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
   const availableSteps = steps.filter(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0);
+  
   const minW = availableSteps[0];
   const maxW = availableSteps[availableSteps.length - 1];
   const [weight, setWeight] = React.useState(minW || steps[0]);
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
+  
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
   const perGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
+  
   const nextStep = availableSteps.find(w => w > weight);
   const promoInfo = React.useMemo(() => {
-    if (!nextStep) return null;
+    if (!nextStep || isPrerolls) return null;
     const nextPrice = Math.round(getInterpolatedPrice(nextStep, product.prices, isEliteProduct));
     const nextPerGram = Math.round(nextPrice / nextStep);
     return { diff: (nextStep - weight).toFixed(1).replace('.0', ''), perGram: nextPerGram };
-  }, [weight, nextStep, product.prices, isEliteProduct]);
+  }, [weight, nextStep, product.prices, isEliteProduct, isPrerolls]);
 
-  const showSlider = availableSteps.length === 4;
+  const showSlider = availableSteps.length === 4 && !isPrerolls;
+
+  // Маппинг отображения для кнопок прероллов
+  const getLabel = (v: number) => {
+    if (!isPrerolls) return `${v}G`;
+    const prerollLabels: Record<number, string> = { 1: "1PCS", 5: "3PCS", 10: "5PCS", 20: "10PCS" };
+    return prerollLabels[v] || `${v}PCS`;
+  };
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
@@ -54,14 +67,14 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
                 <span className="text-[30px] font-black tracking-tighter text-white leading-none">{currentPrice}<Baht className="opacity-40" /></span>
               </div>
               <div className="flex flex-col items-end">
-                <div className="text-[14px] font-black uppercase text-white tracking-tighter">{weight}G</div>
-                <div className="text-[9px] font-black uppercase opacity-40 text-white tracking-widest">{perGram}<Baht />/G</div>
+                <div className="text-[14px] font-black uppercase text-white tracking-tighter">{getLabel(weight)}</div>
+                {!isPrerolls && <div className="text-[9px] font-black uppercase opacity-40 text-white tracking-widest">{perGram}<Baht />/G</div>}
               </div>
             </div>
             <div className="grid grid-cols-4 gap-2">
               {availableSteps.map((v) => (
                 <button key={v} onClick={() => { triggerHaptic('light'); setWeight(v); }}
-                  className={`py-1 rounded-xl text-[12px] font-black transition-all border ${weight === v ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5'}`}>{v}G
+                  className={`py-1 rounded-xl text-[12px] font-black transition-all border ${weight === v ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5'}`}>{getLabel(v)}
                 </button>
               ))}
             </div>
@@ -91,7 +104,7 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
           )}
           <button onClick={() => { 
               triggerHaptic('success');
-              addItem({ ...product, price: currentPrice, weight: `${weight}g`, subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
+              addItem({ ...product, price: currentPrice, weight: getLabel(weight), subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
               setIsAdded(true); 
               setTimeout(() => {setIsAdded(false); onClose();}, 800); 
             }} 
@@ -114,7 +127,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
-      if (isElite(item)) return;
+      if (isElite(item) || item.category === 'joints') return;
       const w = parseFloat(item.weight) || 0;
       if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
       groups[sub].weight += w;
@@ -198,4 +211,4 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
       </div>
     </div>
   );
-}2
+}
