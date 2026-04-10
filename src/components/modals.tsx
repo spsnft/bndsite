@@ -145,20 +145,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       const parseToDate = (dStr: string) => {
         if (!dStr || !dStr.includes('/')) return new Date(0);
         const [day, month] = dStr.split('/').map(Number);
-        // Создаем дату. Если текущий месяц меньше месяца в строке, вероятно, это прошлый год.
-        // Но для стандартной сортировки используем текущий год.
         return new Date(currentYear, month - 1, day);
       };
 
       const dateA = parseToDate(a.date);
       const dateB = parseToDate(b.date);
 
-      // Сортировка: чем ближе к "сейчас" (свежее), тем меньше индекс (раньше выводится)
-      // Сравниваем разницу во времени. dateB - dateA даст убывающий порядок (новые сверху/слева)
-      const diff = dateB.getTime() - dateA.getTime();
-      
-      if (diff !== 0) return diff;
-      return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
+      // Сортировка только по дате: новые сверху/слева
+      return dateB.getTime() - dateA.getTime();
     });
   }, [processedProducts]);
 
@@ -466,4 +460,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
