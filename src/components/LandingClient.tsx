@@ -142,22 +142,22 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       const now = new Date();
       const currentYear = now.getFullYear();
 
-      const parseToDate = (dStr: string) => {
-        if (!dStr || !dStr.includes('/')) return new Date(0);
-        const [day, month] = dStr.split('/').map(Number);
-        // Создаем дату. Если текущий месяц меньше месяца в строке, вероятно, это прошлый год.
-        // Но для стандартной сортировки используем текущий год.
+      // Парсинг формата ДД.ММ
+      const parseToDate = (dStr: any) => {
+        if (!dStr || typeof dStr !== 'string' || !dStr.includes('.')) return new Date(0);
+        const [day, month] = dStr.split('.').map(Number);
+        if (isNaN(day) || isNaN(month)) return new Date(0);
         return new Date(currentYear, month - 1, day);
       };
 
       const dateA = parseToDate(a.date);
       const dateB = parseToDate(b.date);
 
-      // Сортировка: чем ближе к "сейчас" (свежее), тем меньше индекс (раньше выводится)
-      // Сравниваем разницу во времени. dateB - dateA даст убывающий порядок (новые сверху/слева)
+      // Сортировка по времени (самые новые — первые)
       const diff = dateB.getTime() - dateA.getTime();
       
       if (diff !== 0) return diff;
+      // Если даты одинаковые, сортируем по цене
       return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
     });
   }, [processedProducts]);
@@ -466,4 +466,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
