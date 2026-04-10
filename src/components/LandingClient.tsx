@@ -222,11 +222,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        <div className="relative pt-6 pb-6 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-6 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
-          <h2 className="text-[15px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[280px] mx-auto">
+          <h2 className="text-[15px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[320px] mx-auto">
             {lang === 'ru' 
               ? <>Ваш проводник в мир премиального качества</> 
               : <>Your trusted guide to a world of premium quality</>}
@@ -255,7 +255,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           >
             <div className="flex items-center gap-3">
               <div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div>
-              <h3 className="text-[8px] font-black uppercase tracking-[0.15em] text-white">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.15em] text-white">
                 {lang === 'ru' ? 'Общая информация' : 'General info'}
               </h3>
             </div>
@@ -301,13 +301,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       <div className="max-w-xl mx-auto space-y-0">
         {recentUpdates.length > 0 && (
           <section className="mt-[12px] mb-[12px] space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[8px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
         {flashSales.length > 0 && (
           <section className="mt-[12px] mb-[12px] space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[8px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
