@@ -85,11 +85,11 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       
       <div className="relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
-          <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black uppercase tracking-tight leading-tight text-white drop-shadow-md`}>{item.name}</h3>
+          <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
           {showSubcategory && (<p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest italic`}>{item.subcategory || "Product"}</p>)}
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-2">
-            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain" alt={item.name} />
         </div>
       </div>
       
@@ -226,7 +226,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
-          <h2 className="text-[12px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[240px] mx-auto">
+          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[280px] mx-auto">
             {lang === 'ru' 
               ? <>Ваш проводник в мир премиального качества</> 
               : <>Your trusted guide to a world of premium quality</>}
@@ -255,7 +255,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           >
             <div className="flex items-center gap-3">
               <div className="p-2.5 bg-[#F59E0B]/20 rounded-xl text-[#F59E0B] shadow-lg"><Info size={20}/></div>
-              <h3 className="text-[15px] font-black uppercase tracking-[0.15em] text-white">
+              <h3 className="text-[8px] font-black uppercase tracking-[0.15em] text-white">
                 {lang === 'ru' ? 'Общая информация' : 'General info'}
               </h3>
             </div>
@@ -266,16 +266,16 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <div className="space-y-5 pl-9 pb-2">
                <div className="flex items-center gap-4">
                   <Timer size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div>
+                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div>
                </div>
                <div className="flex items-center gap-4">
                   <Plus size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
+                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
                </div>
                <div className="flex items-center gap-4">
                   <Laptop size={18} className="text-[#F59E0B] shrink-0" />
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p>
+                    <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p>
                     <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
                       {lang === 'ru' ? (
                         <>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>
@@ -287,11 +287,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                </div>
                <div className="flex items-center gap-4">
                   <Wallet size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
+                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
                </div>
                <div className="flex items-center gap-4">
                   <Bike size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[10px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
+                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
                </div>
             </div>
           </div>
@@ -300,14 +300,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
       <div className="max-w-xl mx-auto space-y-0">
         {recentUpdates.length > 0 && (
-          <section className="space-y-3 overflow-hidden mb-4">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
+          <section className="mt-[12px] mb-[12px] space-y-3 overflow-hidden">
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[8px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
         {flashSales.length > 0 && (
-          <section className="space-y-3 overflow-hidden mb-0">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
+          <section className="mt-[12px] mb-[12px] space-y-3 overflow-hidden">
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[8px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
             <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
@@ -434,3 +434,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
+
