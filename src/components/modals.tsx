@@ -44,8 +44,8 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
             </div>
           </div>
         </div>
-        <div className="px-6 pb-8 space-y-6">
-          <div className="space-y-5">
+        <div className="px-6 pb-8 space-y-3">
+          <div className="space-y-3">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
                 {oldPrice > currentPrice && <span className="text-lg font-black line-through opacity-20 text-white">{oldPrice}<Baht /></span>}
@@ -59,7 +59,7 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
             <div className="grid grid-cols-4 gap-2">
               {availableSteps.map((v) => (
                 <button key={v} onClick={() => { triggerHaptic('light'); setWeight(v); }}
-                  className={`py-3 rounded-xl text-[12px] font-black transition-all border ${weight === v ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5'}`}>{v}G
+                  className={`py-1 rounded-xl text-[12px] font-black transition-all border ${weight === v ? 'bg-white text-black border-white' : 'bg-white/5 text-white/40 border-white/5'}`}>{v}G
                 </button>
               ))}
             </div>
