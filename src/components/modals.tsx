@@ -139,20 +139,18 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
     
     return [...news].sort((a, b) => {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-
-      const parseToDate = (dStr: string) => {
-        if (!dStr || !dStr.includes('/')) return new Date(0);
+      const parseToTime = (dStr: string) => {
+        if (!dStr || !dStr.includes('/')) return 0;
         const [day, month] = dStr.split('/').map(Number);
-        return new Date(currentYear, month - 1, day);
+        // Используем 2026 год как базовый для корректного сравнения
+        return new Date(2026, month - 1, day).getTime();
       };
 
-      const dateA = parseToDate(a.date);
-      const dateB = parseToDate(b.date);
+      const timeA = parseToTime(a.date);
+      const timeB = parseToTime(b.date);
 
-      // Сортировка только по дате: новые сверху/слева
-      return dateB.getTime() - dateA.getTime();
+      // СОРТИРОВКА: B - A (от большего к меньшему), чтобы 09/04 было раньше 07/04
+      return timeB - timeA;
     });
   }, [processedProducts]);
 
@@ -328,11 +326,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         
         <div className="space-y-1">
           <div id="buds-menu" className="flex items-center gap-4 pt-6 pb-6 relative">
-             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500 border-t-2 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md">
                {t.flowerMenu}
              </span>
-             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500 border-t-2 border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
           </div>
           <div className="space-y-3">
             {gradeSections.map(({ grade, items, priceRef }) => {
@@ -375,11 +373,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
 
           <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
-             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/50 to-[#A855F7] border-t-2 border-[#A855F7] shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#A855F7]/30 bg-[#A855F7]/10 backdrop-blur-md">
                {lang === 'ru' ? 'Концентраты' : 'Concentrates'}
              </span>
-             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/50 to-[#A855F7] border-t-2 border-[#A855F7] shadow-[0_0_10px_rgba(168,85,247,0.5)]"></div>
           </div>
           <div className="space-y-3">
             {concentrateSections.map(sec => {
@@ -403,11 +401,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
 
           <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
-             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B] border-t-2 border-[#F59E0B] shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">
                 {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
              </span>
-             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B] border-t-2 border-[#F59E0B] shadow-[0_0_10px_rgba(245,158,11,0.5)]"></div>
           </div>
           <div className="space-y-3">
             {prerollSections.map(sec => {
@@ -460,3 +458,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
+
