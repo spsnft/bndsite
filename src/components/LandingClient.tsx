@@ -295,7 +295,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         )}
         
         <div className="space-y-1">
-          <div id="buds-menu" className="flex items-center gap-4 pt-1 pb-2">
+          <div id="buds-menu" className="flex items-center gap-4 pt-3 pb-3">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/30 to-emerald-500/60"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-emerald-400/80">{t.flowerMenu}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/30 to-emerald-500/60"></div>
@@ -315,7 +315,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(priceRef.prices?.[w]) || 0);
-                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-2 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
                        })}
                     </div>
                   </button>
@@ -342,7 +342,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="concentrates-menu" className="flex items-center gap-4 pt-1 pb-2 mt-4">
+          <div id="concentrates-menu" className="flex items-center gap-4 pt-3 pb-3 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80">{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
@@ -369,7 +369,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="joints-menu" className="flex items-center gap-4 pt-1 pb-2 mt-4">
+          <div id="joints-menu" className="flex items-center gap-4 pt-3 pb-3 mt-4">
              <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-[#F59E0B]/80">{lang === 'ru' ? 'Джоинты' : 'Joints'}</span>
              <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
