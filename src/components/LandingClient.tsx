@@ -137,19 +137,27 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
+    
     return [...news].sort((a, b) => {
-      // Парсим дату в формате дд/мм для сравнения
-      const parseDate = (dStr: string) => {
-        if (!dStr || !dStr.includes('/')) return 0;
+      const now = new Date();
+      const currentYear = now.getFullYear();
+
+      const parseToDate = (dStr: string) => {
+        if (!dStr || !dStr.includes('/')) return new Date(0);
         const [day, month] = dStr.split('/').map(Number);
-        // Используем 2024 год для корректного сравнения месяцев и дней
-        return new Date(2024, month - 1, day).getTime();
+        // Создаем дату. Если текущий месяц меньше месяца в строке, вероятно, это прошлый год.
+        // Но для стандартной сортировки используем текущий год.
+        return new Date(currentYear, month - 1, day);
       };
 
-      const timeA = parseDate(a.date);
-      const timeB = parseDate(b.date);
+      const dateA = parseToDate(a.date);
+      const dateB = parseToDate(b.date);
 
-      if (timeB !== timeA) return timeB - timeA;
+      // Сортировка: чем ближе к "сейчас" (свежее), тем меньше индекс (раньше выводится)
+      // Сравниваем разницу во времени. dateB - dateA даст убывающий порядок (новые сверху/слева)
+      const diff = dateB.getTime() - dateA.getTime();
+      
+      if (diff !== 0) return diff;
       return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
     });
   }, [processedProducts]);
@@ -325,13 +333,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         )}
         
         <div className="space-y-1">
-          <div id="buds-menu" className="flex items-center gap-4 pt-3 pb-3 relative">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/30 to-emerald-500/60"></div>
-             <span className="text-[15px] font-black uppercase tracking-[0.3em] text-emerald-400/80 relative z-10 px-4 py-1.5 rounded-full overflow-hidden">
-               <div className="absolute inset-0 opacity-10 bg-emerald-400/20 blur-md -z-10"></div>
+          <div id="buds-menu" className="flex items-center gap-4 pt-6 pb-6 relative">
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md">
                {t.flowerMenu}
              </span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/30 to-emerald-500/60"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
           <div className="space-y-3">
             {gradeSections.map(({ grade, items, priceRef }) => {
@@ -373,13 +380,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="concentrates-menu" className="flex items-center gap-4 pt-3 pb-3 mt-4 relative">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
-             <span className="text-[15px] font-black uppercase tracking-[0.3em] text-[#A855F7]/80 relative z-10 px-4 py-1.5 rounded-full overflow-hidden">
-               <div className="absolute inset-0 opacity-10 bg-[#A855F7]/20 blur-md -z-10"></div>
+          <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#A855F7]/30 bg-[#A855F7]/10 backdrop-blur-md">
                {lang === 'ru' ? 'Концентраты' : 'Concentrates'}
              </span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/30 to-[#A855F7]/60"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
           </div>
           <div className="space-y-3">
             {concentrateSections.map(sec => {
@@ -402,13 +408,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          <div id="prerolls-menu" className="flex items-center gap-4 pt-3 pb-3 mt-4 relative">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
-             <span className="text-[15px] font-black uppercase tracking-[0.3em] text-[#F59E0B]/80 relative z-10 px-4 py-1.5 rounded-full overflow-hidden">
-                <div className="absolute inset-0 opacity-10 bg-[#F59E0B]/20 blur-md -z-10"></div>
+          <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">
                 {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
              </span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/30 to-[#F59E0B]/60"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
           <div className="space-y-3">
             {prerollSections.map(sec => {
@@ -461,3 +466,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
+
