@@ -142,22 +142,29 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       const now = new Date();
       const currentYear = now.getFullYear();
 
-      // Парсинг формата ДД.ММ
-      const parseToDate = (dStr: any) => {
-        if (!dStr || typeof dStr !== 'string' || !dStr.includes('.')) return new Date(0);
-        const [day, month] = dStr.split('.').map(Number);
-        if (isNaN(day) || isNaN(month)) return new Date(0);
-        return new Date(currentYear, month - 1, day);
+      const getTime = (dStr: any) => {
+        // Если даты нет или формат неверный — возвращаем 0 (в конец списка)
+        if (!dStr || typeof dStr !== 'string' || !dStr.includes('.')) return 0;
+        
+        const parts = dStr.split('.');
+        const day = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10);
+        
+        if (isNaN(day) || isNaN(month)) return 0;
+        
+        // Создаем временную метку для сравнения
+        return new Date(currentYear, month - 1, day).getTime();
       };
 
-      const dateA = parseToDate(a.date);
-      const dateB = parseToDate(b.date);
+      const timeA = getTime(a.date);
+      const timeB = getTime(b.date);
 
-      // Сортировка по времени (самые новые — первые)
-      const diff = dateB.getTime() - dateA.getTime();
-      
-      if (diff !== 0) return diff;
-      // Если даты одинаковые, сортируем по цене
+      // Сортировка: большее время (свежее) — вперед
+      if (timeB !== timeA) {
+        return timeB - timeA;
+      }
+
+      // Если даты идентичны, сортируем по цене (дорогие вперед)
       return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
     });
   }, [processedProducts]);
