@@ -138,9 +138,18 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
     return [...news].sort((a, b) => {
-      const dateA = a.date ? a.date.split('.').reverse().join('') : '0000';
-      const dateB = b.date ? b.date.split('.').reverse().join('') : '0000';
-      if (dateB !== dateA) return dateB.localeCompare(dateA);
+      // Парсим дату в формате дд/мм для сравнения
+      const parseDate = (dStr: string) => {
+        if (!dStr || !dStr.includes('/')) return 0;
+        const [day, month] = dStr.split('/').map(Number);
+        // Используем 2024 год для корректного сравнения месяцев и дней
+        return new Date(2024, month - 1, day).getTime();
+      };
+
+      const timeA = parseDate(a.date);
+      const timeB = parseDate(b.date);
+
+      if (timeB !== timeA) return timeB - timeA;
       return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
     });
   }, [processedProducts]);
@@ -452,4 +461,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
-
