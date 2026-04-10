@@ -206,12 +206,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <button onClick={() => scrollToSection('joints-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg">{lang === 'ru' ? 'прероллы' : 'prerolls'}</button>
         </div>
 
-        <div className="relative pt-4 pb-4 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+        <div className="relative pt-6 pb-6 px-10 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
-          <h2 className="text-[18px] font-black uppercase tracking-[0.1em] leading-tight text-white mb-2 relative z-10 px-2">
-            {lang === 'ru' ? 'Ваш проводник в мир премиального качества' : 'Your trusted guide to a world of premium quality'}
+          <h2 className="text-[16px] font-black uppercase tracking-[0.1em] leading-[1.2] text-white mb-4 relative z-10 px-2 max-w-[280px] mx-auto">
+            {lang === 'ru' 
+              ? <>Ваш проводник в мир премиального качества и сервиса</> 
+              : <>Your trusted guide to a world of premium quality and service</>}
           </h2>
 
           <div className="grid grid-cols-2 gap-3 relative z-10">
