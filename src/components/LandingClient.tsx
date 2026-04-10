@@ -20,6 +20,9 @@ import {
   TYPE_COLORS, GRADES, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR 
 } from "@/lib/utils"
 
+// Фирменный оранжевый (как в Общей информации)
+const BRAND_ORANGE = "#F59E0B";
+
 // --- INTERNAL HELPERS ---
 const processProductData = (rawProducts: any[]) => {
   return rawProducts.map(p => {
@@ -63,25 +66,20 @@ const BahtSymbol = React.memo(() => (
 
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean, showSubcategory?: boolean }) => {
   const isPrerolls = item.category === 'joints';
-  const unit = isPrerolls ? 'PCS' : 'G';
-
+  
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isPrerolls ? "#F59E0B" : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
+    : (isPrerolls ? BRAND_ORANGE : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : BRAND_ORANGE) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
   
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
 
-  const displayWeight = isPrerolls ? (firstWeight === 3.5 ? 1 : firstWeight === 7 ? 3 : firstWeight === 14 ? 5 : 10) : firstWeight;
-
   return (
     <div 
       onClick={() => { triggerHaptic('light'); onClick(); }} 
       className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border ${isMini ? 'h-[180px]' : 'h-[240px]'} bg-[#1d4837]/80 backdrop-blur-2xl`} 
-      style={{ 
-        borderColor: `${accentColor}80`,
-      }}
+      style={{ borderColor: `${accentColor}80` }}
     >
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
       <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 120%, ${accentColor}, transparent 70%)` }} />
@@ -162,7 +160,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     }).filter(g => g.items.length > 0), [processedProducts]);
 
   const eliteSections = [
-    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: IMPORT_COLOR, icon: MapPin },
+    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: BRAND_ORANGE, icon: MapPin },
     { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
   ];
 
@@ -185,7 +183,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       id: sub,
       title: sub || "Prerolls",
       items: allJoints.filter(p => p.subcategory === sub),
-      color: "#F59E0B",
+      color: BRAND_ORANGE,
       icon: Cigarette
     }));
   }, [processedProducts]);
@@ -401,13 +399,24 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <div className="space-y-3">
             {prerollSections.map(sec => {
               const isOpen = openGrades.includes(sec.id);
+              const priceRef = sec.items[0];
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors">
+                    <div className="w-full flex items-center justify-between mb-3 px-4">
+                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    {/* Таблица цен для прероллов: 1г=1шт, 5г=3шт, 10г=5шт, 20г=10шт */}
+                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                       {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
+                         const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0);
+                         return (<div key={unit.w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[10px] font-black opacity-60 uppercase tracking-widest">{unit.l}</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                       })}
+                    </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
+                    <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                   </div>
                 </div>
               );
@@ -434,7 +443,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       )}
       
-      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: '#F59E0B' } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
+      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: BRAND_ORANGE } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : BRAND_ORANGE} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
       {isCheckoutOpen && (<CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }} />)}
     </div>
   );
