@@ -65,24 +65,37 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
     : (item.category === 'joints' ? "#F59E0B" : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
+  
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
   const oldPrice = Math.round(oldPriceRaw);
+
   return (
-    <div onClick={() => { triggerHaptic('light'); onClick(); }} className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border border-white/5 ${isMini ? 'h-[180px]' : 'h-[240px]'} bg-[#1d4837]/60 backdrop-blur-xl`} style={{ boxShadow: `inset 0 0 0 1px ${accentColor}20` }}>
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 pointer-events-none" />
+    <div 
+      onClick={() => { triggerHaptic('light'); onClick(); }} 
+      className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border ${isMini ? 'h-[180px]' : 'h-[240px]'} bg-[#1d4837]/80 backdrop-blur-2xl`} 
+      style={{ 
+        borderColor: `${accentColor}40`,
+        boxShadow: `inset 0 0 20px ${accentColor}10, 0 10px 30px -10px ${accentColor}20`
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 120%, ${accentColor}, transparent 70%)` }} />
+      
       {!hideBadge && item.badge && (<div className={`absolute top-3 right-3 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}><BadgeIcon type={item.badge} /></div>)}
+      
       <div className="relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
-          <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
+          <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black uppercase tracking-tight leading-tight text-white drop-shadow-md`}>{item.name}</h3>
           {showSubcategory && (<p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest italic`}>{item.subcategory || "Product"}</p>)}
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-2">
-            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_10px_20px_rgba(0,0,0,0.9)]" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)]" alt={item.name} />
         </div>
       </div>
+      
       <div className="relative z-10 flex justify-between items-end px-5 pb-5 mt-auto">
-        <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
+        <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest brightness-125`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end gap-1">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}<BahtSymbol /></span>}
           <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none text-white`}>{currentPrice > 0 ? (<>{currentPrice}<BahtSymbol /></>) : '—'}</p>
@@ -113,16 +126,19 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
+  
   const descriptionsMap = React.useMemo(() => {
     const map: Record<string, any> = {};
     initialDescriptions.forEach(d => { if (d.subcategory) map[d.subcategory.toLowerCase().trim()] = d; });
     return map;
   }, [initialDescriptions]);
+
   const getDesc = (id: string) => {
     const data = descriptionsMap[id.toLowerCase().trim()];
     if (!data) return null;
     return lang === 'ru' ? data.description_ru : data.description_eng;
   };
+
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
     return [...news].sort((a, b) => {
@@ -132,6 +148,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
     });
   }, [processedProducts]);
+
   const flashSales = React.useMemo(() => [...processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')].sort((a, b) => getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price), [processedProducts]);
   
   const gradeSections = React.useMemo(() => GRADES.map(grade => {
@@ -210,7 +227,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
           
-          <h2 className="text-[16px] font-black uppercase tracking-[0.1em] leading-[1.2] text-white mb-4 relative z-10 px-2 max-w-[280px] mx-auto">
+          <h2 className="text-[14px] font-black uppercase tracking-[0.1em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[240px] mx-auto">
             {lang === 'ru' 
               ? <>Ваш проводник в мир премиального качества и сервиса</> 
               : <>Your trusted guide to a world of premium quality and service</>}
