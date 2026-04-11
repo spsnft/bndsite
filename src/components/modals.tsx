@@ -164,26 +164,23 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        {/* Правка 1: Убрали затемнение (bg-black/10) */}
         <div className="p-6 pb-0 border-b border-white/5 flex justify-between items-center text-white min-h-[80px]">
           <div><h2 className="text-xl font-black uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
         
-        {/* Правка 3: pb-2 (8px) отступ до футера */}
         <div className="flex-1 overflow-y-auto p-4 pb-2 space-y-4 no-scrollbar">
           {categoryPromos.length > 0 && (
             <div className="space-y-2">
               {categoryPromos.map((promo: any) => (
-                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
+                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border" style={{ borderColor: `${promo.color}40`, backgroundColor: 'transparent' }}>
                   <div className="flex items-center gap-1.5">
-                    {/* Правка 2: Отступ искры слева 8px (за счет pl-2 родителя + p-1.5 иконки) */}
                     <div className="p-1.5 rounded-xl bg-white/5 shrink-0" style={{ color: promo.color }}><Sparkles size={16} /></div>
                     <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/г</span>!</>
+                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} <span className="text-[8px] opacity-60">฿/g</span></span>!</>
                         ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/g</span> price!</>
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} <span className="text-[8px] opacity-60">฿/g</span></span> price!</>
                         )}
                     </p></div>
                   </div>
@@ -200,15 +197,14 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
                   <button onClick={() => { triggerHaptic('light'); onEditItem(item); }} className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity">
                     <h3 className="text-[14px] font-black uppercase truncate">{item.name}</h3>
                     <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                      {/* Правка 4 & 5: Добавлена цена/г, настроена прозрачность 70% и 30% */}
                       <p className="text-[12px] font-bold uppercase tracking-widest text-white/70">
-                        {item.weight} • {item.price}฿ 
-                        <span className="text-white/30 font-black ml-1.5">· {pricePerGram}฿/G</span>
+                        {item.weight} • {item.price}<span className="text-[10px] opacity-60 ml-0.5">฿</span>
+                        <span className="text-white/30 font-black ml-1.5">({pricePerGram}<span className="text-[9px] ml-0.5">฿/G</span>)</span>
                       </p>
                       <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                      <p className="text-[11px] font-black uppercase tracking-tighter" style={{ color: (item.subcategory?.toLowerCase() === 'import loose' ? GRADES.find(g => g.id === 'import')?.color : GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color) || SELECTED_COLOR }}>{item.subcategory}</p>
+                      <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: (item.subcategory?.toLowerCase() === 'import loose' ? GRADES.find(g => g.id === 'import')?.color : GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color) || SELECTED_COLOR }}>{item.subcategory}</p>
                       <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                      <p className="text-[11px] font-black uppercase tracking-tighter" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</p>
+                      <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</p>
                     </div>
                   </button>
                   <button onClick={() => { triggerHaptic('medium'); removeItem(item.id, item.weight); }} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
@@ -218,9 +214,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
           </div>
         </div>
 
-        {/* Правка 1: Убрали bg-black/20 */}
         <div className="p-6 pt-2 border-t border-white/5">
-          {/* Правка 6: Кнопки соцсетей - активна только одна */}
           <div className="grid grid-cols-4 gap-2 mb-4">
             {CONTACT_METHODS.map(m => (
               <button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} 
