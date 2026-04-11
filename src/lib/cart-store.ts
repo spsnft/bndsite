@@ -1,25 +1,26 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
+import { getInterpolatedPrice, isElite } from "./utils" // Убедись, что пути верные
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
-  weight: string;
-  quantity: number;
+  weight: string; // Отображаемая строка (напр. "6G")
+  quantity: number; // Всегда будет 1, так как мы управляем весом
   image?: string;
   subcategory?: string;
   type?: string;
   prices?: any;
+  category?: string;
 }
 
 interface CartStore {
   items: CartItem[];
   lang: 'en' | 'ru';
   setLang: (lang: 'en' | 'ru') => void;
-  addItem: (newItem: Omit<CartItem, 'quantity'>) => void;
+  addItem: (newItem: any) => void;
   removeItem: (id: string, weight: string) => void;
-  updateQuantity: (id: string, weight: string, delta: number) => void;
   clearCart: () => void;
   getTotal: () => number;
 }
@@ -33,22 +34,38 @@ export const useCart = create<CartStore>()(
       setLang: (lang) => set({ lang }),
 
       addItem: (newItem) => set((state) => {
-        // Ищем индекс товара с таким же ID и таким же ВЕСОМ
-        const existingIndex = state.items.findIndex(
-          (i) => i.id === newItem.id && i.weight === newItem.weight
-        );
+        // 1. Ищем, есть ли уже этот товар (по ID)
+        const existingIndex = state.items.findIndex((i) => i.id === newItem.id);
+        
+        // Извлекаем числовое значение веса из добавляемого товара (напр. "1G" -> 1)
+        const addedWeightNum = parseFloat(newItem.weight);
 
         if (existingIndex > -1) {
-          // Иммутабельно обновляем количество через map
-          const updatedItems = state.items.map((item, index) => 
-            index === existingIndex 
-              ? { ...item, quantity: item.quantity + 1 } 
-              : item
+          const existingItem = state.items[existingIndex];
+          
+          // 2. Считаем новый суммарный вес
+          const currentWeightNum = parseFloat(existingItem.weight);
+          const totalWeightNum = currentWeightNum + addedWeightNum;
+
+          // 3. Пересчитываем цену за НОВЫЙ суммарный вес
+          const isEliteProduct = isElite(existingItem) && existingItem.subcategory?.toLowerCase() !== 'import loose';
+          const newTotalPrice = Math.round(
+            getInterpolatedPrice(totalWeightNum, existingItem.prices, isEliteProduct)
           );
+
+          // 4. Обновляем товар в корзине
+          const updatedItems = [...state.items];
+          updatedItems[existingIndex] = {
+            ...existingItem,
+            weight: `${totalWeightNum}G`,
+            price: newTotalPrice,
+            quantity: 1 // Оставляем 1, так как вес уже учитывает всё количество
+          };
+
           return { items: updatedItems };
         }
 
-        // Если товара нет, добавляем новый с количеством 1
+        // Если товара нет, просто добавляем его (quantity всегда 1)
         return { items: [...state.items, { ...newItem, quantity: 1 }] };
       }),
 
@@ -56,24 +73,10 @@ export const useCart = create<CartStore>()(
         items: state.items.filter((i) => !(i.id === id && i.weight === weight))
       })),
 
-      updateQuantity: (id, weight, delta) => set((state) => {
-        const newItems = state.items.map((i) => {
-          if (i.id === id && i.weight === weight) {
-            const newQty = Math.max(1, i.quantity + delta);
-            return { ...i, quantity: newQty };
-          }
-          return i;
-        });
-        return { items: newItems };
-      }),
-
       clearCart: () => set({ items: [] }),
 
       getTotal: () => {
-        return get().items.reduce(
-          (acc, item) => acc + (item.price * item.quantity), 
-          0
-        );
+        return get().items.reduce((acc, item) => acc + item.price, 0);
       },
     }),
     { 
