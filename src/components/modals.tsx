@@ -44,6 +44,13 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
     return prerollLabels[v] || `${v}PCS`;
   };
 
+  // Логика стиля для подкатегории (включая import loose)
+  const getSubColor = () => {
+    const sub = product.subcategory?.toLowerCase();
+    if (sub === 'import loose') return GRADES.find(g => g.id === 'import')?.color || SELECTED_COLOR;
+    return GRADES.find(g => g.id === sub)?.color || style?.color || SELECTED_COLOR;
+  };
+
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -55,7 +62,7 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
             <div className="flex items-center gap-2 mt-1">
               <span className="text-[12px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
               <span className="w-1 h-1 rounded-full bg-white/20"></span>
-              <span className="text-[12px] font-black uppercase tracking-widest opacity-60" style={{ color: style?.color }}>{product?.subcategory}</span>
+              <span className="text-[12px] font-black uppercase tracking-widest opacity-60" style={{ color: getSubColor() }}>{product?.subcategory}</span>
             </div>
           </div>
         </div>
@@ -139,7 +146,11 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
       const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, false));
       const nextPerGram = Math.round(nextPrice / nextStep);
       const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
-      const gradeInfo = GRADES.find(g => g.id === group.sub.toLowerCase()) || { color: SELECTED_COLOR };
+      
+      // Фикс цвета для import loose в корзине
+      const gradeId = group.sub.toLowerCase() === 'import loose' ? 'import' : group.sub.toLowerCase();
+      const gradeInfo = GRADES.find(g => g.id === gradeId) || { color: SELECTED_COLOR };
+      
       return { sub: group.sub, diff, nextPerGram, color: gradeInfo.color, nextStep };
     }).filter(Boolean);
   }, [items]);
@@ -190,7 +201,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                    <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color || SELECTED_COLOR }}>{item.subcategory}</p>
+                    <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: (item.subcategory?.toLowerCase() === 'import loose' ? GRADES.find(g => g.id === 'import')?.color : GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color) || SELECTED_COLOR }}>{item.subcategory}</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
                     <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</p>
                   </div>
