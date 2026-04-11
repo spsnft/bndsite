@@ -126,6 +126,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
+
   const categoryPromos = React.useMemo(() => {
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
@@ -142,10 +143,8 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
       const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, false));
       const nextPerGram = Math.round(nextPrice / nextStep);
       const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
-      
       const gradeId = group.sub.toLowerCase() === 'import loose' ? 'import' : group.sub.toLowerCase();
       const gradeInfo = GRADES.find(g => g.id === gradeId) || { color: SELECTED_COLOR };
-      
       return { sub: group.sub, diff, nextPerGram, color: gradeInfo.color, nextStep };
     }).filter(Boolean);
   }, [items]);
@@ -165,24 +164,26 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 pb-0 border-b border-white/5 flex justify-between items-center bg-black/10 text-white min-h-[80px]">
+        {/* Правка 1: Убрали затемнение (bg-black/10) */}
+        <div className="p-6 pb-0 border-b border-white/5 flex justify-between items-center text-white min-h-[80px]">
           <div><h2 className="text-xl font-black uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+        
+        {/* Правка 3: pb-2 (8px) отступ до футера */}
+        <div className="flex-1 overflow-y-auto p-4 pb-2 space-y-4 no-scrollbar">
           {categoryPromos.length > 0 && (
             <div className="space-y-2">
               {categoryPromos.map((promo: any) => (
-                <div key={promo.sub} className="relative p-2 pl-1 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
-                  {/* items-center для центровки текста относительно искры, gap-1.5 для плотности */}
+                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
                   <div className="flex items-center gap-1.5">
-                    {/* Иконка в 4px от левого края (pl-1) */}
+                    {/* Правка 2: Отступ искры слева 8px (за счет pl-2 родителя + p-1.5 иконки) */}
                     <div className="p-1.5 rounded-xl bg-white/5 shrink-0" style={{ color: promo.color }}><Sparkles size={16} /></div>
                     <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
+                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/г</span>!</>
                         ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/g</span> price!</>
                         )}
                     </p></div>
                   </div>
@@ -191,26 +192,43 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
             </div>
           )}
           <div className="space-y-2">
-            {items.map((item: any) => (
-              <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-                <button onClick={() => { triggerHaptic('light'); onEditItem(item); }} className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity">
-                  <h3 className="text-[14px] font-black uppercase truncate">{item.name}</h3>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <p className="text-[12px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
-                    <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                    <p className="text-[11px] font-black uppercase tracking-tighter" style={{ color: (item.subcategory?.toLowerCase() === 'import loose' ? GRADES.find(g => g.id === 'import')?.color : GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color) || SELECTED_COLOR }}>{item.subcategory}</p>
-                    <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                    <p className="text-[11px] font-black uppercase tracking-tighter" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</p>
-                  </div>
-                </button>
-                <button onClick={() => { triggerHaptic('medium'); removeItem(item.id, item.weight); }} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
-              </div>
-            ))}
+            {items.map((item: any) => {
+              const weightNum = parseFloat(item.weight) || 1;
+              const pricePerGram = Math.round(item.price / weightNum);
+              return (
+                <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
+                  <button onClick={() => { triggerHaptic('light'); onEditItem(item); }} className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity">
+                    <h3 className="text-[14px] font-black uppercase truncate">{item.name}</h3>
+                    <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                      {/* Правка 4 & 5: Добавлена цена/г, настроена прозрачность 70% и 30% */}
+                      <p className="text-[12px] font-bold uppercase tracking-widest text-white/70">
+                        {item.weight} • {item.price}฿ 
+                        <span className="text-white/30 font-black ml-1.5">· {pricePerGram}฿/G</span>
+                      </p>
+                      <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
+                      <p className="text-[11px] font-black uppercase tracking-tighter" style={{ color: (item.subcategory?.toLowerCase() === 'import loose' ? GRADES.find(g => g.id === 'import')?.color : GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color) || SELECTED_COLOR }}>{item.subcategory}</p>
+                      <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
+                      <p className="text-[11px] font-black uppercase tracking-tighter" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</p>
+                    </div>
+                  </button>
+                  <button onClick={() => { triggerHaptic('medium'); removeItem(item.id, item.weight); }} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
+                </div>
+              );
+            })}
           </div>
         </div>
-        <div className="p-6 bg-black/20 border-t border-white/5">
+
+        {/* Правка 1: Убрали bg-black/20 */}
+        <div className="p-6 pt-2 border-t border-white/5">
+          {/* Правка 6: Кнопки соцсетей - активна только одна */}
           <div className="grid grid-cols-4 gap-2 mb-4">
-            {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
+            {CONTACT_METHODS.map(m => (
+              <button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} 
+                className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-[#193D2E] border-white opacity-100" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
+                <m.icon size={16} />
+                <span className="text-[7px] font-black uppercase">{m.label}</span>
+              </button>
+            ))}
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
           <div className="flex items-center justify-between mt-3 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
