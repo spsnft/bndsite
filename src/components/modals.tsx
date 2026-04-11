@@ -9,10 +9,11 @@ import {
 } from "@/lib/utils"
 
 export function ProductModal({ product, style, onClose, t }: { product: any, style: any, onClose: () => void, t: any }) {
-  const isEliteProduct = isElite(product);
+  // Учитываем import loose как обычную категорию, даже если в subcategory есть слово import
+  const isEliteProduct = isElite(product) && product.subcategory?.toLowerCase() !== 'import loose';
   const isPrerolls = product.category === 'joints';
   
-  // Для прероллов шаги 1, 5, 10, 20 соответствуют 1, 3, 5, 10 шт согласно логике цен
+  // Для обычных категорий и import loose используем 1, 5, 10, 20
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
   const availableSteps = steps.filter(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0);
@@ -37,14 +38,12 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
 
   const showSlider = availableSteps.length === 4 && !isPrerolls;
 
-  // Маппинг отображения для кнопок прероллов
   const getLabel = (v: number) => {
     if (!isPrerolls) return `${v}G`;
     const prerollLabels: Record<number, string> = { 1: "1PCS", 5: "3PCS", 10: "5PCS", 20: "10PCS" };
     return prerollLabels[v] || `${v}PCS`;
   };
 
-  // Логика стиля для подкатегории (включая import loose)
   const getSubColor = () => {
     const sub = product.subcategory?.toLowerCase();
     if (sub === 'import loose') return GRADES.find(g => g.id === 'import')?.color || SELECTED_COLOR;
@@ -134,7 +133,8 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
-      if (isElite(item) || item.category === 'joints') return;
+      // import loose здесь тоже исключаем из элитной логики через !isElite или явную проверку
+      if ((isElite(item) && sub !== 'import loose') || item.category === 'joints') return;
       const w = parseFloat(item.weight) || 0;
       if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
       groups[sub].weight += w;
@@ -147,7 +147,6 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
       const nextPerGram = Math.round(nextPrice / nextStep);
       const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
       
-      // Фикс цвета для import loose в корзине
       const gradeId = group.sub.toLowerCase() === 'import loose' ? 'import' : group.sub.toLowerCase();
       const gradeInfo = GRADES.find(g => g.id === gradeId) || { color: SELECTED_COLOR };
       
