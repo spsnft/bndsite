@@ -137,28 +137,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
-    return [...news].sort((a, b) => {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      
-      const getTime = (dStr: any) => {
-        if (!dStr) return 0;
-        const str = String(dStr).trim().replace(/[-/]/g, '.');
-        if (!str.includes('.')) return 0;
-
-        const parts = str.split('.');
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10);
-
-        if (isNaN(day) || isNaN(month)) return 0;
-        return new Date(currentYear, month - 1, day).getTime();
-      };
-
-      const timeA = getTime(a.date);
-      const timeB = getTime(b.date);
-      
-      return timeB - timeA;
-    });
+    // Сортировка строго по ID: чем больше ID, тем левее в списке
+    return [...news].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
   }, [processedProducts]);
 
   const flashSales = React.useMemo(() => [...processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')].sort((a, b) => getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price), [processedProducts]);
@@ -388,7 +368,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
           <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">{lang === 'ru' ? 'Прероллы' : 'Прероллы'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
           <div className="space-y-3">
