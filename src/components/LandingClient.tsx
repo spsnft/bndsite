@@ -137,34 +137,20 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
-    
     return [...news].sort((a, b) => {
       const now = new Date();
       const currentYear = now.getFullYear();
-
       const getTime = (dStr: any) => {
-        // Если даты нет или формат неверный — возвращаем 0 (в конец списка)
         if (!dStr || typeof dStr !== 'string' || !dStr.includes('.')) return 0;
-        
         const parts = dStr.split('.');
         const day = parseInt(parts[0], 10);
         const month = parseInt(parts[1], 10);
-        
         if (isNaN(day) || isNaN(month)) return 0;
-        
-        // Создаем временную метку для сравнения
         return new Date(currentYear, month - 1, day).getTime();
       };
-
       const timeA = getTime(a.date);
       const timeB = getTime(b.date);
-
-      // Сортировка: большее время (свежее) — вперед
-      if (timeB !== timeA) {
-        return timeB - timeA;
-      }
-
-      // Если даты идентичны, сортируем по цене (дорогие вперед)
+      if (timeB !== timeA) return timeB - timeA;
       return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
     });
   }, [processedProducts]);
@@ -179,8 +165,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
   const eliteSections = [
     { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: BRAND_ORANGE, icon: MapPin },
-    { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
+    // Здесь фильтруем только обычный Import (без loose)
+    { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import') && !p.subcategory?.toLowerCase().includes('loose')), color: IMPORT_COLOR, icon: Star }
   ];
+
+  // Новая секция для Import Loose
+  const importLooseSection = React.useMemo(() => {
+    const items = processedProducts.filter(p => p.category === 'import loose' || p.subcategory?.toLowerCase() === 'import loose');
+    if (items.length === 0) return null;
+    const priceRef = items.find(p => p.badge?.toUpperCase() !== 'SALE') || items[0];
+    return { id: 'import loose', title: 'Import Loose', items, priceRef, color: IMPORT_COLOR, icon: Leaf };
+  }, [processedProducts]);
 
   const concentrateSections = React.useMemo(() => {
     const allConcs = processedProducts.filter(p => p.category === 'concentrates');
@@ -238,24 +233,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
 
         <div className="flex flex-wrap gap-2 px-2 mt-2 mb-4 relative z-20">
-          <button 
-            onClick={() => scrollToSection('buds-menu')} 
-            className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
-          >
+          <button onClick={() => scrollToSection('buds-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
             <div className="absolute inset-0 opacity-0 group-active:opacity-20 pointer-events-none transition-opacity" style={{ background: `radial-gradient(circle, #10B981 0%, transparent 70%)` }} />
             {lang === 'ru' ? 'меню' : 'flowers'}
           </button>
-          <button 
-            onClick={() => scrollToSection('concentrates-menu')} 
-            className="px-5 py-2.5 bg-[#A855F7]/10 rounded-full border border-[#A855F7]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#A855F7]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
-          >
+          <button onClick={() => scrollToSection('concentrates-menu')} className="px-5 py-2.5 bg-[#A855F7]/10 rounded-full border border-[#A855F7]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#A855F7]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
             <div className="absolute inset-0 opacity-0 group-active:opacity-20 pointer-events-none transition-opacity" style={{ background: `radial-gradient(circle, #A855F7 0%, transparent 70%)` }} />
             {lang === 'ru' ? 'концентраты' : 'concentrates'}
           </button>
-          <button 
-            onClick={() => scrollToSection('prerolls-menu')} 
-            className="px-5 py-2.5 bg-[#F59E0B]/10 rounded-full border border-[#F59E0B]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#F59E0B]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group"
-          >
+          <button onClick={() => scrollToSection('prerolls-menu')} className="px-5 py-2.5 bg-[#F59E0B]/10 rounded-full border border-[#F59E0B]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#F59E0B]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
             <div className="absolute inset-0 opacity-0 group-active:opacity-20 pointer-events-none transition-opacity" style={{ background: `radial-gradient(circle, #F59E0B 0%, transparent 70%)` }} />
             {lang === 'ru' ? 'прероллы' : 'prerolls'}
           </button>
@@ -268,12 +254,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
           </h2>
           <div className="grid grid-cols-2 gap-3 relative z-10">
-             {[ 
-               {ru: '3 года на рынке', en: '3 years on market'}, 
-               {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
-               {ru: 'гарантия качества', en: 'quality guarantee'}, 
-               {ru: 'регулярные обновления меню', en: 'regular menu updates'} 
-             ].map((item, i) => (
+             {[ {ru: '3 года на рынке', en: '3 years on market'}, {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, {ru: 'гарантия качества', en: 'quality guarantee'}, {ru: 'регулярные обновления меню', en: 'regular menu updates'} ].map((item, i) => (
                <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                   <span className="text-[9px] font-black uppercase tracking-widest leading-tight text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
                </div>
@@ -283,43 +264,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
         <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3 transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
           <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
-          <button 
-            onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }}
-            className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div>
-              <h3 className="text-[10px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Общая информация' : 'General info'}</h3>
-            </div>
+          <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
+            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[10px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Общая информация' : 'General info'}</h3></div>
             <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
           </button>
           <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <div className="space-y-5 pl-9 pb-2">
-               <div className="flex items-center gap-4">
-                  <Timer size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div>
-               </div>
-               <div className="flex items-center gap-4">
-                  <Plus size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div>
-               </div>
-               <div className="flex items-center gap-4">
-                  <Laptop size={18} className="text-[#F59E0B] shrink-0" />
-                  <div>
-                    <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p>
-                    <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
-                      {lang === 'ru' ? (<>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>) : (<>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>)}
-                    </p>
-                  </div>
-               </div>
-               <div className="flex items-center gap-4">
-                  <Wallet size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div>
-               </div>
-               <div className="flex items-center gap-4">
-                  <Bike size={18} className="text-[#F59E0B] shrink-0" />
-                  <div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div>
-               </div>
+               <div className="flex items-center gap-4"><Timer size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div></div>
+               <div className="flex items-center gap-4"><Plus size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div></div>
+               <div className="flex items-center gap-4"><Laptop size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? (<>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>) : (<>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>)}</p></div></div>
+               <div className="flex items-center gap-4"><Wallet size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div></div>
+               <div className="flex items-center gap-4"><Bike size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div></div>
             </div>
           </div>
         </div>
@@ -342,9 +297,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         <div className="space-y-1">
           <div id="buds-menu" className="flex items-center gap-4 pt-6 pb-6 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md">
-               {t.flowerMenu}
-             </span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md">{t.flowerMenu}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
           <div className="space-y-3">
@@ -385,13 +338,32 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 </div>
               );
             })}
+
+            {/* Вывод Import Loose отдельным списком под Импортом */}
+            {importLooseSection && (
+              <div key={importLooseSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: openGrades.includes(importLooseSection.id) ? `${importLooseSection.color}80` : 'rgba(255,255,255,0.05)', boxShadow: openGrades.includes(importLooseSection.id) ? `0 0 20px ${importLooseSection.color}15` : 'none' }}>
+                <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, importLooseSection.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors">
+                  <div className="w-full flex items-center justify-between mb-3 px-4">
+                    <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
+                    <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                  </div>
+                  <div className="w-full grid grid-cols-4 gap-2 px-4">
+                     {[1, 5, 10, 20].map(w => {
+                       const p = Math.round(Number(importLooseSection.priceRef?.prices?.[w]) || 0);
+                       return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                     })}
+                  </div>
+                </button>
+                <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(importLooseSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                  <div className="divide-y divide-white/10 bg-white/5">{importLooseSection.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#A855F7]/30 bg-[#A855F7]/10 backdrop-blur-md">
-               {lang === 'ru' ? 'Концентраты' : 'Concentrates'}
-             </span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#A855F7]/30 bg-[#A855F7]/10 backdrop-blur-md">{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
           </div>
           <div className="space-y-3">
@@ -404,11 +376,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     {getDesc(sec.id) && (<p className="mt-3 text-[11px] font-medium text-white/40 leading-relaxed text-left uppercase tracking-wide">{getDesc(sec.id)}</p>)}
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    {sec.isList ? (
-                      <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
-                    ) : (
-                      <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
-                    )}
+                    {sec.isList ? (<div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>) : (<div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>)}
                   </div>
                 </div>
               );
@@ -417,9 +385,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
           <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">
-                {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
-             </span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
           <div className="space-y-3">
