@@ -1,12 +1,12 @@
 import "@/styles/globals.css"
 import type { Metadata, Viewport } from "next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
-import { Inter_Tight } from 'next/font/google'
+import { Montserrat } from 'next/font/google' // Импортируем Montserrat
 
-const interTight = Inter_Tight({
+const montserrat = Montserrat({
   subsets: ['latin', 'cyrillic'],
-  // Вариативный шрифт подгружает все веса автоматически, если не указывать конкретные
-  variable: '--font-inter-tight',
+  weight: ['400', '500', '700', '900'], // Подгружаем нужные веса для заголовков и текста
+  variable: '--font-montserrat',
 })
 
 export const viewport: Viewport = {
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`dark ${interTight.variable}`} style={{ colorScheme: 'dark' }}>
+    <html lang="en" className={`dark ${montserrat.variable}`} style={{ colorScheme: 'dark' }}>
       <head>
         <link rel="preconnect" href="https://res.cloudinary.com" />
       </head>
