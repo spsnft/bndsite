@@ -78,14 +78,12 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border ${isMini ? 'h-[170px]' : 'h-[230px]'} bg-[#0D1F18]`} 
       style={{ borderColor: `${accentColor}80` }}
     >
-      {/* Глубокий градиент заливки снизу */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/80 pointer-events-none" />
       <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 110%, ${accentColor}, transparent 70%)` }} />
       
       {!hideBadge && item.badge && (<div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75' : 'scale-90'}`}><BadgeIcon type={item.badge} /></div>)}
       
-      {/* Отступы изменены на 12px (p-3) */}
-      <div className="relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0">
+      <div className="relative z-10 px-4 py-3 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[11px]' : 'text-[13px]'} font-black uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
           {showSubcategory && (<p className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-bold mt-1 text-white/40 uppercase tracking-widest italic`}>{item.subcategory || "Product"}</p>)}
@@ -95,7 +93,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
         </div>
       </div>
 
-      <div className="relative z-10 flex justify-between items-end px-3 pb-3 mt-auto">
+      <div className="relative z-10 flex justify-between items-end px-4 pb-4 mt-auto">
         <span className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-black uppercase tracking-widest brightness-125`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[9px]' : 'text-[11px]'} font-bold line-through opacity-30 text-white leading-none mb-0.5`}>{oldPrice}<BahtSymbol /></span>}
@@ -297,6 +295,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 </div>
               );
             })}
+            
             {eliteSections.map(sec => {
               const isOpen = openGrades.includes(sec.id);
               return sec.items.length > 0 && (
@@ -310,6 +309,27 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 </div>
               );
             })}
+
+            {importLooseSection && (
+                <div key={importLooseSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: openGrades.includes(importLooseSection.id) ? `${importLooseSection.color}80` : 'rgba(255,255,255,0.05)' }}>
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, importLooseSection.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                    <div className="w-full flex items-center justify-between mb-3 px-4">
+                      <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
+                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                    </div>
+                    {getDesc(importLooseSection.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(importLooseSection.id)}</p>)}
+                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                       {[1, 5, 10, 20].map(w => {
+                         const p = Math.round(Number(importLooseSection.priceRef.prices?.[w]) || 0);
+                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase">{w}g</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                       })}
+                    </div>
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(importLooseSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                    <div className="divide-y divide-white/10 bg-white/5">{importLooseSection.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                  </div>
+                </div>
+            )}
           </div>
 
           <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
