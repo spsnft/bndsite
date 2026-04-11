@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { X, Sparkles, Trash2, SendHorizontal } from "lucide-react"
+import { X, Plus, Trash2, SendHorizontal } from "lucide-react"
 import { BlurImage } from "@/components/blur-image"
 import { useCart } from "@/lib/cart-store"
 import { 
@@ -9,11 +9,9 @@ import {
 } from "@/lib/utils"
 
 export function ProductModal({ product, style, onClose, t }: { product: any, style: any, onClose: () => void, t: any }) {
-  // Учитываем import loose как обычную категорию, даже если в subcategory есть слово import
   const isEliteProduct = isElite(product) && product.subcategory?.toLowerCase() !== 'import loose';
   const isPrerolls = product.category === 'joints';
   
-  // Для обычных категорий и import loose используем 1, 5, 10, 20
   const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
   const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
   const availableSteps = steps.filter(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0);
@@ -33,8 +31,12 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
     if (!nextStep || isPrerolls) return null;
     const nextPrice = Math.round(getInterpolatedPrice(nextStep, product.prices, isEliteProduct));
     const nextPerGram = Math.round(nextPrice / nextStep);
-    return { diff: (nextStep - weight).toFixed(1).replace('.0', ''), perGram: nextPerGram };
-  }, [weight, nextStep, product.prices, isEliteProduct, isPrerolls]);
+    return { 
+      diff: (nextStep - weight).toFixed(1).replace('.0', ''), 
+      perGram: nextPerGram,
+      currentPerGram: perGram
+    };
+  }, [weight, nextStep, product.prices, isEliteProduct, isPrerolls, perGram]);
 
   const showSlider = availableSteps.length === 4 && !isPrerolls;
 
@@ -84,7 +86,6 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
                 </button>
               ))}
             </div>
-            
             {showSlider && (
               <div className="relative h-14 flex items-center group">
                 <div className="absolute left-0 right-0 h-3 bg-white/5 rounded-full overflow-hidden">
@@ -101,13 +102,6 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
               </div>
             )}
           </div>
-          {promoInfo && (
-            <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
-              <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
-                Add <span className="text-white">{promoInfo.diff}g</span> more for <span className="text-white">{promoInfo.perGram}<Baht /></span> per gram!
-              </p>
-            </div>
-          )}
           <button onClick={() => { 
               triggerHaptic('success');
               addItem({ ...product, price: currentPrice, weight: getLabel(weight), subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
@@ -129,11 +123,11 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const { clearCart, removeItem } = useCart();
+
   const categoryPromos = React.useMemo(() => {
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
-      // import loose здесь тоже исключаем из элитной логики через !isElite или явную проверку
       if ((isElite(item) && sub !== 'import loose') || item.category === 'joints') return;
       const w = parseFloat(item.weight) || 0;
       if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
@@ -143,14 +137,13 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
       const steps = [1, 5, 10, 20];
       const nextStep = steps.find(s => s > group.weight);
       if (!nextStep || !group.prices) return null;
+      const currentPerGram = Math.round(getInterpolatedPrice(group.weight, group.prices, false) / group.weight);
       const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, false));
       const nextPerGram = Math.round(nextPrice / nextStep);
       const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
-      
       const gradeId = group.sub.toLowerCase() === 'import loose' ? 'import' : group.sub.toLowerCase();
       const gradeInfo = GRADES.find(g => g.id === gradeId) || { color: SELECTED_COLOR };
-      
-      return { sub: group.sub, diff, nextPerGram, color: gradeInfo.color, nextStep };
+      return { sub: group.sub, diff, nextPerGram, currentPerGram, color: gradeInfo.color };
     }).filter(Boolean);
   }, [items]);
 
@@ -169,22 +162,24 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
+        {/* Правка 2: pt-3 (12px) отступ сверху до заголовка */}
+        <div className="pt-3 px-6 pb-0 border-b border-white/5 flex justify-between items-center text-white min-h-[70px]">
           <div><h2 className="text-xl font-black uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+        
+        <div className="flex-1 overflow-y-auto p-4 pb-2 space-y-4 no-scrollbar">
           {categoryPromos.length > 0 && (
             <div className="space-y-2">
               {categoryPromos.map((promo: any) => (
-                <div key={promo.sub} className="relative p-4 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-white/5" style={{ color: promo.color }}><Sparkles size={16} /></div>
+                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border" style={{ borderColor: `${promo.color}40` }}>
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-xl bg-white/10 shrink-0" style={{ color: promo.color }}><Plus size={16} strokeWidth={4} /></div>
                     <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
+                          <><span className="font-black" style={{ color: promo.color }}>{promo.diff}г {promo.sub}</span> откроет цену <span className="line-through opacity-40 ml-1">{promo.currentPerGram}</span> <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} <span className="text-[8px] opacity-60">฿/g</span></span></>
                         ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
+                          <><span className="font-black" style={{ color: promo.color }}>{promo.diff}g {promo.sub}</span> unlocks price <span className="line-through opacity-40 ml-1">{promo.currentPerGram}</span> <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} <span className="text-[8px] opacity-60">฿/g</span></span></>
                         )}
                     </p></div>
                   </div>
@@ -196,9 +191,11 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
             {items.map((item: any) => (
               <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
                 <button onClick={() => { triggerHaptic('light'); onEditItem(item); }} className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity">
-                  <h3 className="text-[11px] font-black uppercase truncate">{item.name}</h3>
+                  <h3 className="text-[14px] font-black uppercase truncate">{item.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <p className="text-[9px] opacity-40 font-bold uppercase tracking-widest">{item.weight} • {item.price}฿</p>
+                    <p className="text-[12px] font-bold uppercase tracking-widest text-white/70">
+                      {item.weight} • {item.price}<span className="text-[10px] opacity-60 ml-0.5">฿</span>
+                    </p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
                     <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: (item.subcategory?.toLowerCase() === 'import loose' ? GRADES.find(g => g.id === 'import')?.color : GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color) || SELECTED_COLOR }}>{item.subcategory}</p>
                     <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
@@ -210,13 +207,21 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
             ))}
           </div>
         </div>
-        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <div className="grid grid-cols-4 gap-2">
-            {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
+
+        <div className="p-6 pt-2 border-t border-white/5">
+          {/* Правка 1: Кнопки выбора метода контакта теперь работают как переключатель (radio-like) */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            {CONTACT_METHODS.map(m => (
+              <button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} 
+                className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-[#193D2E] border-white opacity-100 scale-[1.02]" : "bg-white/5 border-white/10 opacity-30 text-white scale-100"}`}>
+                <m.icon size={16} />
+                <span className="text-[7px] font-black uppercase">{m.label}</span>
+              </button>
+            ))}
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">{t.confirmOrder}</button>
+          <div className="flex items-center justify-between mt-3 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
+          <button onClick={handleSubmit} className="w-full mt-4 bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">{t.confirmOrder}</button>
         </div>
       </div>
     </div>
