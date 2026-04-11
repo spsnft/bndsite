@@ -5,16 +5,18 @@ export async function getProducts() {
     const response = await fetch(SCRIPT_URL, {
       method: 'GET',
       headers: { 'Accept': 'application/json' },
-      cache: 'no-store'
+      // Убираем no-store и ставим кэширование
+      next: { revalidate: 60 } 
     });
 
     if (!response.ok) throw new Error("Ошибка сети");
 
     const data = await response.json();
     
-    // ВАЖНО: берем товары из data.products, а сторисы из data.stories
+    // ВАЖНО: Достаем все три массива из ответа API
     const items = data.products || [];
     const stories = data.stories || [];
+    const descriptions = data.descriptions || [];
 
     const formattedProducts = items.map((item: any) => ({
       ...item,
@@ -41,10 +43,13 @@ export async function getProducts() {
       price: Number(item.price_1g) || Number(item.price) || 0
     }));
 
-    // Возвращаем объект, чтобы page.tsx мог взять и то, и другое
-    return { products: formattedProducts, stories: stories };
+    return { 
+      products: formattedProducts, 
+      stories: stories, 
+      descriptions: descriptions 
+    };
   } catch (error) {
     console.error("❌ Ошибка загрузки:", error);
-    return { products: [], stories: [] };
+    return { products: [], stories: [], descriptions: [] };
   }
 }

@@ -1,46 +1,26 @@
 "use client"
-
 import * as React from "react"
 import Link from "next/link"
 import { 
-  Flame, Percent, X, MapPin, Leaf, Wind, Crown, 
+  Plus, Tag, Zap, MapPin, Leaf, Wind, Crown, 
   ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, Trash2, ChevronDown, Star, Phone, Droplets
+  SendHorizontal, ChevronDown, Star, Phone, 
+  Droplets, Snowflake, Box, Sparkles, Flame, Percent,
+  ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
+  Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
+  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
 import { BlurImage } from "@/components/blur-image"
+import { translations } from "@/lib/translations"
+import { ProductModal, CheckoutModal } from "@/components/modals"
+import { 
+  triggerHaptic, getFirstAvailablePrice, getInterpolatedPrice, isElite,
+  TYPE_COLORS, GRADES, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR 
+} from "@/lib/utils"
 
-// --- КОНСТАНТЫ ---
-const SELECTED_COLOR = "#2DD4BF"; 
-const IMPORT_COLOR = "#60A5FA";
-const CONCENTRATES_COLOR = "#F59E0B"; 
-
-const GRADES = [
-  { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
-  { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Star },
-  { id: "premium", title: "PREMIUM GRADE", color: "#34D399", icon: Flame },
-  { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
-];
-
-const CONTACT_METHODS = [
-  { id: "telegram", label: "Telegram", icon: SendHorizontal, ph: "@username or phone number" },
-  { id: "whatsapp", label: "WhatsApp", icon: Phone, ph: "phone number" },
-  { id: "line", label: "Line", icon: MessageCircle, ph: "phone number" },
-  { id: "instagram", label: "Instagram", icon: Instagram, ph: "@username or phone number" },
-];
-
-const INFO_CARDS = [
-  { id: 1, title: "DAILY SUPPORT", value: "12:00—00:00", color: "#A855F7" },
-  { id: 3, title: "MINIMAL ORDER", value: "1000฿", color: "#FBBF24" },
-  { id: 2, title: "PHUKET DELIVERY", value: "60 MINUTES", color: "#2DD4BF" },
-  { id: 4, title: "NATIONWIDE", value: "2-3 DAYS", color: "#60A5FA" },
-];
-
-const TYPE_SHORT: Record<string, string> = { "indica": "IND", "sativa": "SAT", "hybrid": "HYB" };
-const TYPE_COLORS: Record<string, string> = { "indica": "#A855F7", "sativa": "#FBBF24", "hybrid": "#2DD4BF" };
-
-// --- HELPERS ---
+const BRAND_ORANGE = "#F59E0B";
 
 const processProductData = (rawProducts: any[]) => {
   return rawProducts.map(p => {
@@ -59,61 +39,34 @@ const processProductData = (rawProducts: any[]) => {
     return {
       ...p,
       prices: Object.keys(prices).length ? prices : p.prices,
-      old_prices: Object.keys(oldPrices).length ? oldPrices : null
+      old_prices: Object.keys(oldPrices).length ? oldPrices : p.old_prices
     };
   });
 };
 
-const isElite = (product: any) => {
-  const sub = product?.subcategory?.toLowerCase() || "";
-  return sub.includes('exclusive') || sub.includes('import');
-};
-
-const getInterpolatedPrice = (weight: number, prices: any, isEliteProduct: boolean) => {
-  if (!prices) return 0;
-  if (isEliteProduct) {
-    const eliteMap: Record<number, number> = { 3.5: 1, 7: 5, 14: 10, 28: 20 };
-    const steps = [3.5, 7, 14, 28];
-    const baseTier = [...steps].reverse().find(s => s <= weight) || 3.5;
-    const priceAtTier = Number(prices[eliteMap[baseTier]]) || 0;
-    return priceAtTier > 0 ? (priceAtTier / baseTier) * weight : 0;
-  }
-  const tiers = [1, 5, 10, 20];
-  const lowerTier = [...tiers].reverse().find(t => t <= weight) || 1;
-  const upperTier = tiers.find(t => t > weight) || 20;
-  const val1 = Number(prices[lowerTier]) || 0;
-  const val2 = Number(prices[upperTier]) || val1; 
-  if (val1 === 0) return 0;
-  if (lowerTier === upperTier) return val1;
-  return val1 + (val2 - val1) * ((weight - lowerTier) / (upperTier - lowerTier));
-};
-
-const getFirstAvailablePrice = (product: any) => {
-  const isEliteProduct = isElite(product);
-  const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
-  const keyMap: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-  for (let w of steps) {
-    const price = Number(product.prices?.[keyMap[w]]) || 0;
-    if (price > 0) return { price: Math.round(price), weight: w };
-  }
-  return { price: 0, weight: 0 };
-};
-
-// --- COMPONENTS ---
-
-const BadgeIcon = React.memo(({ type }: { type: string }) => {
+const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boolean }) => {
+  const iconSize = isSmall ? 13 : 18;
+  const colorClass = { NEW: "text-blue-400", SALE: "text-emerald-400", HIT: "text-orange-400" }[type.toUpperCase()] || "text-white";
+  const iconWrapper = (icon: React.ReactNode) => (
+    <div className={`${isSmall ? '' : 'p-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-lg'}`}>{icon}</div>
+  );
   switch (type.toUpperCase()) {
-    case "NEW": return <div className="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30 shrink-0"><span className="text-[6px] font-black text-blue-400">NEW</span></div>;
-    case "HIT": return <div className="w-5 h-5 rounded-full bg-orange-500/20 flex items-center justify-center border border-orange-500/30 shrink-0"><Flame size={10} className="text-orange-400" /></div>;
-    case "SALE": return <div className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/30 shrink-0"><Percent size={10} className="text-emerald-400" /></div>;
+    case "NEW": return iconWrapper(<Plus size={iconSize} className={colorClass} strokeWidth={3} />);
+    case "SALE": return iconWrapper(<Tag size={iconSize} className={colorClass} strokeWidth={2.5} />);
+    case "HIT": return iconWrapper(<Zap size={iconSize} className={colorClass} strokeWidth={2.5} fill="currentColor" fillOpacity={0.2} />);
     default: return null;
   }
 });
 
-const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean }) => {
+const BahtSymbol = React.memo(() => (
+  <span className="font-sans text-[0.7em] ml-0.5 opacity-80 align-baseline">฿</span>
+));
+
+const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean, showSubcategory?: boolean }) => {
+  const isPrerolls = item.category === 'joints';
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR));
+    : (isPrerolls ? BRAND_ORANGE : (isElite(item) ? (item.subcategory?.toLowerCase().includes('exclusive') ? BRAND_ORANGE : IMPORT_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
   
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
@@ -121,25 +74,27 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
 
   return (
     <div 
-      onClick={onClick} 
-      className={`relative rounded-[1.5rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden ${isMini ? 'h-[140px]' : 'h-[200px]'}`} 
-      style={{ boxShadow: `inset 0 0 0 1px ${accentColor}30`, background: `radial-gradient(circle at 50% 0%, ${accentColor}10 0%, rgba(0,0,0,1) 90%)` }}
+      onClick={() => { triggerHaptic('light'); onClick(); }} 
+      className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border ${isMini ? 'h-[180px]' : 'h-[240px]'} bg-[#1d4837]/80 backdrop-blur-2xl`} 
+      style={{ borderColor: `${accentColor}80` }}
     >
-      {!hideBadge && item.badge && <div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75 origin-top-right' : ''}`}><BadgeIcon type={item.badge} /></div>}
-      <div className={`relative z-10 p-3 pb-0 flex-1 flex flex-col min-h-0`}>
-        <div className="min-w-0 pr-4">
-          <h3 className={`${isMini ? 'text-[8px]' : 'text-[10px]'} font-black italic uppercase tracking-tighter leading-tight truncate text-white`}>{item.name}</h3>
-          <p className={`${isMini ? 'text-[6px]' : 'text-[7px]'} font-black mt-0.5 text-white/40 truncate uppercase italic tracking-widest`}>{item.subcategory || "Product"}</p>
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
+      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 120%, ${accentColor}, transparent 70%)` }} />
+      {!hideBadge && item.badge && (<div className={`absolute top-3 right-3 z-20 ${isMini ? 'scale-90' : 'scale-100'}`}><BadgeIcon type={item.badge} /></div>)}
+      <div className="relative z-10 p-5 pb-0 flex-1 flex flex-col min-h-0">
+        <div className="min-w-0 pr-6">
+          <h3 className={`${isMini ? 'text-[12px]' : 'text-[14px]'} font-black uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
+          {showSubcategory && (<p className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-bold mt-1 text-white/40 uppercase tracking-widest italic`}>{item.subcategory || "Product"}</p>)}
         </div>
-        <div className="relative flex-1 w-full min-h-0 flex items-center justify-center mt-1 mb-1">
-            <BlurImage src={item.image} priority={priority} width={isMini ? 100 : 160} height={isMini ? 100 : 160} className="max-w-full max-h-full object-contain drop-shadow-[0_5px_15px_rgba(0,0,0,0.8)]" alt={item.name} />
+        <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-2">
+            <BlurImage src={item.image} priority={priority} width={200} height={200} className="max-w-full max-h-full object-contain" alt={item.name} />
         </div>
       </div>
-      <div className={`relative z-10 flex justify-between items-end px-3 pb-3 mt-auto`}>
-        <span className={`${isMini ? 'text-[7px]' : 'text-[8px]'} font-black uppercase tracking-widest mb-0.5`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{TYPE_SHORT[item.type?.toLowerCase()] || item.type}</span>
-        <div className="flex flex-col items-end">
-          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[6px]' : 'text-[8px]'} font-bold line-through opacity-30 text-white leading-none mb-0.5`}>{oldPrice}฿</span>}
-          <p className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-black italic tracking-tighter leading-none`} style={{ color: accentColor }}>{currentPrice > 0 ? `${currentPrice}฿` : '—'}</p>
+      <div className="relative z-10 flex justify-between items-end px-5 pb-5 mt-auto">
+        <span className={`${isMini ? 'text-[9px]' : 'text-[10px]'} font-black uppercase tracking-widest brightness-125`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
+        <div className="flex flex-col items-end gap-1">
+          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[10px]' : 'text-[12px]'} font-bold line-through opacity-30 text-white leading-none`}>{oldPrice}<BahtSymbol /></span>}
+          <p className={`${isMini ? 'text-[16px]' : 'text-[20px]'} font-black tracking-tighter leading-none text-white`}>{currentPrice > 0 ? (<>{currentPrice}<BahtSymbol /></>) : '—'}</p>
         </div>
       </div>
     </div>
@@ -147,419 +102,323 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini }
 });
 
 const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  <div onClick={onClick} className="flex items-center justify-between gap-3 px-6 py-3.5 active:bg-white/5 transition-colors cursor-pointer group text-white">
-    <div className="flex items-center gap-3 truncate flex-1">
-      <div className="w-6 flex justify-start shrink-0">{p.badge && <BadgeIcon type={p.badge} />}</div>
-      <span className="text-[12px] font-black uppercase italic tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer group text-white border-b border-white/10 last:border-b last:border-white/10">
+    <div className="flex items-center gap-4 truncate flex-1">
+      <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
+      <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
     </div>
-    <div className="flex items-center gap-4 shrink-0">
-      {p.farm && p.farm !== "-" && <span className="text-[8px] font-bold text-white/20 uppercase tracking-widest italic truncate max-w-[80px]">{p.farm}</span>}
-      <span className="text-[8px] font-black uppercase px-2 py-1 rounded bg-white/5 min-w-[36px] text-center" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{TYPE_SHORT[p.type?.toLowerCase()] || 'HYB'}</span>
+    <div className="flex items-center gap-5 shrink-0 pr-4">
+      {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>}
+      <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
     </div>
   </div>
 ));
 
-// --- MODALS ---
-
-function ProductModal({ product, style, onClose }: { product: any, style: any, onClose: () => void }) {
-  const isEliteProduct = isElite(product);
-  const steps = isEliteProduct ? [3.5, 7, 14, 28] : [1, 5, 10, 20];
-  const weightToKey: Record<number, number> = isEliteProduct ? { 3.5: 1, 7: 5, 14: 10, 28: 20 } : { 1: 1, 5: 5, 10: 10, 20: 20 };
-  const firstAvailableWeight = steps.find(w => (Number(product.prices?.[weightToKey[w]]) || 0) > 0) || steps[0];
-  
-  const [weight, setWeight] = React.useState(firstAvailableWeight);
-  const [isAdded, setIsAdded] = React.useState(false);
-  const addItem = useCart((s: any) => s.addItem);
-  
-  const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
-  const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
-  const isWeightAvailable = (w: number) => (Number(product.prices?.[weightToKey[w]]) || 0) > 0;
-
-  const getUpsellInfo = () => {
-    if (isEliteProduct) return null;
-    const nextWeight = steps.find(s => s > weight && (Number(product.prices?.[weightToKey[s]]) || 0) > 0);
-    if (!nextWeight) return null;
-    const nextPrice = Math.round(getInterpolatedPrice(nextWeight, product.prices, false));
-    const nextPpg = Math.round(nextPrice / nextWeight);
-    return { next: nextWeight, diff: (nextWeight - weight).toFixed(1), ppg: nextPpg };
-  };
-  const upsell = getUpsellInfo();
-
-  const hasValue = (val: string, placeholder?: string) => {
-    if (!val) return false;
-    const v = val.trim();
-    if (v === "" || v === "-" || v.toLowerCase() === "none") return false;
-    if (placeholder && v.toLowerCase() === placeholder.toLowerCase()) return false;
-    return true;
-  };
-
-  return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md" onClick={onClose}>
-      <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
-        <button onClick={onClose} className="absolute top-4 right-4 z-20 p-1.5 bg-black/40 rounded-full text-white/50 hover:text-white transition-colors"><X size={18}/></button>
-        <div className="relative aspect-[1.4/1] w-full bg-black/10">
-          <BlurImage src={product?.image} width={400} height={400} className="w-full h-full object-contain p-4" alt={product?.name} />
-          <div className="absolute bottom-0 left-0 right-0 p-5 bg-gradient-to-t from-[#193D2E] via-[#193D2E]/90 to-transparent">
-            <h2 className="text-2xl font-black italic uppercase tracking-tighter text-white">{product?.name}</h2>
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] mt-0.5 text-white/60">
-              <span style={{ color: TYPE_COLORS[product?.type?.toLowerCase()] }}>{product?.type}</span>
-              <span className="mx-2 opacity-20">•</span>
-              <span style={{ color: style?.color }}>{product?.subcategory}</span>
-            </p>
-          </div>
-        </div>
-        <div className="px-6 pb-6 space-y-5">
-          {(hasValue(product?.farm) || hasValue(product?.taste, "Sweet, Earthy") || hasValue(product?.terpenes, "Myrcene, Limonene")) && (
-            <div className="flex flex-wrap gap-4 border-b border-white/5 pb-3">
-               {hasValue(product?.farm) && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><MapPin size={8}/><span className="text-[6px] font-black uppercase">Farm</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.farm}</p></div>
-               )}
-               {hasValue(product?.taste, "Sweet, Earthy") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Leaf size={8}/><span className="text-[6px] font-black uppercase">Taste</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.taste}</p></div>
-               )}
-               {hasValue(product?.terpenes, "Myrcene, Limonene") && (
-                 <div className="space-y-0.5"><div className="flex items-center gap-1 opacity-20"><Wind size={8}/><span className="text-[6px] font-black uppercase">Terps</span></div><p className="text-[9px] font-bold italic truncate text-white">{product.terpenes}</p></div>
-               )}
-            </div>
-          )}
-
-          <div className="space-y-5">
-            <div className="flex justify-between items-end">
-              <div className="flex items-center gap-3">
-                 {oldPrice > currentPrice && <span className="text-lg font-black italic line-through opacity-20 text-white">{oldPrice}฿</span>}
-                 <span className="text-3xl font-black italic tracking-tighter text-white">{currentPrice}฿</span>
-              </div>
-              <div className="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-full border border-white/5 text-white/60 tracking-widest">{weight}g</div>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-4 gap-1.5">
-                {steps.map(v => {
-                  const available = isWeightAvailable(v);
-                  return (
-                    <button key={v} disabled={!available} onClick={() => setWeight(v)} className={`py-3 text-[9px] font-black rounded-xl border transition-all ${!available ? "opacity-5 grayscale border-white/5" : weight === v ? "bg-white text-black border-white" : "border-white/5 text-white/30 active:bg-white/5"}`}>{v}g</button>
-                  )
-                })}
-              </div>
-              
-              {!isEliteProduct && (
-                <div className="px-1 space-y-2">
-                  <input 
-                    type="range" 
-                    min={steps[0]} 
-                    max={steps[steps.length-1]} 
-                    step="0.5" 
-                    value={weight} 
-                    onChange={(e) => setWeight(parseFloat(e.target.value))}
-                    className="w-full h-1 bg-white/10 rounded-full appearance-none cursor-pointer accent-white"
-                  />
-                  <div className="flex justify-between text-[7px] font-black uppercase opacity-10 tracking-[0.2em]">
-                    {steps.map(s => <span key={s}>{s}g</span>)}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {upsell && (
-              <div className="bg-emerald-400/5 border border-emerald-400/10 rounded-2xl p-3 flex items-center gap-3 animate-pulse">
-                <Flame size={14} className="text-emerald-400 shrink-0" />
-                <p className="text-[8px] font-black uppercase tracking-widest text-emerald-400 leading-tight">
-                  Add {upsell.diff}g more for {upsell.ppg}฿ per gram!
-                </p>
-              </div>
-            )}
-
-            <button onClick={() => { addItem({ ...product, price: currentPrice, weight: `${weight}g` }); setIsAdded(true); setTimeout(() => {setIsAdded(false); onClose();}, 800); }} className={`w-full py-5 rounded-2xl font-black uppercase text-[10px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black shadow-[0_0_30px_rgba(52,211,153,0.3)]' : 'bg-white text-[#193D2E]'}`}>{isAdded ? "Added to Cart" : "Add to Order"}</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function CheckoutModal({ items, total, onClose }: { items: any[], total: number, onClose: () => void }) {
-  const [method, setMethod] = React.useState("telegram");
-  const [contact, setContact] = React.useState("");
-  const [isSending, setIsSending] = React.useState(false);
-  const { clearCart, removeItem } = useCart();
-  const handleSubmit = async () => {
-    if (!contact) return alert("Please enter contact info");
-    setIsSending(true);
-    try {
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
-      alert("Order sent!"); clearCart(); onClose();
-    } catch (e) { alert("Error sending."); } finally { setIsSending(false); }
-  };
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl" onClick={onClose}>
-      <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/10 text-white">
-          <div><h2 className="text-xl font-black italic uppercase tracking-tighter">Your Basket</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} items</p></div>
-          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-2 no-scrollbar">
-          {items.map((item: any) => (
-            <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-              <div className="w-10 h-10 rounded-lg bg-black/20 flex-shrink-0 p-1"><BlurImage src={item.image} width={100} height={100} className="w-full h-full object-contain" alt="" /></div>
-              <div className="flex-1 min-w-0"><h3 className="text-[11px] font-black uppercase italic truncate">{item.name}</h3><p className="text-[9px] opacity-40 font-bold uppercase">{item.weight} • {item.price}฿</p></div>
-              <button onClick={() => removeItem(item.id, item.weight)} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
-            </div>
-          ))}
-        </div>
-        <div className="p-6 bg-black/20 border-t border-white/5 space-y-4">
-          <div className="grid grid-cols-4 gap-2">
-            {CONTACT_METHODS.map(m => (<button key={m.id} onClick={() => setMethod(m.id)} className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-black border-white" : "bg-white/5 border-white/10 opacity-30 text-white"}`}><m.icon size={16} /><span className="text-[7px] font-black uppercase">{m.label}</span></button>))}
-          </div>
-          <input type="text" placeholder={CONTACT_METHODS.find(m => m.id === method)?.ph} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between pt-2 text-white"><p className="text-[10px] font-black uppercase opacity-40">Total Amount</p><p className="text-3xl font-black italic tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full bg-emerald-400 text-[#193D2E] py-5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_10px_30px_rgba(52,211,153,0.2)]">Confirm Order</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// --- MAIN LANDING ---
-export default function LandingClient({ initialProducts }: { initialProducts: any[] }) {
+export default function LandingClient({ initialProducts, initialDescriptions = [] }: { initialProducts: any[], initialDescriptions?: any[] }) {
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   const [openGrades, setOpenGrades] = React.useState<string[]>([]);
-  const { items, getTotal } = useCart();
+  const [isInfoOpen, setIsInfoOpen] = React.useState(false);
+  const { items, getTotal, lang, setLang } = useCart();
+  const t = translations[lang as keyof typeof translations];
+  
+  const descriptionsMap = React.useMemo(() => {
+    const map: Record<string, any> = {};
+    initialDescriptions.forEach(d => { if (d.subcategory) map[d.subcategory.toLowerCase().trim()] = d; });
+    return map;
+  }, [initialDescriptions]);
 
-  const sortProductsByPrice = (prods: any[]) => {
-    return [...prods].sort((a, b) => {
-      const priceA = getFirstAvailablePrice(a).price;
-      const priceB = getFirstAvailablePrice(b).price;
-      return priceB - priceA;
-    });
+  const getDesc = (id: string) => {
+    const data = descriptionsMap[id.toLowerCase().trim()];
+    if (!data) return null;
+    return lang === 'ru' ? data.description_ru : data.description_eng;
   };
 
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
-    return [...news].sort((a, b) => {
-      const dateA = a.date ? a.date.split('.').reverse().join('') : '0000';
-      const dateB = b.date ? b.date.split('.').reverse().join('') : '0000';
-      if (dateB !== dateA) return dateB.localeCompare(dateA);
-      const priceA = getFirstAvailablePrice(a).price;
-      const priceB = getFirstAvailablePrice(b).price;
-      return priceB - priceA;
-    });
+    // Сортировка строго по ID: чем больше ID, тем левее в списке
+    return [...news].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
   }, [processedProducts]);
 
-  const flashSales = React.useMemo(() => 
-    sortProductsByPrice(processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')), 
-  [processedProducts]);
-
-  const gradeSections = React.useMemo(() => {
-    return GRADES.map(grade => {
+  const flashSales = React.useMemo(() => [...processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')].sort((a, b) => getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price), [processedProducts]);
+  
+  const gradeSections = React.useMemo(() => GRADES.map(grade => {
       const items = processedProducts.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
       const priceRef = items.find(p => p.badge?.toUpperCase() !== 'SALE') || items[0];
       return { grade, items, priceRef };
-    }).filter(g => g.items.length > 0);
-  }, [processedProducts]);
+    }).filter(g => g.items.length > 0), [processedProducts]);
 
   const eliteSections = [
-    { id: 'local', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
-    { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import')), color: IMPORT_COLOR, icon: Star }
+    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: BRAND_ORANGE, icon: MapPin },
+    { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import') && !p.subcategory?.toLowerCase().includes('loose')), color: IMPORT_COLOR, icon: Star }
   ];
+
+  const importLooseSection = React.useMemo(() => {
+    const items = processedProducts.filter(p => p.category === 'import loose' || p.subcategory?.toLowerCase() === 'import loose');
+    if (items.length === 0) return null;
+    const priceRef = items.find(p => p.badge?.toUpperCase() !== 'SALE') || items[0];
+    return { id: 'import loose', title: 'Import Loose', items, priceRef, color: IMPORT_COLOR, icon: Star };
+  }, [processedProducts]);
 
   const concentrateSections = React.useMemo(() => {
     const allConcs = processedProducts.filter(p => p.category === 'concentrates');
     const subs = Array.from(new Set(allConcs.map(p => p.subcategory)));
     return subs.map(sub => {
-      let color = SELECTED_COLOR;
-      const subLower = sub?.toLowerCase() || "";
-      
-      if (subLower.includes('old school')) color = "#C1C1C1";
-      if (subLower.includes('fresh frozen premium')) color = "#34D399"; // Premium Grade Color
-      else if (subLower.includes('fresh frozen')) color = "#FEC107"; // Golden Grade Color
-      
-      if (subLower.includes('live rosin')) color = "#A855F7"; // Selected Grade Color
-      
-      return {
-        id: sub,
-        title: sub || "Concentrates",
-        items: allConcs.filter(p => p.subcategory === sub),
-        color: color,
-        icon: Droplets,
-        isList: subLower.includes('old school')
-      };
+      let color = SELECTED_COLOR; let icon = Droplets; const subLower = sub?.toLowerCase() || "";
+      if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
+      else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
+      else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
+      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: subLower.includes('old school') };
     });
   }, [processedProducts]);
 
+  const prerollSections = React.useMemo(() => {
+    const allJoints = processedProducts.filter(p => p.category === 'joints');
+    const subs = Array.from(new Set(allJoints.map(p => p.subcategory)));
+    return subs.map(sub => ({
+      id: sub,
+      title: sub || "Prerolls",
+      items: allJoints.filter(p => p.subcategory === sub),
+      color: BRAND_ORANGE,
+      icon: Cigarette
+    }));
+  }, [processedProducts]);
+
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      triggerHaptic('light');
+      const offset = 20;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      const offsetPosition = elementPosition - offset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30">
-      <header className="max-w-xl mx-auto pt-4">
-        <div className="flex items-center justify-between mb-4"> 
-           <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16 flex items-center justify-center">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-[20px]"></div>
-                <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={64} height={64} className="w-full h-full object-contain relative z-10" alt="Logo" />
-              </div>
-              <h1 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 leading-none text-emerald-400/80">Premium Service</h1>
+    <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
+      <header className="max-w-xl mx-auto pt-0 mb-0">
+        <div className="flex items-center justify-between px-2 mb-2"> 
+           <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
+              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
            </div>
-           <div className="flex gap-2">
-              {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                <Link key={i} href={soc.url} target="_blank" className="p-2.5 bg-white/5 rounded-full border border-white/5 opacity-40 hover:opacity-100 transition-all active:scale-90"><soc.icon size={18}/></Link>
-              ))}
+           <div className="flex items-center flex-1 justify-end">
+              <div className="flex gap-3">
+                {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
+                  <Link key={i} href={soc.url} target="_blank" className="p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl"><soc.icon size={22} className="opacity-80"/></Link>
+                ))}
+              </div>
+              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-6 w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
         </div>
-        <div className="grid grid-cols-2 gap-2 mb-6">
-          {INFO_CARDS.map((card) => (
-            <div key={card.id} className="relative p-4 rounded-[1.8rem] border border-white/5 bg-black/20 flex flex-col items-center justify-center text-center min-h-[68px]">
-              <div className="space-y-0">
-                <p className="text-[13px] font-black italic tracking-[0.05em] text-white uppercase leading-tight">{card.value}</p>
-                <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/30 leading-tight">{card.title}</p>
-              </div>
-              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[2px] rounded-full" style={{ backgroundColor: card.color }}></div>
+
+        <div className="flex flex-wrap gap-2 px-2 mt-2 mb-4 relative z-20">
+          <button onClick={() => scrollToSection('buds-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
+            <div className="absolute inset-0 opacity-0 group-active:opacity-20 pointer-events-none transition-opacity" style={{ background: `radial-gradient(circle, #10B981 0%, transparent 70%)` }} />
+            {lang === 'ru' ? 'меню' : 'flowers'}
+          </button>
+          <button onClick={() => scrollToSection('concentrates-menu')} className="px-5 py-2.5 bg-[#A855F7]/10 rounded-full border border-[#A855F7]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#A855F7]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
+            <div className="absolute inset-0 opacity-0 group-active:opacity-20 pointer-events-none transition-opacity" style={{ background: `radial-gradient(circle, #A855F7 0%, transparent 70%)` }} />
+            {lang === 'ru' ? 'концентраты' : 'concentrates'}
+          </button>
+          <button onClick={() => scrollToSection('prerolls-menu')} className="px-5 py-2.5 bg-[#F59E0B]/10 rounded-full border border-[#F59E0B]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#F59E0B]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
+            <div className="absolute inset-0 opacity-0 group-active:opacity-20 pointer-events-none transition-opacity" style={{ background: `radial-gradient(circle, #F59E0B 0%, transparent 70%)` }} />
+            {lang === 'ru' ? 'прероллы' : 'prerolls'}
+          </button>
+        </div>
+
+        <div className="relative pt-6 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
+          <div className="absolute -top-24 -left-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
+          <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-[60px]"></div>
+          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] leading-[1.3] text-white mb-4 relative z-10 px-2 max-w-[320px] mx-auto">
+            {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
+          </h2>
+          <div className="grid grid-cols-2 gap-3 relative z-10">
+             {[ {ru: '3 года на рынке', en: '3 years on market'}, {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, {ru: 'гарантия качества', en: 'quality guarantee'}, {ru: 'регулярные обновления меню', en: 'regular menu updates'} ].map((item, i) => (
+               <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
+                  <span className="text-[10px] font-black uppercase tracking-widest leading-tight text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
+               </div>
+             ))}
+          </div>
+        </div>
+
+        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3 transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
+          <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#F59E0B]/10 rounded-full blur-[40px]"></div>
+          <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
+            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3></div>
+            <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
+          </button>
+          <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="space-y-5 pl-9 pb-2">
+               <div className="flex items-center gap-4"><Timer size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div></div>
+               <div className="flex items-center gap-4"><Plus size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div></div>
+               <div className="flex items-center gap-4"><Laptop size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? (<>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>) : (<>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>)}</p></div></div>
+               <div className="flex items-center gap-4"><Wallet size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div></div>
+               <div className="flex items-center gap-4"><Bike size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div></div>
             </div>
-          ))}
+          </div>
         </div>
       </header>
 
-      <div className="max-w-xl mx-auto space-y-3">
+      <div className="max-w-xl mx-auto space-y-0">
         {recentUpdates.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center gap-2 px-2">
-              <BadgeIcon type="NEW" />
-              <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Recent Updates</h2>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {recentUpdates.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
-            </div>
+          <section className="mt-[12px] mb-[12px] space-y-3 overflow-hidden">
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="NEW" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.updates}</h2></div>
+            <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{recentUpdates.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
-
         {flashSales.length > 0 && (
-          <section className="space-y-3">
-            <div className="flex items-center gap-2 px-2">
-              <BadgeIcon type="SALE" />
-              <h2 className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50 italic">Flash Sales</h2>
-            </div>
-            <div className="flex gap-3 overflow-x-auto pb-4 no-scrollbar -mx-4 px-4 snap-x">
-              {flashSales.map((p, idx) => (<div key={p.id} className="w-[160px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} /></div>))}
-            </div>
+          <section className="mt-[12px] mb-[12px] space-y-3 overflow-hidden">
+            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales}</h2></div>
+            <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p.id} className="w-[180px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
-
-        <div className="space-y-5 pt-0.5">
-          <div className="flex items-center gap-4 py-4">
-             <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/10 to-emerald-500/30"></div>
-             <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-emerald-400/80">Flower Menu</span>
-             <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/10 to-emerald-500/30"></div>
+        
+        <div className="space-y-1">
+          <div id="buds-menu" className="flex items-center gap-4 pt-6 pb-6 relative">
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md">{t.flowerMenu}</span>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
-
-          {gradeSections.map(({ grade, items, priceRef }) => (
-            <div key={grade.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id])} className="w-full px-6 py-6 flex flex-col items-start active:bg-white/5 transition-colors">
-                <div className="w-full flex items-center justify-between mb-5">
-                  <div className="flex items-center"><grade.icon size={18} style={{ color: grade.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
-                  <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(grade.id) ? 'rotate-180' : ''}`} />
-                </div>
-                <div className="w-full flex flex-row justify-between items-center opacity-80 px-1">
-                   {[1, 5, 10, 20].map(w => {
-                     const p = Math.round(getInterpolatedPrice(w, priceRef.prices, false));
-                     return (
-                       <div key={w} className="flex items-baseline gap-1">
-                         <span className="text-[8px] font-black opacity-30 uppercase tracking-widest">{w}g</span>
-                         <span className="text-[16px] font-black italic text-white tracking-tighter leading-none">{p > 0 ? `${p}฿` : '—'}</span>
-                       </div>
-                     )
-                   })}
-                </div>
-              </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(grade.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="divide-y divide-white/5 bg-white/5">
-                  {items.map((p: any) => (
-                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {eliteSections.map(sec => sec.items.length > 0 && (
-            <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
-              <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
-                <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
-              </button>
-              <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
-                  {sec.items.map(p => (
-                    <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {concentrateSections.length > 0 && (
-            <>
-              <div className="flex items-center gap-4 py-8">
-                 <div className="h-[1px] flex-1 bg-gradient-to-r from-transparent via-amber-500/10 to-amber-500/30"></div>
-                 <span className="text-[11px] font-black uppercase tracking-[0.6em] italic text-amber-500/80">Concentrates</span>
-                 <div className="h-[1px] flex-1 bg-gradient-to-l from-transparent via-amber-500/10 to-amber-500/30"></div>
-              </div>
-
-              {concentrateSections.map(sec => (
-                <div key={sec.id} className="rounded-[1.8rem] overflow-hidden border border-white/5 bg-black/20">
-                  <button onClick={() => setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id])} className="w-full px-6 py-5 flex items-center justify-between active:bg-white/5 transition-colors">
-                    <div className="flex items-center"><sec.icon size={18} style={{ color: sec.color }} className="mr-3" /><h2 className="text-[13px] font-black italic uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                    <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(sec.id) ? 'rotate-180' : ''}`} />
+          <div className="space-y-3">
+            {gradeSections.map(({ grade, items, priceRef }) => {
+              const isOpen = openGrades.includes(grade.id);
+              return (
+                <div key={grade.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${grade.color}15` : 'none' }}>
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                    <div className="w-full flex items-center justify-between mb-3 px-4">
+                      <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
+                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    {getDesc(grade.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed tracking-wide">{getDesc(grade.id)}</p>)}
+                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                       {[1, 5, 10, 20].map(w => {
+                         const p = Math.round(Number(priceRef.prices?.[w]) || 0);
+                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                       })}
+                    </div>
                   </button>
-                  <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(sec.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    {sec.isList ? (
-                      <div className="divide-y divide-white/5 bg-white/5">
-                        {sec.items.map(p => (
-                          <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="p-4 grid grid-cols-2 gap-3 bg-white/5">
-                        {sec.items.map(p => (
-                          <HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} />
-                        ))}
-                      </div>
-                    )}
+                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                    <div className="divide-y divide-white/10 bg-white/5">{items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                   </div>
                 </div>
-              ))}
-            </>
-          )}
+              );
+            })}
+            {eliteSections.map(sec => {
+              const isOpen = openGrades.includes(sec.id);
+              return sec.items.length > 0 && (
+                <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
+                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    {getDesc(sec.id) && (<p className="mt-3 text-[14px] font-medium text-white leading-relaxed tracking-wide">{getDesc(sec.id)}</p>)}
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                    <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
+                  </div>
+                </div>
+              );
+            })}
+
+            {importLooseSection && (
+              <div key={importLooseSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: openGrades.includes(importLooseSection.id) ? `${importLooseSection.color}80` : 'rgba(255,255,255,0.05)', boxShadow: openGrades.includes(importLooseSection.id) ? `0 0 20px ${importLooseSection.color}15` : 'none' }}>
+                <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, importLooseSection.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                  <div className="w-full flex items-center justify-between mb-3 px-4">
+                    <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
+                    <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                  </div>
+                  <div className="w-full grid grid-cols-4 gap-2 px-4">
+                     {[1, 5, 10, 20].map(w => {
+                       const p = Math.round(Number(importLooseSection.priceRef?.prices?.[w]) || 0);
+                       return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase tracking-widest">{w}g</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                     })}
+                  </div>
+                </button>
+                <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(importLooseSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                  <div className="divide-y divide-white/10 bg-white/5">{importLooseSection.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#A855F7]/30 bg-[#A855F7]/10 backdrop-blur-md">{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
+          </div>
+          <div className="space-y-3">
+            {concentrateSections.map(sec => {
+              const isOpen = openGrades.includes(sec.id);
+              return (
+                <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
+                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    {getDesc(sec.id) && (<p className="mt-3 text-[14px] font-medium text-white leading-relaxed tracking-wide">{getDesc(sec.id)}</p>)}
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                    {sec.isList ? (<div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>) : (<div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white relative z-10 px-6 py-2 rounded-full overflow-hidden border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">{lang === 'ru' ? 'Прероллы' : 'Прероллы'}</span>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
+          </div>
+          <div className="space-y-3">
+            {prerollSections.map(sec => {
+              const isOpen = openGrades.includes(sec.id);
+              const priceRef = sec.items[0];
+              return (
+                <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)', boxShadow: isOpen ? `0 0 20px ${sec.color}15` : 'none' }}>
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                    <div className="w-full flex items-center justify-between mb-3 px-4">
+                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                       {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
+                         const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0);
+                         return (<div key={unit.w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[10px] font-black opacity-60 uppercase tracking-widest">{unit.l}</span><span className="text-[18px] font-black text-white tracking-tighter leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                       })}
+                    </div>
+                  </button>
+                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                    <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {items.length > 0 && (
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
-          <button onClick={() => setIsCheckoutOpen(true)} className="w-full bg-white/10 backdrop-blur-2xl text-white p-5 rounded-[2.2rem] border border-white/20 shadow-[0_20px_50px_rgba(0,0,0,0.4)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
-            <div className="flex items-center gap-3 relative z-10">
-              <ShoppingBag size={20} className="text-emerald-400"/>
-              <span className="font-black uppercase text-[13px] tracking-[0.1em]">{getTotal()}฿ Total</span>
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-6">
+          <button onClick={() => { triggerHaptic('medium'); setIsCheckoutOpen(true); }} className="w-full bg-white/10 backdrop-blur-2xl text-white py-3 px-7 rounded-[2.5rem] border border-white/20 shadow-[0_25px_60px_rgba(0,0,0,0.5)] flex justify-between items-center active:scale-95 transition-all overflow-hidden">
+            <div className="flex items-center gap-4 relative z-10">
+              <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
+              <div className="text-left">
+                <div className="block font-black uppercase text-[18px] tracking-tight leading-none mb-0.5">{getTotal()}<BahtSymbol /></div>
+                <span className="block font-black uppercase text-[9px] tracking-widest text-emerald-400 leading-none">{items.length} {t.items}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-emerald-400 relative z-10">
-              <span className="text-[10px] font-black uppercase">Order</span>
-              <Send size={18}/>
+            <div className="flex items-center gap-3 text-white relative z-10 opacity-70">
+              <span className="text-[12px] font-black uppercase tracking-widest">{t.basket}</span>
+              <span className="p-2 bg-white/10 rounded-full animate-pulse"><Send size={18}/></span>
             </div>
           </button>
         </div>
       )}
-
-      {selectedProduct && (
-        <ProductModal 
-          product={selectedProduct} 
-          style={
-            selectedProduct.category === 'concentrates' 
-            ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR }
-            : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' }))
-          } 
-          onClose={() => setSelectedProduct(null)} 
-        />
-      )}
-      {isCheckoutOpen && <CheckoutModal items={items} total={getTotal()} onClose={() => setIsCheckoutOpen(false)} />}
+      
+      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: BRAND_ORANGE } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('exclusive') ? BRAND_ORANGE : IMPORT_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
+      {isCheckoutOpen && (<CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }} />)}
     </div>
   );
 }

@@ -1,0 +1,50 @@
+export const translations = {
+  en: {
+    updates: "Updates",
+    sales: "Sales",
+    flowerMenu: "Flower Menu",
+    concentrates: "Concentrates",
+    dailySupport: "WORKING HOURS",
+    minOrder: "MINIMAL ORDER",
+    delivery: "PHUKET DELIVERY",
+    nationwide: "NATIONWIDE",
+    basket: "Cart",
+    yourBasket: "Your Basket",
+    totalAmount: "Total Amount",
+    confirmOrder: "Confirm Order",
+    added: "Added to Cart",
+    addToOrder: "Add to Order",
+    items: "items",
+    farm: "Farm",
+    taste: "Taste",
+    terps: "Terps",
+    contactPh: "@username or phone number",
+    orderSent: "Order sent!",
+    sendError: "Error sending."
+  },
+  ru: {
+    updates: "Обновления",
+    sales: "Акции",
+    flowerMenu: "Основное меню",
+    concentrates: "Меню концентратов",
+    dailySupport: "ЧАСЫ РАБОТЫ",
+    minOrder: "МИН.ЗАКАЗ",
+    delivery: "ПО ПХУКЕТУ",
+    nationwide: "ПО ТАИЛАНДУ",
+    basket: "Корзина",
+    yourBasket: "Ваша корзина",
+    totalAmount: "Итого",
+    confirmOrder: "Подтвердить заказ",
+    added: "Добавлено",
+    addToOrder: "В корзину",
+    items: "позиций",
+    farm: "Ферма",
+    taste: "Вкус",
+    terps: "Терпены",
+    contactPh: "@юзернейм или телефон",
+    orderSent: "Заказ отправлен!",
+    sendError: "Ошибка отправки."
+  }
+};
+
+export type Language = 'en' | 'ru';
