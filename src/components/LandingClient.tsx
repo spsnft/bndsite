@@ -143,7 +143,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       
       const getTime = (dStr: any) => {
         if (!dStr) return 0;
-        // Принудительно в строку, убираем пробелы и нормализуем разделитель
         const str = String(dStr).trim().replace(/[-/]/g, '.');
         if (!str.includes('.')) return 0;
 
@@ -158,8 +157,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       const timeA = getTime(a.date);
       const timeB = getTime(b.date);
       
-      if (timeB !== timeA) return timeB - timeA;
-      return getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price;
+      return timeB - timeA;
     });
   }, [processedProducts]);
 
