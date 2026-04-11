@@ -173,14 +173,16 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
           {categoryPromos.length > 0 && (
             <div className="space-y-2">
               {categoryPromos.map((promo: any) => (
-                <div key={promo.sub} className="relative p-4 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-white/5" style={{ color: promo.color }}><Sparkles size={16} /></div>
+                <div key={promo.sub} className="relative p-2 pl-1 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
+                  {/* items-center для центровки текста относительно искры, gap-1.5 для плотности */}
+                  <div className="flex items-center gap-1.5">
+                    {/* Иконка в 4px от левого края (pl-1) */}
+                    <div className="p-1.5 rounded-xl bg-white/5 shrink-0" style={{ color: promo.color }}><Sparkles size={16} /></div>
                     <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> из <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
+                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/г</span>!</>
                         ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> of <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g</span> <span className="font-black" style={{ color: promo.color }}>{promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}฿/g</span> price!</>
                         )}
                     </p></div>
                   </div>
