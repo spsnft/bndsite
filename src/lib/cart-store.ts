@@ -1,13 +1,13 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import { getInterpolatedPrice, isElite } from "./utils" // Убедись, что пути верные
+import { getInterpolatedPrice, isElite } from "./utils"
 
 interface CartItem {
   id: string;
   name: string;
   price: number;
-  weight: string; // Отображаемая строка (напр. "6G")
-  quantity: number; // Всегда будет 1, так как мы управляем весом
+  weight: string;
+  quantity: number;
   image?: string;
   subcategory?: string;
   type?: string;
@@ -34,38 +34,44 @@ export const useCart = create<CartStore>()(
       setLang: (lang) => set({ lang }),
 
       addItem: (newItem) => set((state) => {
-        // 1. Ищем, есть ли уже этот товар (по ID)
         const existingIndex = state.items.findIndex((i) => i.id === newItem.id);
         
-        // Извлекаем числовое значение веса из добавляемого товара (напр. "1G" -> 1)
+        // Извлекаем числовое значение (например, "3.5G" -> 3.5)
         const addedWeightNum = parseFloat(newItem.weight);
 
         if (existingIndex > -1) {
           const existingItem = state.items[existingIndex];
-          
-          // 2. Считаем новый суммарный вес
           const currentWeightNum = parseFloat(existingItem.weight);
           const totalWeightNum = currentWeightNum + addedWeightNum;
 
-          // 3. Пересчитываем цену за НОВЫЙ суммарный вес
+          // Определяем, является ли товар элитным/импортом
           const isEliteProduct = isElite(existingItem) && existingItem.subcategory?.toLowerCase() !== 'import loose';
-          const newTotalPrice = Math.round(
-            getInterpolatedPrice(totalWeightNum, existingItem.prices, isEliteProduct)
+
+          // ПРОВЕРКА: Если цены передаются в newItem, используем их, иначе берем из существующего
+          const priceData = existingItem.prices || newItem.prices;
+
+          // Пересчитываем цену. 
+          // Если getInterpolatedPrice вернет 0 или undefined, ставим старую цену + цену нового (как фоллбек)
+          let newTotalPrice = Math.round(
+            getInterpolatedPrice(totalWeightNum, priceData, isEliteProduct)
           );
 
-          // 4. Обновляем товар в корзине
+          // Если расчет не удался (вернул 0), просто плюсуем цены (защита от "цены 0")
+          if (!newTotalPrice || newTotalPrice === 0) {
+            newTotalPrice = existingItem.price + newItem.price;
+          }
+
           const updatedItems = [...state.items];
           updatedItems[existingIndex] = {
             ...existingItem,
-            weight: `${totalWeightNum}G`,
+            weight: `${totalWeightNum}${existingItem.category === 'joints' ? 'PCS' : 'G'}`,
             price: newTotalPrice,
-            quantity: 1 // Оставляем 1, так как вес уже учитывает всё количество
+            quantity: 1
           };
 
           return { items: updatedItems };
         }
 
-        // Если товара нет, просто добавляем его (quantity всегда 1)
         return { items: [...state.items, { ...newItem, quantity: 1 }] };
       }),
 
@@ -76,7 +82,8 @@ export const useCart = create<CartStore>()(
       clearCart: () => set({ items: [] }),
 
       getTotal: () => {
-        return get().items.reduce((acc, item) => acc + item.price, 0);
+        const items = get().items;
+        return items.reduce((acc, item) => acc + (item.price || 0), 0);
       },
     }),
     { 
