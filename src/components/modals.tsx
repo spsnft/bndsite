@@ -162,7 +162,8 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="p-6 pb-0 border-b border-white/5 flex justify-between items-center text-white min-h-[80px]">
+        {/* Правка 2: pt-3 (12px) отступ сверху до заголовка */}
+        <div className="pt-3 px-6 pb-0 border-b border-white/5 flex justify-between items-center text-white min-h-[70px]">
           <div><h2 className="text-xl font-black uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
         </div>
@@ -173,7 +174,6 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
               {categoryPromos.map((promo: any) => (
                 <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border" style={{ borderColor: `${promo.color}40` }}>
                   <div className="flex items-center gap-2">
-                    {/* Правка 2: Иконка Плюс вместо Искры */}
                     <div className="p-1.5 rounded-xl bg-white/10 shrink-0" style={{ color: promo.color }}><Plus size={16} strokeWidth={4} /></div>
                     <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
@@ -193,7 +193,6 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
                 <button onClick={() => { triggerHaptic('light'); onEditItem(item); }} className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity">
                   <h3 className="text-[14px] font-black uppercase truncate">{item.name}</h3>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    {/* Правка 3: Убрана цена за 1г */}
                     <p className="text-[12px] font-bold uppercase tracking-widest text-white/70">
                       {item.weight} • {item.price}<span className="text-[10px] opacity-60 ml-0.5">฿</span>
                     </p>
@@ -210,10 +209,11 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
         </div>
 
         <div className="p-6 pt-2 border-t border-white/5">
+          {/* Правка 1: Кнопки выбора метода контакта теперь работают как переключатель (radio-like) */}
           <div className="grid grid-cols-4 gap-2 mb-4">
             {CONTACT_METHODS.map(m => (
               <button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} 
-                className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-[#193D2E] border-white opacity-100" : "bg-white/5 border-white/10 opacity-30 text-white"}`}>
+                className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-[#193D2E] border-white opacity-100 scale-[1.02]" : "bg-white/5 border-white/10 opacity-30 text-white scale-100"}`}>
                 <m.icon size={16} />
                 <span className="text-[7px] font-black uppercase">{m.label}</span>
               </button>
