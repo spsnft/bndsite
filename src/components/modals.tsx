@@ -52,6 +52,9 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
     return GRADES.find(g => g.id === sub)?.color || style?.color || SELECTED_COLOR;
   };
 
+  // Проверка на эксклюзивность/импорт для скрытия промо-блока
+  const isExclusiveOrImport = product.subcategory?.toLowerCase().includes('exclusive') || product.subcategory?.toLowerCase().includes('import');
+
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -102,6 +105,16 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
               </div>
             )}
           </div>
+
+          {/* Восстановленный блок CTA внутри карточки товара */}
+          {promoInfo && !isExclusiveOrImport && (
+            <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
+              <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
+                Add <span className="text-white">{promoInfo.diff}g</span> more for <span className="text-white">{promoInfo.perGram}<Baht className="scale-75 inline-block" /></span> per gram!
+              </p>
+            </div>
+          )}
+
           <button onClick={() => { 
               triggerHaptic('success');
               addItem({ ...product, price: currentPrice, weight: getLabel(weight), subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
@@ -125,35 +138,29 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   const { clearCart, removeItem } = useCart();
 
   const categoryPromos = React.useMemo(() => {
-    const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string, category: string }> = {};
+    const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
-      // Блокируем отображение для Elite/Exclusives/Joints
       if (
         (isElite(item) && sub !== 'import loose') || 
         item.category === 'joints' || 
         sub.includes('exclusive') || 
         sub.includes('import')
       ) return;
-      
       const w = parseFloat(item.weight) || 0;
-      if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory, category: item.category };
+      if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
       groups[sub].weight += w;
     });
-
     return Object.values(groups).map(group => {
       const steps = [1, 5, 10, 20];
       const nextStep = steps.find(s => s > group.weight);
       if (!nextStep || !group.prices) return null;
-      
       const currentPerGram = Math.round(getInterpolatedPrice(group.weight, group.prices, false) / group.weight);
       const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, false));
       const nextPerGram = Math.round(nextPrice / nextStep);
       const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
-      
       const gradeId = group.sub.toLowerCase() === 'import loose' ? 'import' : group.sub.toLowerCase();
       const gradeInfo = GRADES.find(g => g.id === gradeId) || { color: SELECTED_COLOR };
-      
       return { sub: group.sub, diff, nextPerGram, currentPerGram, color: gradeInfo.color };
     }).filter(Boolean);
   }, [items]);
@@ -182,11 +189,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
           {categoryPromos.length > 0 && (
             <div className="space-y-2">
               {categoryPromos.map((promo: any) => (
-                <div 
-                  key={promo.sub} 
-                  className="relative p-2 pl-2 rounded-2xl overflow-hidden border border-white/5" 
-                  style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}
-                >
+                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
                   <div className="flex items-center gap-2">
                     <div className="p-1.5 rounded-xl bg-white/5 shrink-0" style={{ color: promo.color }}><Sparkles size={16} /></div>
                     <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
