@@ -67,7 +67,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   const isPrerolls = item.category === 'joints';
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isPrerolls ? GOLDEN_COLOR : (isElite(item) ? (item.subcategory?.toLowerCase().includes('exclusive') ? BRAND_ORANGE : IMPORT_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
+    : (isPrerolls ? GOLDEN_COLOR : (isElite(item) ? (item.subcategory?.toLowerCase().includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
   
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
@@ -156,7 +156,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     }).filter(g => g.items.length > 0), [processedProducts]);
 
   const eliteSections = [
-    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: BRAND_ORANGE, icon: MapPin },
+    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
     { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import') && !p.subcategory?.toLowerCase().includes('loose')), color: IMPORT_COLOR, icon: Star }
   ];
 
@@ -411,7 +411,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       )}
       
-      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: GOLDEN_COLOR } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('exclusive') ? BRAND_ORANGE : IMPORT_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
+      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: GOLDEN_COLOR } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
       {isCheckoutOpen && (<CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }} />)}
     </div>
   );
