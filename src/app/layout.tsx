@@ -19,7 +19,7 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://app.bnd.delivery"),
+  metadataBase: new URL("https://bnd.delivery"),
   title: "BND Delivery | Phuket",
   description: "Premium Delivery Service in Phuket",
   other: {
