@@ -52,7 +52,6 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
     return GRADES.find(g => g.id === sub)?.color || style?.color || SELECTED_COLOR;
   };
 
-  // Проверка на эксклюзивность/импорт для скрытия промо-блока
   const isExclusiveOrImport = product.subcategory?.toLowerCase().includes('exclusive') || product.subcategory?.toLowerCase().includes('import');
 
   return (
@@ -106,7 +105,6 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
             )}
           </div>
 
-          {/* Восстановленный блок CTA внутри карточки товара */}
           {promoInfo && !isExclusiveOrImport && (
             <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
               <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
@@ -141,12 +139,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
-      if (
-        (isElite(item) && sub !== 'import loose') || 
-        item.category === 'joints' || 
-        sub.includes('exclusive') || 
-        sub.includes('import')
-      ) return;
+      if ((isElite(item) && sub !== 'import loose') || item.category === 'joints' || sub.includes('exclusive') || sub.includes('import')) return;
       const w = parseFloat(item.weight) || 0;
       if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
       groups[sub].weight += w;
@@ -169,12 +162,36 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
     if (!contact) return alert(t.contactPh);
     setIsSending(true);
     triggerHaptic('medium');
+
+    const orderLines = items.map(i => `• ${i.name} (${i.weight}) — ${i.price}฿`).join("\n");
+    const summaryText = `🛒 NEW ORDER\n\n${orderLines}\n\n💰 Total: ${total}฿\n👤 Contact: ${contact} (${method})`;
+
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      await fetch(GOOGLE_SCRIPT_URL, { method: "POST", mode: "no-cors", body: JSON.stringify({ contact, method, orderText: items.map(i => `${i.name} (${i.weight}) x${i.quantity} — ${i.price * i.quantity}฿`).join("\n"), total }) });
+      
+      // Отправляем в таблицу фоном
+      fetch(GOOGLE_SCRIPT_URL, { 
+        method: "POST", 
+        mode: "no-cors", 
+        body: JSON.stringify({ contact, method, orderText: orderLines, total }) 
+      });
+
       triggerHaptic('success');
-      alert(t.orderSent); clearCart(); onClose();
-    } catch (e) { alert(t.sendError); } finally { setIsSending(false); }
+      
+      // Формируем URL для Telegram и открываем
+      const tgUrl = `https://t.me/bshk_phuket?text=${encodeURIComponent(summaryText)}`;
+      
+      setTimeout(() => {
+        window.open(tgUrl, '_blank');
+        clearCart(); 
+        onClose();
+      }, 500);
+
+    } catch (e) { 
+      alert(t.sendError); 
+    } finally { 
+      setIsSending(false); 
+    }
   };
 
   return (
