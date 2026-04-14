@@ -1,6 +1,7 @@
 import "@/styles/globals.css"
 import type { Metadata, Viewport } from "next"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/react"
 import { Montserrat } from 'next/font/google' // Импортируем Montserrat
 
 const montserrat = Montserrat({
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-sans min-h-screen bg-[#193D2E] text-white antialiased selection:bg-emerald-500/30">
         {children}
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )
