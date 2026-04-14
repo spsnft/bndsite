@@ -21,6 +21,7 @@ import {
 } from "@/lib/utils"
 
 const BRAND_ORANGE = "#F59E0B";
+const GOLDEN_COLOR = GRADES.find(g => g.id.toLowerCase() === 'golden')?.color || BRAND_ORANGE;
 
 const processProductData = (rawProducts: any[]) => {
   return rawProducts.map(p => {
@@ -66,7 +67,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   const isPrerolls = item.category === 'joints';
   const accentColor = item.category === 'concentrates' 
     ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isPrerolls ? BRAND_ORANGE : (isElite(item) ? (item.subcategory?.toLowerCase().includes('exclusive') ? BRAND_ORANGE : IMPORT_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
+    : (isPrerolls ? GOLDEN_COLOR : (isElite(item) ? (item.subcategory?.toLowerCase().includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR)));
   
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPriceRaw = item.old_prices ? getInterpolatedPrice(firstWeight, item.old_prices, isElite(item)) : 0;
@@ -143,7 +144,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     return [...news].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
   }, [processedProducts]);
 
-  const flashSales = React.useMemo(() => [...processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE')].sort((a, b) => getFirstAvailablePrice(b).price - getFirstAvailablePrice(a).price), [processedProducts]);
+  const flashSales = React.useMemo(() => {
+    const sales = processedProducts.filter(p => p.badge?.toUpperCase() === 'SALE');
+    return [...sales].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
+  }, [processedProducts]);
   
   const gradeSections = React.useMemo(() => GRADES.map(grade => {
       const items = processedProducts.filter(p => p.subcategory === grade.id && p.category === 'buds' && !isElite(p));
@@ -152,7 +156,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     }).filter(g => g.items.length > 0), [processedProducts]);
 
   const eliteSections = [
-    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: BRAND_ORANGE, icon: MapPin },
+    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
     { id: 'import', title: 'Import', items: processedProducts.filter(p => p.category === 'buds' && p.subcategory?.toLowerCase().includes('import') && !p.subcategory?.toLowerCase().includes('loose')), color: IMPORT_COLOR, icon: Star }
   ];
 
@@ -178,7 +182,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const prerollSections = React.useMemo(() => {
     const allJoints = processedProducts.filter(p => p.category === 'joints');
     const subs = Array.from(new Set(allJoints.map(p => p.subcategory)));
-    return subs.map(sub => ({ id: sub, title: sub || "Prerolls", items: allJoints.filter(p => p.subcategory === sub), color: BRAND_ORANGE, icon: Cigarette }));
+    return subs.map(sub => ({ id: sub, title: sub || "Prerolls", items: allJoints.filter(p => p.subcategory === sub), color: GOLDEN_COLOR, icon: Cigarette }));
   }, [processedProducts]);
 
   const scrollToSection = (id: string) => {
@@ -359,7 +363,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
           <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md">{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md" style={{ borderColor: `${GOLDEN_COLOR}4d`, color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
           <div className="space-y-3">
@@ -408,8 +412,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       )}
       
-      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: BRAND_ORANGE } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('exclusive') ? BRAND_ORANGE : IMPORT_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
+      {selectedProduct && (<ProductModal product={selectedProduct} t={t} style={selectedProduct.category === 'concentrates' ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || CONCENTRATES_COLOR } : (selectedProduct.category === 'joints' ? { color: GOLDEN_COLOR } : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR} : (GRADES.find(g => g.id === selectedProduct.subcategory) || { color: '#FFF' })))} onClose={() => setSelectedProduct(null)} />)}
       {isCheckoutOpen && (<CheckoutModal items={items} total={getTotal()} t={t} lang={lang} onClose={() => setIsCheckoutOpen(false)} onEditItem={(p) => { setSelectedProduct(p); setIsCheckoutOpen(false); }} />)}
     </div>
   );
 }
+

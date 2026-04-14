@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { X, Plus, Trash2, SendHorizontal } from "lucide-react"
+import { X, Plus, Trash2, SendHorizontal, Sparkles } from "lucide-react"
 import { BlurImage } from "@/components/blur-image"
 import { useCart } from "@/lib/cart-store"
 import { 
@@ -52,6 +52,9 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
     return GRADES.find(g => g.id === sub)?.color || style?.color || SELECTED_COLOR;
   };
 
+  // Проверка на эксклюзивность/импорт для скрытия промо-блока
+  const isExclusiveOrImport = product.subcategory?.toLowerCase().includes('exclusive') || product.subcategory?.toLowerCase().includes('import');
+
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -102,6 +105,16 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
               </div>
             )}
           </div>
+
+          {/* Восстановленный блок CTA внутри карточки товара */}
+          {promoInfo && !isExclusiveOrImport && (
+            <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
+              <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
+                Add <span className="text-white">{promoInfo.diff}g</span> more for <span className="text-white">{promoInfo.perGram}<Baht className="scale-75 inline-block" /></span> per gram!
+              </p>
+            </div>
+          )}
+
           <button onClick={() => { 
               triggerHaptic('success');
               addItem({ ...product, price: currentPrice, weight: getLabel(weight), subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
@@ -128,7 +141,12 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
     const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
     items.forEach(item => {
       const sub = item.subcategory?.toLowerCase() || "other";
-      if ((isElite(item) && sub !== 'import loose') || item.category === 'joints') return;
+      if (
+        (isElite(item) && sub !== 'import loose') || 
+        item.category === 'joints' || 
+        sub.includes('exclusive') || 
+        sub.includes('import')
+      ) return;
       const w = parseFloat(item.weight) || 0;
       if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
       groups[sub].weight += w;
@@ -162,7 +180,6 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        {/* Правка 2: pt-3 (12px) отступ сверху до заголовка */}
         <div className="pt-3 px-6 pb-0 border-b border-white/5 flex justify-between items-center text-white min-h-[70px]">
           <div><h2 className="text-xl font-black uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
           <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
@@ -172,14 +189,14 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
           {categoryPromos.length > 0 && (
             <div className="space-y-2">
               {categoryPromos.map((promo: any) => (
-                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border" style={{ borderColor: `${promo.color}40` }}>
+                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-white/10 shrink-0" style={{ color: promo.color }}><Plus size={16} strokeWidth={4} /></div>
+                    <div className="p-1.5 rounded-xl bg-white/5 shrink-0" style={{ color: promo.color }}><Sparkles size={16} /></div>
                     <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
                         {lang === 'ru' ? (
-                          <><span className="font-black" style={{ color: promo.color }}>{promo.diff}г {promo.sub}</span> откроет цену <span className="line-through opacity-40 ml-1">{promo.currentPerGram}</span> <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} <span className="text-[8px] opacity-60">฿/g</span></span></>
+                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г {promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/г</span>!</>
                         ) : (
-                          <><span className="font-black" style={{ color: promo.color }}>{promo.diff}g {promo.sub}</span> unlocks price <span className="line-through opacity-40 ml-1">{promo.currentPerGram}</span> <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram} <span className="text-[8px] opacity-60">฿/g</span></span></>
+                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g {promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/g</span> price!</>
                         )}
                     </p></div>
                   </div>
@@ -209,7 +226,6 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
         </div>
 
         <div className="p-6 pt-2 border-t border-white/5">
-          {/* Правка 1: Кнопки выбора метода контакта теперь работают как переключатель (radio-like) */}
           <div className="grid grid-cols-4 gap-2 mb-4">
             {CONTACT_METHODS.map(m => (
               <button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} 
