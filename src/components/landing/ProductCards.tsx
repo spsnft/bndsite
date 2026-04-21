@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Plus, Tag, Zap } from "lucide-react"
 import { BlurImage } from "@/components/blur-image"
-import { GRADES, TYPE_COLORS, SELECTED_COLOR, IMPORT_COLOR } from "./constants"
+import { GRADES, TYPE_COLORS, SELECTED_COLOR, IMPORT_COLOR, GOLDEN_COLOR } from "./constants"
 import { triggerHaptic, getFirstAvailablePrice, getInterpolatedPrice, isElite } from "@/lib/utils"
 
 export const Baht = ({ className = "" }: { className?: string }) => (
@@ -25,9 +25,12 @@ export const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?
 });
 
 export const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: any) => {
+  const sub = item.subcategory?.toLowerCase() || "";
+  
+  // Определяем основной цвет. Если это classic — берем золотой.
   const accentColor = item.category === 'concentrates' 
-    ? (item.subcategory?.toLowerCase().includes('fresh frozen premium') ? "#34D399" : item.subcategory?.toLowerCase().includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isElite(item) ? (item.subcategory?.toLowerCase().includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR));
+    ? (sub.includes('fresh frozen premium') ? "#34D399" : sub.includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
+    : (isElite(item) ? (sub.includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (sub === 'classic' ? GOLDEN_COLOR : (GRADES.find(g => g.id === sub)?.color || SELECTED_COLOR)));
   
   const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
   const oldPrice = item.old_prices ? Math.round(getInterpolatedPrice(firstWeight, item.old_prices, isElite(item))) : 0;
@@ -62,7 +65,10 @@ export const ProductRow = React.memo(({ p, onClick }: any) => (
   <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer text-white border-b border-white/5 last:border-none">
     <div className="flex items-center gap-4 truncate flex-1">
       <div className="w-8 flex justify-center">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
-      <span className="text-[14px] font-black uppercase truncate">{p.name}</span>
+      <div className="flex flex-col truncate">
+        <span className="text-[14px] font-black uppercase truncate">{p.name}</span>
+        {p.badge?.toUpperCase() === 'SALE' && <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-tighter">Special Offer</span>}
+      </div>
     </div>
     <div className="flex items-center gap-5 shrink-0 pr-4">
       <span className="text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] }}>{p.type}</span>
