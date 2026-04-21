@@ -104,32 +104,16 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   );
 });
 
-const ProductRow = React.memo(({ p, onClick, showMiniPrices }: { p: any, onClick: () => void, showMiniPrices?: boolean }) => (
-  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex flex-col border-b border-white/10 last:border-b-0 active:bg-white/5 transition-colors cursor-pointer group">
-    <div className="flex items-center justify-between gap-3 px-4 py-4 text-white">
-        <div className="flex items-center gap-4 truncate flex-1">
-          <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
-          <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
-        </div>
-        <div className="flex items-center gap-5 shrink-0 pr-4">
-          {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>}
-          <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
-        </div>
-    </div>
-    {showMiniPrices && (
-        <div className="flex gap-2 px-16 pb-4 overflow-x-auto no-scrollbar">
-            {[1, 5, 10, 20].map(w => {
-                const price = Math.round(Number(p.prices?.[w]) || 0);
-                if (price === 0) return null;
-                return (
-                    <div key={w} className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded-md shrink-0">
-                        <span className="text-[8px] font-black opacity-50 uppercase">{w}g</span>
-                        <span className="text-[10px] font-black text-emerald-400">{price}<BahtSymbol /></span>
-                    </div>
-                )
-            })}
-        </div>
-    )}
+const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
+  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 text-white border-b border-white/10 last:border-b-0 active:bg-white/5 transition-colors cursor-pointer group">
+      <div className="flex items-center gap-4 truncate flex-1">
+        <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
+        <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+      </div>
+      <div className="flex items-center gap-5 shrink-0 pr-4">
+        {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>}
+        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
+      </div>
   </div>
 ));
 
@@ -176,7 +160,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         const regularItems = allItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
         const saleItems = allItems.filter(p => p.badge?.toUpperCase() === 'SALE');
         const priceRef = regularItems[0] || allItems[0];
-        return { grade, regularItems, saleItems, priceRef, isClassic: true };
+        const salePriceRef = saleItems[0]; // Берем цены для плашки акций от первого товара со скидкой
+        return { grade, regularItems, saleItems, priceRef, salePriceRef, isClassic: true };
       }
 
       return { grade, regularItems: allItems, saleItems: [], priceRef: allItems[0], isClassic: false };
@@ -306,7 +291,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
           <div className="space-y-3">
-            {gradeSections.map(({ grade, regularItems, saleItems, priceRef, isClassic }) => {
+            {gradeSections.map(({ grade, regularItems, saleItems, priceRef, salePriceRef, isClassic }) => {
               const isOpen = openGrades.includes(grade.id);
               return (
                 <div key={grade.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)' }}>
@@ -328,14 +313,31 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                         {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
                         
                         {isClassic && saleItems.length > 0 && (
-                            <div className="bg-emerald-500/5 pt-4">
-                                <div className="px-8 pb-3 flex items-center gap-2 opacity-60">
-                                    <Tag size={12} className="text-emerald-400" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">{lang === 'ru' ? 'Акционные предложения' : 'Special Sale Offers'}</span>
+                            <div className="bg-emerald-500/5 pt-6 pb-2">
+                                <div className="px-8 flex flex-col gap-4">
+                                    <div className="flex items-center gap-2 opacity-90">
+                                        <Tag size={14} style={{ color: GOLDEN_COLOR }} />
+                                        <span className="text-[11px] font-black uppercase tracking-[0.1em]" style={{ color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Акционные предложения' : 'Special Sale Offers'}</span>
+                                    </div>
+                                    
+                                    {/* Общие цены для всей секции Sale */}
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {[1, 5, 10, 20].map(w => {
+                                            const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
+                                            return (
+                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1.5 rounded-xl border border-white/5">
+                                                    <span className="text-[10px] font-black opacity-40 uppercase">{w}g</span>
+                                                    <span className="text-[14px] font-black text-emerald-400">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
                                 </div>
-                                {saleItems.map((p: any) => (
-                                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} showMiniPrices={true} />
-                                ))}
+                                <div className="mt-4 divide-y divide-white/5">
+                                    {saleItems.map((p: any) => (
+                                        <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
@@ -480,4 +482,3 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
- 
