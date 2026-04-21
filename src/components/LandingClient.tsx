@@ -480,3 +480,4 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     </div>
   );
 }
+ 
