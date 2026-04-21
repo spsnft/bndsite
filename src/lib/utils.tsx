@@ -22,10 +22,10 @@ export function absoluteUrl(path: string) {
 export const SELECTED_COLOR = "#2DD4BF"; 
 export const IMPORT_COLOR = "#60A5FA";
 export const CONCENTRATES_COLOR = "#F59E0B"; 
+export const GOLDEN_COLOR = "#FEC107";
 
 export const GRADES = [
-  { id: "silver", title: "SILVER GRADE", color: "#C1C1C1", icon: Percent },
-  { id: "golden", title: "GOLDEN GRADE", color: "#FEC107", icon: Star },
+  { id: "classic", title: "CLASSIC GRADE", color: "#FEC107", icon: Star },
   { id: "premium", title: "PREMIUM GRADE", color: "#34D399", icon: Flame },
   { id: "selected", title: "SELECTED GRADE", color: "#A855F7", icon: Crown }
 ];
