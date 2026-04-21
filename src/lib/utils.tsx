@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import * as React from "react"
-import { Percent, Star, Flame, Crown, SendHorizontal, Phone, MessageCircle, Instagram } from "lucide-react"
+import { Star, Flame, Crown, SendHorizontal, Phone, MessageCircle, Instagram } from "lucide-react"
 
 /**
  * Утилита для объединения Tailwind классов
@@ -22,7 +22,7 @@ export function absoluteUrl(path: string) {
 export const SELECTED_COLOR = "#2DD4BF"; 
 export const IMPORT_COLOR = "#60A5FA";
 export const CONCENTRATES_COLOR = "#F59E0B"; 
-export const GOLDEN_COLOR = "#FEC107";
+export const GOLDEN_COLOR = "#FEC107"; // Цвет для категории Classic
 
 export const GRADES = [
   { id: "classic", title: "CLASSIC GRADE", color: "#FEC107", icon: Star },
@@ -54,6 +54,7 @@ export const triggerHaptic = (type: 'light' | 'medium' | 'success' = 'light') =>
 
 export const isElite = (product: any) => {
   const sub = product?.subcategory?.toLowerCase() || "";
+  // Теперь элитными считаются только импорт и эксклюзивы, Classic (бывшие Silver/Golden) сюда не входят
   return sub.includes('exclusive') || sub.includes('import');
 };
 
@@ -87,7 +88,7 @@ export const getFirstAvailablePrice = (product: any) => {
   return { price: 0, weight: 0 };
 };
 
-// Компонент иконки бата. Работает только в .tsx файлах
+// Компонент иконки бата
 export const Baht = ({ className = "" }: { className?: string }) => (
   <span className={`inline-block text-[0.85em] -translate-y-[0.05em] ml-0.5 font-sans ${className}`}>฿</span>
 );
