@@ -22,6 +22,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://bnd.delivery"),
   title: "BND Delivery | Phuket",
   description: "Premium Delivery Service in Phuket",
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/icon.png",
+  },
   openGraph: {
     title: "BND Delivery | Phuket",
     description: "Premium Delivery Service in Phuket",
@@ -29,7 +34,7 @@ export const metadata: Metadata = {
     siteName: "BND Delivery",
     images: [
       {
-        url: "images/og-image.png",
+        url: "/images/og-image.png",
         width: 1200,
         height: 630,
         alt: "BND Delivery Phuket",
@@ -42,7 +47,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BND Delivery | Phuket",
     description: "Premium Delivery Service in Phuket",
-    images: ["/og-image.png"],
+    images: ["/images/og-image.png"],
   },
   other: {
     "dns-prefetch": "https://res.cloudinary.com",
