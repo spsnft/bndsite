@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: "BND Delivery",
     images: [
       {
-        url: "/og-image.png",
+        url: "images/og-image.png",
         width: 1200,
         height: 630,
         alt: "BND Delivery Phuket",
