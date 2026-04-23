@@ -134,6 +134,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [finalOrderText, setFinalOrderText] = React.useState(""); // Стейт для сохранения текста заказа
   const { clearCart, removeItem } = useCart();
 
   const categoryPromos = React.useMemo(() => {
@@ -159,23 +160,21 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
     }).filter(Boolean);
   }, [items]);
 
-  // Генерируем текст заказа для ТГ
-  const getOrderText = () => {
-    const orderLines = items.map(i => `• ${i.name} (${i.weight}) — ${i.price}฿`).join("\n");
-    return `🛒 NEW ORDER\n\n${orderLines}\n\n💰 Total: ${total}฿\n👤 Contact: ${contact} (${method})`;
-  };
-
   const handleSubmit = async () => {
     if (!contact) return alert(t.contactPh);
     setIsSending(true);
     triggerHaptic('medium');
 
+    // Формируем текст ДО очистки корзины
     const orderLines = items.map(i => `• ${i.name} (${i.weight}) — ${i.price}฿`).join("\n");
+    const summaryText = `🛒 NEW ORDER\n\n${orderLines}\n\n💰 Total: ${total}฿\n👤 Contact: ${contact} (${method})`;
+    
+    // Сохраняем текст в стейт для последующего перехода в ТГ
+    setFinalOrderText(summaryText);
 
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       
-      // Отправляем в таблицу
       await fetch(GOOGLE_SCRIPT_URL, { 
         method: "POST", 
         mode: "no-cors", 
@@ -184,8 +183,6 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
 
       triggerHaptic('success');
       setIsSuccess(true);
-      // Корзину очистим после финального перехода или здесь - 
-      // лучше здесь, чтобы заказ не задублировался
       clearCart(); 
 
     } catch (e) { 
@@ -196,13 +193,11 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   };
 
   const handleFinalRedirect = () => {
-    const summaryText = getOrderText();
-    const tgUrl = `https://t.me/bshk_phuket?text=${encodeURIComponent(summaryText)}`;
+    const tgUrl = `https://t.me/bshk_phuket?text=${encodeURIComponent(finalOrderText)}`;
     window.open(tgUrl, '_blank');
     onClose();
   };
 
-  // ЭКРАН УСПЕХА
   if (isSuccess) {
     return (
       <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
