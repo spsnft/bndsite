@@ -133,6 +133,7 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
   const [method, setMethod] = React.useState("telegram");
   const [contact, setContact] = React.useState("");
   const [isSending, setIsSending] = React.useState(false);
+  const [isSuccess, setIsSuccess] = React.useState(false);
   const { clearCart, removeItem } = useCart();
 
   const categoryPromos = React.useMemo(() => {
@@ -158,34 +159,34 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
     }).filter(Boolean);
   }, [items]);
 
+  // Генерируем текст заказа для ТГ
+  const getOrderText = () => {
+    const orderLines = items.map(i => `• ${i.name} (${i.weight}) — ${i.price}฿`).join("\n");
+    return `🛒 NEW ORDER\n\n${orderLines}\n\n💰 Total: ${total}฿\n👤 Contact: ${contact} (${method})`;
+  };
+
   const handleSubmit = async () => {
     if (!contact) return alert(t.contactPh);
     setIsSending(true);
     triggerHaptic('medium');
 
     const orderLines = items.map(i => `• ${i.name} (${i.weight}) — ${i.price}฿`).join("\n");
-    const summaryText = `🛒 NEW ORDER\n\n${orderLines}\n\n💰 Total: ${total}฿\n👤 Contact: ${contact} (${method})`;
 
     try {
       const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
       
-      // Отправляем в таблицу фоном
-      fetch(GOOGLE_SCRIPT_URL, { 
+      // Отправляем в таблицу
+      await fetch(GOOGLE_SCRIPT_URL, { 
         method: "POST", 
         mode: "no-cors", 
         body: JSON.stringify({ contact, method, orderText: orderLines, total }) 
       });
 
       triggerHaptic('success');
-      
-      // Формируем URL для Telegram и открываем
-      const tgUrl = `https://t.me/bshk_phuket?text=${encodeURIComponent(summaryText)}`;
-      
-      setTimeout(() => {
-        window.open(tgUrl, '_blank');
-        clearCart(); 
-        onClose();
-      }, 500);
+      setIsSuccess(true);
+      // Корзину очистим после финального перехода или здесь - 
+      // лучше здесь, чтобы заказ не задублировался
+      clearCart(); 
 
     } catch (e) { 
       alert(t.sendError); 
@@ -193,6 +194,53 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
       setIsSending(false); 
     }
   };
+
+  const handleFinalRedirect = () => {
+    const summaryText = getOrderText();
+    const tgUrl = `https://t.me/bshk_phuket?text=${encodeURIComponent(summaryText)}`;
+    window.open(tgUrl, '_blank');
+    onClose();
+  };
+
+  // ЭКРАН УСПЕХА
+  if (isSuccess) {
+    return (
+      <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
+        <div className="relative w-full max-w-[380px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-8 text-center shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+          <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-400"></div>
+          
+          <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/30">
+            <SendHorizontal size={32} className="text-emerald-400 ml-1" />
+          </div>
+          
+          <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-4">
+            {lang === 'ru' ? 'Заказ принят!' : 'Order Received!'}
+          </h2>
+          
+          <p className="text-[13px] font-medium text-white/60 leading-relaxed mb-8 px-2">
+            {lang === 'ru' 
+              ? 'Ваш заказ уже в нашей системе. Чтобы ускорить обработку и подтвердить доставку, пожалуйста, отправьте детали нашему оператору.' 
+              : 'Your order is already in our system. To speed up processing and confirm delivery, please send the details to our operator.'}
+          </p>
+
+          <button 
+            onClick={handleFinalRedirect}
+            className="w-full bg-emerald-400 text-[#193D2E] py-4 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_0_30px_rgba(52,211,153,0.3)] flex items-center justify-center gap-3"
+          >
+            {lang === 'ru' ? 'Отправить оператору' : 'Send to Operator'}
+            <SendHorizontal size={18} />
+          </button>
+          
+          <button 
+            onClick={onClose}
+            className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-white/40 transition-colors"
+          >
+            {lang === 'ru' ? 'Закрыть меню' : 'Close Menu'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
@@ -254,7 +302,9 @@ export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { 
           </div>
           <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
           <div className="flex items-center justify-between mt-3 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} className="w-full mt-4 bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">{t.confirmOrder}</button>
+          <button onClick={handleSubmit} disabled={isSending} className="w-full mt-4 bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] disabled:opacity-50 hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">
+            {isSending ? (lang === 'ru' ? 'ОТПРАВКА...' : 'SENDING...') : t.confirmOrder}
+          </button>
         </div>
       </div>
     </div>
