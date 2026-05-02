@@ -121,7 +121,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
-  const [openGrades, setOpenGrades] = React.useState<string[]>([]);
+  
+  // ПРАВКА: Открываем категорию Top Shelf (classic) по умолчанию, чтобы показать механику[span_3](start_span)[span_3](end_span)
+  const [openGrades, setOpenGrades] = React.useState<string[]>(['classic']);
+  
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
@@ -298,7 +301,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
-                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      
+                      {/* ПРАВКА: Добавлен текст подсказки и увеличен opacity стрелки[span_4](start_span)[span_4](end_span) */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                        </span>
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
                     {getDesc(grade.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(grade.id)}</p>)}
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
@@ -350,7 +360,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               return sec.items.length > 0 && (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                      
+                      {/* ПРАВКА: Текст-подсказка для элитных секций[span_5](start_span)[span_5](end_span) */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                        </span>
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
@@ -364,7 +384,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, importLooseSection.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
-                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                      
+                      {/* ПРАВКА: Текст-подсказка[span_6](start_span)[span_6](end_span) */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                          {openGrades.includes(importLooseSection.id) ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                        </span>
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
                     {getDesc(importLooseSection.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(importLooseSection.id)}</p>)}
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
@@ -392,7 +419,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                      
+                      {/* ПРАВКА: Текст-подсказка для концентратов[span_7](start_span)[span_7](end_span) */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                        </span>
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
                     {getDesc(sec.id) && (<p className="mt-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
@@ -417,7 +454,14 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      
+                      {/* ПРАВКА: Текст-подсказка для прероллов[span_8](start_span)[span_8](end_span) */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                        </span>
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
