@@ -160,7 +160,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         const regularItems = allItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
         const saleItems = allItems.filter(p => p.badge?.toUpperCase() === 'SALE');
         const priceRef = regularItems[0] || allItems[0];
-        const salePriceRef = saleItems[0]; // Берем цены для плашки акций от первого товара со скидкой
+        const salePriceRef = saleItems[0]; 
         return { grade, regularItems, saleItems, priceRef, salePriceRef, isClassic: true };
       }
 
@@ -228,18 +228,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 px-2 mt-2 mb-4 relative z-20">
-          <button onClick={() => scrollToSection('buds-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'меню' : 'flowers'}
-          </button>
-          <button onClick={() => scrollToSection('concentrates-menu')} className="px-5 py-2.5 bg-[#A855F7]/10 rounded-full border border-[#A855F7]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#A855F7]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'концентраты' : 'concentrates'}
-          </button>
-          <button onClick={() => scrollToSection('prerolls-menu')} className="px-5 py-2.5 bg-[#F59E0B]/10 rounded-full border border-[#F59E0B]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#F59E0B]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'прероллы' : 'prerolls'}
-          </button>
-        </div>
-
         <div className="relative pt-6 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
           <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-4 relative z-10 px-2 max-w-[320px] mx-auto">
             {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
@@ -255,7 +243,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
         <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3 transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
           <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
-            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3></div>
+            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">FAQ</h3></div>
             <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
           </button>
           <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
@@ -267,6 +255,18 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                <div className="flex items-center gap-4"><Bike size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div></div>
             </div>
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2 px-2 mt-2 mb-4 relative z-20">
+          <button onClick={() => scrollToSection('buds-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
+            {lang === 'ru' ? 'меню' : 'flowers'}
+          </button>
+          <button onClick={() => scrollToSection('concentrates-menu')} className="px-5 py-2.5 bg-[#A855F7]/10 rounded-full border border-[#A855F7]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#A855F7]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
+            {lang === 'ru' ? 'концентраты' : 'concentrates'}
+          </button>
+          <button onClick={() => scrollToSection('prerolls-menu')} className="px-5 py-2.5 bg-[#F59E0B]/10 rounded-full border border-[#F59E0B]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#F59E0B]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
+            {lang === 'ru' ? 'прероллы' : 'prerolls'}
+          </button>
         </div>
       </header>
 
@@ -320,7 +320,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                                         <span className="text-[11px] font-black uppercase tracking-[0.1em]" style={{ color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Акционные предложения' : 'Special Sale Offers'}</span>
                                     </div>
                                     
-                                    {/* Общие цены для всей секции Sale */}
                                     <div className="grid grid-cols-4 gap-2">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
