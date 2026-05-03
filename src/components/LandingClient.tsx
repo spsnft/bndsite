@@ -199,10 +199,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     });
   }, [processedProducts]);
 
-  const accessoriesSection = React.useMemo(() => {
-    const items = processedProducts.filter(p => p.category === 'accessories');
-    if (items.length === 0) return null;
-    return { id: 'accessories', title: lang === 'ru' ? 'Аксессуары' : 'Accessories', items, color: "#F472B6", icon: Gem };
+  const accessoriesSections = React.useMemo(() => {
+    const allAccs = processedProducts.filter(p => p.category === 'accessories');
+    if (allAccs.length === 0) return null;
+    const subs = Array.from(new Set(allAccs.map(p => p.subcategory)));
+    return subs.map(sub => ({
+      id: sub,
+      title: sub || (lang === 'ru' ? 'Аксессуары' : 'Accessories'),
+      items: allAccs.filter(p => p.subcategory === sub),
+      color: "#F472B6",
+      icon: Gem
+    }));
   }, [processedProducts, lang]);
 
   const prerollSections = React.useMemo(() => {
@@ -226,7 +233,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
-        <div className="flex items-center justify-between px-2 mb-[12px]"> 
+        <div className="flex items-center justify-between px-2 mb-[4px]"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
               <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={80} height={80} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
@@ -241,7 +248,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[12px]">
+        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[4px]">
           <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-2 relative z-10 px-2 max-w-[320px] mx-auto">
             {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
           </h2>
@@ -286,7 +293,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <button onClick={() => scrollToSection('prerolls-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F59E0B]/20 rounded-2xl border-2 border-[#F59E0B]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)]">
               {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
             </button>
-            {accessoriesSection && (
+            {accessoriesSections && (
               <button onClick={() => scrollToSection('accessories-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F472B6]/20 rounded-2xl border-2 border-[#F472B6]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(244,114,182,0.2)]">
                 {lang === 'ru' ? 'Аксессуары' : 'Accessories'}
               </button>
@@ -469,23 +476,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
           </div>
 
-          {accessoriesSection && (
-            <div id="accessories-menu" className="pt-4">
-              <div className="flex items-center gap-4 pt-6 pb-6 relative">
-                 <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
-                 <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#F472B6]/30 bg-[#F472B6]/10 backdrop-blur-md" style={{ color: '#F472B6' }}>{accessoriesSection.title}</span>
-                 <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
-              </div>
-              <div className={`rounded-[2rem] overflow-hidden border border-white/5 bg-[#1d4837]/40 backdrop-blur-xl`}>
-                 <div className="divide-y divide-white/10 bg-white/5">
-                    {accessoriesSection.items.map((p: any) => (
-                      <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
-                    ))}
-                 </div>
-              </div>
-            </div>
-          )}
-
           <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md" style={{ borderColor: `${GOLDEN_COLOR}4d`, color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
@@ -523,6 +513,38 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               );
             })}
           </div>
+
+          {accessoriesSections && (
+            <div id="accessories-menu" className="pt-4">
+              <div className="flex items-center gap-4 pt-6 pb-6 relative">
+                 <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
+                 <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#F472B6]/30 bg-[#F472B6]/10 backdrop-blur-md" style={{ color: '#F472B6' }}>{lang === 'ru' ? 'Аксессуары' : 'Accessories'}</span>
+                 <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
+              </div>
+              <div className="space-y-3">
+                {accessoriesSections.map(sec => {
+                  const isOpen = openGrades.includes(sec.id);
+                  return (
+                    <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
+                      <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                        <div className="w-full flex items-center justify-between px-4">
+                          <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                          <div className="flex items-center gap-2">
+                            <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                          </div>
+                        </div>
+                      </button>
+                      <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                        <div className="divide-y divide-white/10 bg-white/5">
+                          {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
