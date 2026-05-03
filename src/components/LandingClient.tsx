@@ -314,7 +314,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
-                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase">{w}g</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                         return (<div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase">{w}g</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
                        })}
                     </div>
                   </button>
@@ -397,7 +397,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(importLooseSection.priceRef.prices?.[w]) || 0);
-                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase">{w}g</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                         return (<div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase">{w}g</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
                        })}
                     </div>
                   </button>
@@ -466,7 +466,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
                          const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0);
-                         return (<div key={unit.w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[10px] font-black opacity-60 uppercase">{unit.l}</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                         return (<div key={unit.w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[10px] font-black opacity-60 uppercase">{unit.l}</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
                        })}
                     </div>
                   </button>
