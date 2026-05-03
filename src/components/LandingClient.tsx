@@ -241,12 +241,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="relative pt-2 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
-          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-4 relative z-10 px-2 max-w-[320px] mx-auto">
+        <div className="relative pt-2 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-8">
+          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-2 relative z-10 px-2 max-w-[320px] mx-auto">
             {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
           </h2>
-          <div className="grid grid-cols-2 gap-3 relative z-10">
-             {[ {ru: '3 года на рынке', en: '3 years on market'}, {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, {ru: 'гарантия качества', en: 'quality guarantee'}, {ru: 'регулярные обновления меню', en: 'regular menu updates'} ].map((item, i) => (
+          <div className="grid grid-cols-2 gap-2 relative z-10">
+             {[ 
+               {ru: '3 года на рынке', en: '3 years on market'}, 
+               {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
+               {ru: 'оплата наличными при получении', en: 'cash on delivery'}, 
+               {ru: 'бесплатная доставка за 60мин', en: 'free 60min delivery'} 
+             ].map((item, i) => (
                <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                   <span className="text-[10px] font-black uppercase tracking-widest text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
                </div>
@@ -319,9 +324,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
-                        </span>
+                        {isClassic && (
+                          <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                            {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                          </span>
+                        )}
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
@@ -383,9 +390,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full flex items-center justify-between">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
-                        </span>
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
@@ -399,13 +403,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
             {importLooseSection && (
                 <div key={importLooseSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: openGrades.includes(importLooseSection.id) ? `${importLooseSection.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, some(importLooseSection.id)]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, importLooseSection.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                          {openGrades.includes(importLooseSection.id) ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
-                        </span>
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
@@ -443,9 +444,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full flex items-center justify-between">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
-                        </span>
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
@@ -491,9 +489,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
-                        </span>
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
