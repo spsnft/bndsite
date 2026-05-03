@@ -240,9 +240,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
            <div className="flex items-center flex-1 justify-end">
               <div className="flex gap-3">
-                {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                  <Link key={i} href={soc.url} target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl"><soc.icon size={24} className="opacity-80"/></Link>
-                ))}
+                <Link href="https://t.me/bshk_phuket" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
+                  <SendHorizontal size={22} className="opacity-80"/>
+                </Link>
+
+                <div className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
+                  <Phone size={22} />
+                </div>
+
+                <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
+                  <Instagram size={22} className="opacity-80"/>
+                </Link>
               </div>
               <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-3 w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
