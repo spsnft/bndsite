@@ -8,7 +8,7 @@ import {
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
   ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
   Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
-  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette
+  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette, Layers
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -104,24 +104,31 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   );
 });
 
-const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 text-white border-b border-white/10 last:border-b-0 active:bg-white/5 transition-colors cursor-pointer group">
-      <div className="flex items-center gap-4 truncate flex-1">
-        <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
-        <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
-      </div>
-      <div className="flex items-center gap-5 shrink-0 pr-4">
-        {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>}
-        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
-      </div>
-  </div>
-));
+const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => {
+  const isAccessory = p.category === 'accessories';
+  return (
+    <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 text-white border-b border-white/10 last:border-b-0 active:bg-white/5 transition-colors cursor-pointer group">
+        <div className="flex items-center gap-4 truncate flex-1">
+          <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
+          <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+        </div>
+        <div className="flex items-center gap-5 shrink-0 pr-4">
+          {isAccessory ? (
+            <span className="text-[14px] font-black text-white/90">{Math.round(Number(p.prices?.['1']) || 0)}<BahtSymbol /></span>
+          ) : (
+            p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>
+          )}
+          <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
+        </div>
+    </div>
+  );
+});
 
 export default function LandingClient({ initialProducts, initialDescriptions = [] }: { initialProducts: any[], initialDescriptions?: any[] }) {
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
-  const [openGrades, setOpenGrades] = React.useState<string[]>([]);
+  const [openGrades, setOpenGrades] = React.useState<string[]>(['classic']);
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
@@ -160,7 +167,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         const regularItems = allItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
         const saleItems = allItems.filter(p => p.badge?.toUpperCase() === 'SALE');
         const priceRef = regularItems[0] || allItems[0];
-        const salePriceRef = saleItems[0]; // Берем цены для плашки акций от первого товара со скидкой
+        const salePriceRef = saleItems[0]; 
         return { grade, regularItems, saleItems, priceRef, salePriceRef, isClassic: true };
       }
 
@@ -188,9 +195,22 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
       else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
       else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
-      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: subLower.includes('old school') };
+      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), priceRef: allConcs.find(p => p.subcategory === sub), color, icon, isList: true };
     });
   }, [processedProducts]);
+
+  const accessoriesSections = React.useMemo(() => {
+    const allAccs = processedProducts.filter(p => p.category === 'accessories');
+    if (allAccs.length === 0) return null;
+    const subs = Array.from(new Set(allAccs.map(p => p.subcategory)));
+    return subs.map(sub => ({
+      id: sub,
+      title: sub || (lang === 'ru' ? 'Аксессуары' : 'Accessories'),
+      items: allAccs.filter(p => p.subcategory === sub),
+      color: "#F472B6",
+      icon: Layers
+    }));
+  }, [processedProducts, lang]);
 
   const prerollSections = React.useMemo(() => {
     const allJoints = processedProducts.filter(p => p.category === 'joints');
@@ -213,50 +233,40 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
-        <div className="flex items-center justify-between px-2 mb-2"> 
+        <div className="flex items-center justify-between px-2 mb-[4px]"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
-              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
+              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={80} height={80} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
               <div className="flex gap-3">
-                {/* Кнопка Telegram */}
-                <Link href="https://t.me/bshk_phuket" target="_blank" className="p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
+                <Link href="https://t.me/bshk_phuket" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
                   <SendHorizontal size={22} className="opacity-80"/>
                 </Link>
 
-                {/* Кнопка WhatsApp (ВЫКЛЮЧЕНА: серая и не кликается) */}
-                <div className="p-4 bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
+                <div className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
                   <Phone size={22} />
                 </div>
 
-                {/* Кнопка Instagram */}
-                <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
+                <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
                   <Instagram size={22} className="opacity-80"/>
                 </Link>
               </div>
-              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-6 w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
+              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-3 w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 px-2 mt-2 mb-4 relative z-20">
-          <button onClick={() => scrollToSection('buds-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'меню' : 'flowers'}
-          </button>
-          <button onClick={() => scrollToSection('concentrates-menu')} className="px-5 py-2.5 bg-[#A855F7]/10 rounded-full border border-[#A855F7]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#A855F7]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'концентраты' : 'concentrates'}
-          </button>
-          <button onClick={() => scrollToSection('prerolls-menu')} className="px-5 py-2.5 bg-[#F59E0B]/10 rounded-full border border-[#F59E0B]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#F59E0B]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'прероллы' : 'prerolls'}
-          </button>
-        </div>
-
-        <div className="relative pt-6 pb-6 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3">
-          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-4 relative z-10 px-2 max-w-[320px] mx-auto">
+        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[4px]">
+          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-2 relative z-10 px-2 max-w-[320px] mx-auto">
             {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
           </h2>
-          <div className="grid grid-cols-2 gap-3 relative z-10">
-             {[ {ru: '3 года на рынке', en: '3 years on market'}, {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, {ru: 'гарантия качества', en: 'quality guarantee'}, {ru: 'регулярные обновления меню', en: 'regular menu updates'} ].map((item, i) => (
+          <div className="grid grid-cols-2 gap-2 relative z-10">
+             {[ 
+               {ru: '3 года на рынке', en: '3 years on market'}, 
+               {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
+               {ru: 'оплата наличными при получении', en: 'cash on delivery'}, 
+               {ru: 'бесплатная доставка за 60мин', en: 'free 60min delivery'} 
+             ].map((item, i) => (
                <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
                   <span className="text-[10px] font-black uppercase tracking-widest text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
                </div>
@@ -264,9 +274,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-3 transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
+        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[16px] transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
           <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
-            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3></div>
+            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">FAQ</h3></div>
             <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
           </button>
           <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
@@ -277,6 +287,25 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                <div className="flex items-center gap-4"><Wallet size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div></div>
                <div className="flex items-center gap-4"><Bike size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}</p></div></div>
             </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 px-2 mt-[16px] mb-[16px] relative z-20">
+          <button onClick={() => scrollToSection('buds-menu')} className="w-full px-4 py-3 bg-emerald-500/20 rounded-2xl border-2 border-emerald-500/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+            {lang === 'ru' ? 'Основное меню' : 'Flowers'}
+          </button>
+          <div className="flex gap-3">
+            <button onClick={() => scrollToSection('concentrates-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#A855F7]/20 rounded-2xl border-2 border-[#A855F7]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+              {lang === 'ru' ? 'Экстракты' : 'Extracts'}
+            </button>
+            <button onClick={() => scrollToSection('prerolls-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F59E0B]/20 rounded-2xl border-2 border-[#F59E0B]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+              {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
+            </button>
+            {accessoriesSections && (
+              <button onClick={() => scrollToSection('accessories-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F472B6]/20 rounded-2xl border-2 border-[#F472B6]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(244,114,182,0.2)]">
+                {lang === 'ru' ? 'Аксессуары' : 'Accessories'}
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -309,13 +338,25 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
-                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      <div className="flex items-center gap-2">
+                        {isClassic && (
+                          <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                            {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                          </span>
+                        )}
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
                     {getDesc(grade.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(grade.id)}</p>)}
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
-                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase">{w}g</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                         return (
+                          <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
+                            <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span>
+                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                          </div>
+                         )
                        })}
                     </div>
                   </button>
@@ -331,14 +372,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                                         <span className="text-[11px] font-black uppercase tracking-[0.1em]" style={{ color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Акционные предложения' : 'Special Sale Offers'}</span>
                                     </div>
                                     
-                                    {/* Общие цены для всей секции Sale */}
                                     <div className="grid grid-cols-4 gap-2">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1.5 rounded-xl border border-white/5">
-                                                    <span className="text-[10px] font-black opacity-40 uppercase">{w}g</span>
-                                                    <span className="text-[14px] font-black text-emerald-400">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-xl border border-white/5">
+                                                    <span className="text-[10px] font-black opacity-40 uppercase leading-none mb-[1px]">{w}g</span>
+                                                    <span className="text-[14px] font-black text-emerald-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -362,7 +402,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               return sec.items.length > 0 && (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                      <div className="flex items-center gap-2">
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
@@ -376,13 +421,20 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, importLooseSection.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
-                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                      <div className="flex items-center gap-2">
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
                     {getDesc(importLooseSection.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(importLooseSection.id)}</p>)}
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(importLooseSection.priceRef.prices?.[w]) || 0);
-                         return (<div key={w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[12px] font-black opacity-60 uppercase">{w}g</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                         return (
+                          <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
+                            <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span>
+                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                          </div>
+                         )
                        })}
                     </div>
                   </button>
@@ -403,12 +455,29 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               const isOpen = openGrades.includes(sec.id);
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between"><div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div><ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
-                    {getDesc(sec.id) && (<p className="mt-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                    <div className="w-full flex items-center justify-between mb-3 px-4">
+                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                      <div className="flex items-center gap-2">
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
+                    </div>
+                    {getDesc(sec.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
+                    
+                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                       {[1, 5, 10, 20].map(w => {
+                         const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0);
+                         return (
+                          <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
+                            <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span>
+                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                          </div>
+                         )
+                       })}
+                    </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    {sec.isList ? (<div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>) : (<div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>)}
+                    <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                   </div>
                 </div>
               );
@@ -429,12 +498,19 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                      <ChevronDown size={20} className={`opacity-20 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      <div className="flex items-center gap-2">
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                      </div>
                     </div>
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
                          const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0);
-                         return (<div key={unit.w} className="flex flex-col items-center gap-1 bg-white/5 py-1 rounded-2xl border border-white/5"><span className="text-[10px] font-black opacity-60 uppercase">{unit.l}</span><span className="text-[18px] font-black text-white">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span></div>)
+                         return (
+                          <div key={unit.w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
+                            <span className="text-[10px] font-black opacity-60 uppercase leading-none mb-[1px]">{unit.l}</span>
+                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                          </div>
+                         )
                        })}
                     </div>
                   </button>
@@ -445,6 +521,38 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               );
             })}
           </div>
+
+          {accessoriesSections && (
+            <div id="accessories-menu" className="pt-4">
+              <div className="flex items-center gap-4 pt-6 pb-6 relative">
+                 <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
+                 <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#F472B6]/30 bg-[#F472B6]/10 backdrop-blur-md" style={{ color: '#F472B6' }}>{lang === 'ru' ? 'Аксессуары' : 'Accessories'}</span>
+                 <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
+              </div>
+              <div className="space-y-3">
+                {accessoriesSections.map(sec => {
+                  const isOpen = openGrades.includes(sec.id);
+                  return (
+                    <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
+                      <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                        <div className="w-full flex items-center justify-between px-4">
+                          <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
+                          <div className="flex items-center gap-2">
+                            <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                          </div>
+                        </div>
+                      </button>
+                      <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                        <div className="divide-y divide-white/10 bg-white/5">
+                          {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -468,7 +576,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       
       {selectedProduct && (
         <ProductModal 
-          product={selectedProduct} 
+          product={{
+            ...selectedProduct,
+            unitLabel: selectedProduct.category === 'accessories' ? 'pcs' : 'g'
+          }} 
           t={t} 
           style={
             selectedProduct.category === 'concentrates' 
@@ -482,7 +593,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       )}
       {isCheckoutOpen && (
         <CheckoutModal 
-          items={items} 
+          items={items.map(item => ({
+            ...item,
+            unitLabel: item.category === 'accessories' ? 'pcs' : 'g'
+          }))} 
           total={getTotal()} 
           t={t} 
           lang={lang} 
