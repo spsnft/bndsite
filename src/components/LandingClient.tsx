@@ -188,9 +188,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
       else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
       else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
-      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: subLower.includes('old school') };
+      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: true };
     });
   }, [processedProducts]);
+
+  const accessoriesSection = React.useMemo(() => {
+    const items = processedProducts.filter(p => p.category === 'accessories');
+    if (items.length === 0) return null;
+    return { id: 'accessories', title: lang === 'ru' ? 'Аксессуары' : 'Accessories', items, color: "#F472B6", icon: Gem };
+  }, [processedProducts, lang]);
 
   const prerollSections = React.useMemo(() => {
     const allJoints = processedProducts.filter(p => p.category === 'joints');
@@ -257,16 +263,21 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 px-2 mt-2 mb-4 relative z-20">
-          <button onClick={() => scrollToSection('buds-menu')} className="px-5 py-2.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-emerald-500/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'меню' : 'flowers'}
+        <div className="flex flex-wrap gap-3 px-2 mt-4 mb-6 relative z-20">
+          <button onClick={() => scrollToSection('buds-menu')} className="flex-1 min-w-[100px] px-4 py-3 bg-emerald-500/20 rounded-2xl border-2 border-emerald-500/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+            {lang === 'ru' ? 'Шишки' : 'Flowers'}
           </button>
-          <button onClick={() => scrollToSection('concentrates-menu')} className="px-5 py-2.5 bg-[#A855F7]/10 rounded-full border border-[#A855F7]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#A855F7]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'концентраты' : 'concentrates'}
+          <button onClick={() => scrollToSection('concentrates-menu')} className="flex-1 min-w-[100px] px-4 py-3 bg-[#A855F7]/20 rounded-2xl border-2 border-[#A855F7]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+            {lang === 'ru' ? 'Экстракты' : 'Extracts'}
           </button>
-          <button onClick={() => scrollToSection('prerolls-menu')} className="px-5 py-2.5 bg-[#F59E0B]/10 rounded-full border border-[#F59E0B]/20 text-[9px] font-black uppercase tracking-widest text-white active:bg-[#F59E0B]/30 active:scale-95 transition-all shadow-lg relative overflow-hidden group">
-            {lang === 'ru' ? 'прероллы' : 'prerolls'}
+          <button onClick={() => scrollToSection('prerolls-menu')} className="flex-1 min-w-[100px] px-4 py-3 bg-[#F59E0B]/20 rounded-2xl border-2 border-[#F59E0B]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+            {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
           </button>
+          {accessoriesSection && (
+            <button onClick={() => scrollToSection('accessories-menu')} className="w-full px-4 py-3 bg-[#F472B6]/20 rounded-2xl border-2 border-[#F472B6]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(244,114,182,0.2)]">
+              {lang === 'ru' ? 'Аксессуары' : 'Accessories'}
+            </button>
+          )}
         </div>
       </header>
 
@@ -432,12 +443,29 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     {getDesc(sec.id) && (<p className="mt-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    {sec.isList ? (<div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>) : (<div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>)}
+                    <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                   </div>
                 </div>
               );
             })}
           </div>
+
+          {accessoriesSection && (
+            <div id="accessories-menu" className="pt-4">
+              <div className="flex items-center gap-4 pt-6 pb-6 relative">
+                 <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
+                 <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#F472B6]/30 bg-[#F472B6]/10 backdrop-blur-md" style={{ color: '#F472B6' }}>{accessoriesSection.title}</span>
+                 <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
+              </div>
+              <div className={`rounded-[2rem] overflow-hidden border border-white/5 bg-[#1d4837]/40 backdrop-blur-xl`}>
+                 <div className="divide-y divide-white/10 bg-white/5">
+                    {accessoriesSection.items.map((p: any) => (
+                      <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                    ))}
+                 </div>
+              </div>
+            </div>
+          )}
 
           <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
