@@ -8,7 +8,7 @@ import {
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
   ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
   Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
-  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette
+  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette, Layers
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -208,7 +208,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       title: sub || (lang === 'ru' ? 'Аксессуары' : 'Accessories'),
       items: allAccs.filter(p => p.subcategory === sub),
       color: "#F472B6",
-      icon: Gem
+      icon: Layers
     }));
   }, [processedProducts, lang]);
 
