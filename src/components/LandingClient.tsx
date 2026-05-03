@@ -195,7 +195,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
       else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
       else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
-      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), color, icon, isList: true };
+      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), priceRef: allConcs.find(p => p.subcategory === sub), color, icon, isList: true };
     });
   }, [processedProducts]);
 
@@ -241,10 +241,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* ПУНКТ 1: Между шапкой и блоком УТП - 16px (mb-4) */}
-        {/* ПУНКТ 2: Внутри блока УТП (pt-3 pb-3 для 12px) */}
-        {/* ПУНКТ 3: Между УТП и FAQ - 8px (mb-2) */}
-        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-2 mt-4">
+        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-2 mt-2">
           <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-2 relative z-10 px-2 max-w-[320px] mx-auto">
             {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
           </h2>
@@ -262,7 +259,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        {/* ПУНКТ 4: Между FAQ и якорями - 16px (mb-4) */}
         <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-4 transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
           <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
             <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">FAQ</h3></div>
@@ -444,14 +440,27 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               const isOpen = openGrades.includes(sec.id);
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between">
+                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                    <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <div className="flex items-center gap-2">
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
-                    {getDesc(sec.id) && (<p className="mt-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
+                    {getDesc(sec.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
+                    
+                    {/* ПО АНАЛОГИИ: Стандартный вывод цен 1/5/10/20г */}
+                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                       {[1, 5, 10, 20].map(w => {
+                         const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0);
+                         return (
+                          <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
+                            <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span>
+                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                          </div>
+                         )
+                       })}
+                    </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
