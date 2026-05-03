@@ -226,22 +226,22 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
-        <div className="flex items-center justify-between px-2 mb-1"> 
+        <div className="flex items-center justify-between px-2 mb-[12px]"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
-              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={112} height={112} className="w-28 h-28 object-contain relative z-10" alt="Logo" />
+              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={80} height={80} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
               <div className="flex gap-3">
                 {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
-                  <Link key={i} href={soc.url} target="_blank" className="p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl"><soc.icon size={22} className="opacity-80"/></Link>
+                  <Link key={i} href={soc.url} target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl"><soc.icon size={24} className="opacity-80"/></Link>
                 ))}
               </div>
-              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-6 w-12 h-12 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
+              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-3 w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
         </div>
 
-        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-2 mt-2">
+        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[12px]">
           <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-2 relative z-10 px-2 max-w-[320px] mx-auto">
             {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
           </h2>
@@ -259,7 +259,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-4 transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
+        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[16px] transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
           <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
             <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">FAQ</h3></div>
             <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
@@ -275,7 +275,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 px-2 mt-4 mb-6 relative z-20">
+        <div className="flex flex-col gap-3 px-2 mt-[16px] mb-[16px] relative z-20">
           <button onClick={() => scrollToSection('buds-menu')} className="w-full px-4 py-3 bg-emerald-500/20 rounded-2xl border-2 border-emerald-500/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
             {lang === 'ru' ? 'Основное меню' : 'Flowers'}
           </button>
@@ -449,7 +449,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     </div>
                     {getDesc(sec.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
                     
-                    {/* ПО АНАЛОГИИ: Стандартный вывод цен 1/5/10/20г */}
                     <div className="w-full grid grid-cols-4 gap-2 px-4">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0);
