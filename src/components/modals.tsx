@@ -1,6 +1,6 @@
 "use client"
 import * as React from "react"
-import { X, Plus, Trash2, SendHorizontal, Sparkles } from "lucide-react"
+import { X, Plus, Trash2, SendHorizontal, Sparkles, Wind, MapPin, Beaker, Info, Layers } from "lucide-react"
 import { BlurImage } from "@/components/blur-image"
 import { useCart } from "@/lib/cart-store"
 import { 
@@ -54,6 +54,9 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
 
   const isExclusiveOrImport = product.subcategory?.toLowerCase().includes('exclusive') || product.subcategory?.toLowerCase().includes('import');
 
+  // Логика проверки наличия данных в поле
+  const hasValue = (val: any) => val && val !== "" && val !== "-";
+
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
       <div className="relative w-full max-w-[400px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
@@ -69,7 +72,7 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
             </div>
           </div>
         </div>
-        <div className="px-6 pb-8 space-y-3">
+        <div className="px-6 pb-8 space-y-4 max-h-[50vh] overflow-y-auto no-scrollbar">
           <div className="space-y-3">
             <div className="flex justify-between items-end">
               <div className="flex items-center gap-3">
@@ -105,6 +108,43 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
             )}
           </div>
 
+          {/* Дополнительные поля характеристик */}
+          <div className="space-y-2.5">
+            {hasValue(product.description) && (
+              <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                <div className="flex gap-2 text-white/40 mb-1.5"><Info size={12}/><span className="text-[9px] font-black uppercase tracking-widest">Description</span></div>
+                <p className="text-[11px] text-white/80 leading-relaxed font-medium">{product.description}</p>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-2">
+              {hasValue(product.taste) && (
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                  <div className="flex gap-2 text-white/40 mb-1"><Sparkles size={11}/><span className="text-[8px] font-black uppercase tracking-widest">Taste</span></div>
+                  <p className="text-[10px] text-white font-bold uppercase">{product.taste}</p>
+                </div>
+              )}
+              {hasValue(product.terpenes) && (
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                  <div className="flex gap-2 text-white/40 mb-1"><Wind size={11}/><span className="text-[8px] font-black uppercase tracking-widest">Terpenes</span></div>
+                  <p className="text-[10px] text-white font-bold uppercase">{product.terpenes}</p>
+                </div>
+              )}
+              {hasValue(product.farm) && (
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                  <div className="flex gap-2 text-white/40 mb-1"><MapPin size={11}/><span className="text-[8px] font-black uppercase tracking-widest">Farm</span></div>
+                  <p className="text-[10px] text-white font-bold uppercase">{product.farm}</p>
+                </div>
+              )}
+              {hasValue(product.microns) && (
+                <div className="p-3 bg-white/5 rounded-2xl border border-white/5">
+                  <div className="flex gap-2 text-white/40 mb-1"><Layers size={11}/><span className="text-[8px] font-black uppercase tracking-widest">Microns</span></div>
+                  <p className="text-[10px] text-white font-bold uppercase">{product.microns}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           {promoInfo && !isExclusiveOrImport && (
             <div className="relative py-3 px-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl overflow-hidden animate-pulse">
               <p className="text-[10px] font-black uppercase tracking-tighter text-emerald-400 text-center">
@@ -122,183 +162,6 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
             className={`w-full py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-[0.2em] transition-all active:scale-95 ${isAdded ? 'bg-emerald-400 text-black' : 'bg-white text-[#193D2E]'}`}
           >
             {isAdded ? t.added : t.addToOrder}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export function CheckoutModal({ items, total, onClose, t, lang, onEditItem }: { items: any[], total: number, onClose: () => void, t: any, lang: string, onEditItem: (p: any) => void }) {
-  const [method, setMethod] = React.useState("telegram");
-  const [contact, setContact] = React.useState("");
-  const [isSending, setIsSending] = React.useState(false);
-  const [isSuccess, setIsSuccess] = React.useState(false);
-  const [finalOrderText, setFinalOrderText] = React.useState(""); // Стейт для сохранения текста заказа
-  const { clearCart, removeItem } = useCart();
-
-  const categoryPromos = React.useMemo(() => {
-    const groups: Record<string, { weight: number, prices: any, isElite: boolean, sub: string }> = {};
-    items.forEach(item => {
-      const sub = item.subcategory?.toLowerCase() || "other";
-      if ((isElite(item) && sub !== 'import loose') || item.category === 'joints' || sub.includes('exclusive') || sub.includes('import')) return;
-      const w = parseFloat(item.weight) || 0;
-      if (!groups[sub]) groups[sub] = { weight: 0, prices: item.prices, isElite: false, sub: item.subcategory };
-      groups[sub].weight += w;
-    });
-    return Object.values(groups).map(group => {
-      const steps = [1, 5, 10, 20];
-      const nextStep = steps.find(s => s > group.weight);
-      if (!nextStep || !group.prices) return null;
-      const currentPerGram = Math.round(getInterpolatedPrice(group.weight, group.prices, false) / group.weight);
-      const nextPrice = Math.round(getInterpolatedPrice(nextStep, group.prices, false));
-      const nextPerGram = Math.round(nextPrice / nextStep);
-      const diff = (nextStep - group.weight).toFixed(1).replace('.0', '');
-      const gradeId = group.sub.toLowerCase() === 'import loose' ? 'import' : group.sub.toLowerCase();
-      const gradeInfo = GRADES.find(g => g.id === gradeId) || { color: SELECTED_COLOR };
-      return { sub: group.sub, diff, nextPerGram, currentPerGram, color: gradeInfo.color };
-    }).filter(Boolean);
-  }, [items]);
-
-  const handleSubmit = async () => {
-    if (!contact) return alert(t.contactPh);
-    setIsSending(true);
-    triggerHaptic('medium');
-
-    // Формируем текст ДО очистки корзины
-    const orderLines = items.map(i => `• ${i.name} (${i.weight}) — ${i.price}฿`).join("\n");
-    const summaryText = `🛒 NEW ORDER\n\n${orderLines}\n\n💰 Total: ${total}฿\n👤 Contact: ${contact} (${method})`;
-    
-    // Сохраняем текст в стейт для последующего перехода в ТГ
-    setFinalOrderText(summaryText);
-
-    try {
-      const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyWoirxcrPstlMohLMoWV0llN69vMnWzGNc-8wksFULMlasDQechzbRJwcY-RbuagsE/exec";
-      
-      await fetch(GOOGLE_SCRIPT_URL, { 
-        method: "POST", 
-        mode: "no-cors", 
-        body: JSON.stringify({ contact, method, orderText: orderLines, total }) 
-      });
-
-      triggerHaptic('success');
-      setIsSuccess(true);
-      clearCart(); 
-
-    } catch (e) { 
-      alert(t.sendError); 
-    } finally { 
-      setIsSending(false); 
-    }
-  };
-
-  const handleFinalRedirect = () => {
-    const tgUrl = `https://t.me/bshk_phuket?text=${encodeURIComponent(finalOrderText)}`;
-    window.open(tgUrl, '_blank');
-    onClose();
-  };
-
-  if (isSuccess) {
-    return (
-      <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
-        <div className="relative w-full max-w-[380px] bg-[#193D2E] rounded-[2.5rem] border border-white/10 p-8 text-center shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-          <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-400"></div>
-          
-          <div className="w-20 h-20 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/30">
-            <SendHorizontal size={32} className="text-emerald-400 ml-1" />
-          </div>
-          
-          <h2 className="text-2xl font-black uppercase tracking-tighter text-white mb-4">
-            {lang === 'ru' ? 'Заказ принят!' : 'Order Received!'}
-          </h2>
-          
-          <p className="text-[13px] font-medium text-white/60 leading-relaxed mb-8 px-2">
-            {lang === 'ru' 
-              ? 'Ваш заказ уже в нашей системе. Чтобы ускорить обработку и подтвердить доставку, пожалуйста, отправьте детали нашему оператору.' 
-              : 'Your order is already in our system. To speed up processing and confirm delivery, please send the details to our operator.'}
-          </p>
-
-          <button 
-            onClick={handleFinalRedirect}
-            className="w-full bg-emerald-400 text-[#193D2E] py-4 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-95 transition-all shadow-[0_0_30px_rgba(52,211,153,0.3)] flex items-center justify-center gap-3"
-          >
-            {lang === 'ru' ? 'Отправить оператору' : 'Send to Operator'}
-            <SendHorizontal size={18} />
-          </button>
-          
-          <button 
-            onClick={onClose}
-            className="mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-white/20 hover:text-white/40 transition-colors"
-          >
-            {lang === 'ru' ? 'Закрыть меню' : 'Close Menu'}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="fixed inset-0 z-[300] flex items-center justify-center p-4 bg-black/40 backdrop-blur-lg" onClick={onClose}>
-      <div className="relative w-full max-md bg-[#193D2E] rounded-[2.5rem] border border-white/10 flex flex-col max-h-[85vh] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="pt-3 px-6 pb-0 border-b border-white/5 flex justify-between items-center text-white min-h-[70px]">
-          <div><h2 className="text-xl font-black uppercase tracking-tighter">{t.yourBasket}</h2><p className="text-[10px] font-bold opacity-30 uppercase tracking-[0.2em]">{items.length} {t.items}</p></div>
-          <button onClick={onClose} className="p-2 opacity-20 hover:opacity-100 transition-opacity"><X size={24}/></button>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4 pb-2 space-y-4 no-scrollbar">
-          {categoryPromos.length > 0 && (
-            <div className="space-y-2">
-              {categoryPromos.map((promo: any) => (
-                <div key={promo.sub} className="relative p-2 pl-2 rounded-2xl overflow-hidden border border-white/5" style={{ background: `linear-gradient(135deg, ${promo.color}15 0%, rgba(0,0,0,0.4) 100%)` }}>
-                  <div className="flex items-center gap-2">
-                    <div className="p-1.5 rounded-xl bg-white/5 shrink-0" style={{ color: promo.color }}><Sparkles size={16} /></div>
-                    <div><p className="text-[10px] font-bold text-white/70 leading-relaxed uppercase tracking-wide">
-                        {lang === 'ru' ? (
-                          <>Добавь <span className="font-black" style={{ color: promo.color }}>{promo.diff}г {promo.sub}</span> и открой цену <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/г</span>!</>
-                        ) : (
-                          <>Add <span className="font-black" style={{ color: promo.color }}>{promo.diff}g {promo.sub}</span> and unlock <span className="font-black" style={{ color: promo.color }}>{promo.nextPerGram}<Baht className="scale-75 inline-block origin-left" />/g</span> price!</>
-                        )}
-                    </p></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="space-y-2">
-            {items.map((item: any) => (
-              <div key={`${item.id}-${item.weight}`} className="flex items-center gap-4 bg-white/5 rounded-2xl p-3 border border-white/5 text-white">
-                <button onClick={() => { triggerHaptic('light'); onEditItem(item); }} className="flex-1 min-w-0 text-left active:opacity-60 transition-opacity">
-                  <h3 className="text-[14px] font-black uppercase truncate">{item.name}</h3>
-                  <div className="flex items-center gap-2 mt-0.5 flex-wrap">
-                    <p className="text-[12px] font-bold uppercase tracking-widest text-white/70">
-                      {item.weight} • {item.price}<span className="text-[10px] opacity-60 ml-0.5">฿</span>
-                    </p>
-                    <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                    <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: (item.subcategory?.toLowerCase() === 'import loose' ? GRADES.find(g => g.id === 'import')?.color : GRADES.find(g => g.id === item.subcategory?.toLowerCase())?.color) || SELECTED_COLOR }}>{item.subcategory}</p>
-                    <span className="w-1 h-1 rounded-full bg-white/10 shrink-0"></span>
-                    <p className="text-[8px] font-black uppercase tracking-tighter" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</p>
-                  </div>
-                </button>
-                <button onClick={() => { triggerHaptic('medium'); removeItem(item.id, item.weight); }} className="text-rose-500/30 hover:text-rose-500 transition-colors p-2.5 bg-white/5 rounded-xl"><Trash2 size={16}/></button>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="p-6 pt-2 border-t border-white/5">
-          <div className="grid grid-cols-4 gap-2 mb-4">
-            {CONTACT_METHODS.map(m => (
-              <button key={m.id} onClick={() => { triggerHaptic('light'); setMethod(m.id); }} 
-                className={`flex flex-col items-center gap-2 py-3 rounded-xl border transition-all ${method === m.id ? "bg-white text-[#193D2E] border-white opacity-100 scale-[1.02]" : "bg-white/5 border-white/10 opacity-30 text-white scale-100"}`}>
-                <m.icon size={16} />
-                <span className="text-[7px] font-black uppercase">{m.label}</span>
-              </button>
-            ))}
-          </div>
-          <input type="text" placeholder={t[CONTACT_METHODS.find(m => m.id === method)?.phKey || "contactPh"]} value={contact} onChange={(e) => setContact(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl py-4 px-6 text-[12px] font-bold outline-none focus:border-emerald-400 text-white placeholder:opacity-30" />
-          <div className="flex items-center justify-between mt-3 text-white"><p className="text-[10px] font-black uppercase opacity-40">{t.totalAmount}</p><p className="text-3xl font-black tracking-tighter">{total}฿</p></div>
-          <button onClick={handleSubmit} disabled={isSending} className="w-full mt-4 bg-emerald-400 text-[#193D2E] py-2.5 rounded-2xl font-black uppercase text-[12px] tracking-widest active:scale-[0.97] disabled:opacity-50 hover:animate-pulse transition-all shadow-[0_0_20px_rgba(52,211,153,0.3)]">
-            {isSending ? (lang === 'ru' ? 'ОТПРАВКА...' : 'SENDING...') : t.confirmOrder}
           </button>
         </div>
       </div>
