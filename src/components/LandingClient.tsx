@@ -229,11 +229,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         <div className="flex items-center justify-between px-2 mb-2"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
-              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={96} height={96} className="w-24 h-24 object-contain relative z-10" alt="Logo" />
+              <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={112} height={112} className="w-28 h-28 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
               <div className="flex gap-3">
-                {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Phone, url: "https://bndeliveryphuket.click/wa"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
+                {[ {icon: SendHorizontal, url: "https://t.me/bshk_phuket"}, {icon: Instagram, url: "https://www.instagram.com/boshkunadoroshku"} ].map((soc, i) => (
                   <Link key={i} href={soc.url} target="_blank" className="p-4 bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl"><soc.icon size={22} className="opacity-80"/></Link>
                 ))}
               </div>
@@ -272,7 +272,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
         <div className="flex flex-col gap-3 px-2 mt-4 mb-6 relative z-20">
           <button onClick={() => scrollToSection('buds-menu')} className="w-full px-4 py-3 bg-emerald-500/20 rounded-2xl border-2 border-emerald-500/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-            {lang === 'ru' ? 'Шишки' : 'Flowers'}
+            {lang === 'ru' ? 'Основное меню' : 'Flowers'}
           </button>
           <div className="flex gap-3">
             <button onClick={() => scrollToSection('concentrates-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#A855F7]/20 rounded-2xl border-2 border-[#A855F7]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]">
