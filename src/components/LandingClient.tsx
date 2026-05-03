@@ -104,18 +104,25 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   );
 });
 
-const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => (
-  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 text-white border-b border-white/10 last:border-b-0 active:bg-white/5 transition-colors cursor-pointer group">
-      <div className="flex items-center gap-4 truncate flex-1">
-        <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
-        <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
-      </div>
-      <div className="flex items-center gap-5 shrink-0 pr-4">
-        {p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>}
-        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
-      </div>
-  </div>
-));
+const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) => {
+  const isAccessory = p.category === 'accessories';
+  return (
+    <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 text-white border-b border-white/10 last:border-b-0 active:bg-white/5 transition-colors cursor-pointer group">
+        <div className="flex items-center gap-4 truncate flex-1">
+          <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
+          <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+        </div>
+        <div className="flex items-center gap-5 shrink-0 pr-4">
+          {isAccessory ? (
+            <span className="text-[14px] font-black text-white/90">{Math.round(Number(p.prices?.['1']) || 0)}<BahtSymbol /></span>
+          ) : (
+            p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>
+          )}
+          <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] || '#10B981' }}>{p.type}</span>
+        </div>
+    </div>
+  );
+});
 
 export default function LandingClient({ initialProducts, initialDescriptions = [] }: { initialProducts: any[], initialDescriptions?: any[] }) {
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
@@ -263,21 +270,23 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3 px-2 mt-4 mb-6 relative z-20">
-          <button onClick={() => scrollToSection('buds-menu')} className="flex-1 min-w-[100px] px-4 py-3 bg-emerald-500/20 rounded-2xl border-2 border-emerald-500/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+        <div className="flex flex-col gap-3 px-2 mt-4 mb-6 relative z-20">
+          <button onClick={() => scrollToSection('buds-menu')} className="w-full px-4 py-3 bg-emerald-500/20 rounded-2xl border-2 border-emerald-500/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
             {lang === 'ru' ? 'Шишки' : 'Flowers'}
           </button>
-          <button onClick={() => scrollToSection('concentrates-menu')} className="flex-1 min-w-[100px] px-4 py-3 bg-[#A855F7]/20 rounded-2xl border-2 border-[#A855F7]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-            {lang === 'ru' ? 'Экстракты' : 'Extracts'}
-          </button>
-          <button onClick={() => scrollToSection('prerolls-menu')} className="flex-1 min-w-[100px] px-4 py-3 bg-[#F59E0B]/20 rounded-2xl border-2 border-[#F59E0B]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-            {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
-          </button>
-          {accessoriesSection && (
-            <button onClick={() => scrollToSection('accessories-menu')} className="w-full px-4 py-3 bg-[#F472B6]/20 rounded-2xl border-2 border-[#F472B6]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(244,114,182,0.2)]">
-              {lang === 'ru' ? 'Аксессуары' : 'Accessories'}
+          <div className="flex gap-3">
+            <button onClick={() => scrollToSection('concentrates-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#A855F7]/20 rounded-2xl border-2 border-[#A855F7]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]">
+              {lang === 'ru' ? 'Экстракты' : 'Extracts'}
             </button>
-          )}
+            <button onClick={() => scrollToSection('prerolls-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F59E0B]/20 rounded-2xl border-2 border-[#F59E0B]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+              {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
+            </button>
+            {accessoriesSection && (
+              <button onClick={() => scrollToSection('accessories-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F472B6]/20 rounded-2xl border-2 border-[#F472B6]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(244,114,182,0.2)]">
+                {lang === 'ru' ? 'Аксессуары' : 'Accessories'}
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -530,7 +539,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       
       {selectedProduct && (
         <ProductModal 
-          product={selectedProduct} 
+          product={{
+            ...selectedProduct,
+            unitLabel: selectedProduct.category === 'accessories' ? 'pcs' : 'g'
+          }} 
           t={t} 
           style={
             selectedProduct.category === 'concentrates' 
@@ -544,7 +556,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       )}
       {isCheckoutOpen && (
         <CheckoutModal 
-          items={items} 
+          items={items.map(item => ({
+            ...item,
+            unitLabel: item.category === 'accessories' ? 'pcs' : 'g'
+          }))} 
           total={getTotal()} 
           t={t} 
           lang={lang} 
