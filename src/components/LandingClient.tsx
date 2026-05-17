@@ -8,7 +8,7 @@ import {
   Droplets, Snowflake, Box, Sparkles, Flame, Percent,
   ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
   Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
-  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette, Layers
+  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette, Layers, X, EyeOff
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -20,7 +20,28 @@ import {
   TYPE_COLORS, GRADES, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR, GOLDEN_COLOR 
 } from "@/lib/utils"
 
-// Конфигурация карточек презентационного хаба (Обновлено: сетка 3 в первом ряду, 2 во втором)
+// Локальный компонент для инфо-модалок (Доставка/Гарантии)
+const InfoModal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-sm bg-[#0D1F18] border border-white/10 rounded-[2.5rem] p-6 text-white shadow-2xl overflow-hidden z-10 max-h-[85vh] flex flex-col">
+        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 0%, #10B981, transparent 70%)` }} />
+        <div className="flex items-center justify-between mb-6 shrink-0 relative z-10">
+          <h3 className="text-[14px] font-black uppercase tracking-[0.15em] text-white">{title}</h3>
+          <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 active:scale-90 rounded-full border border-white/10 transition-all text-white/60 hover:text-white">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="overflow-y-auto pr-1 flex-1 relative z-10 space-y-5 no-scrollbar">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const SHOWCASE_CARDS = [
   {
     id: 'classic-showcase',
@@ -30,12 +51,9 @@ const SHOWCASE_CARDS = [
     borderColor: '#F59E0B50',
     icon: Leaf,
     iconColor: '#F59E0B',
-    spanClass: 'col-span-2 min-h-[140px]', // 1/3 ширины
+    spanClass: 'col-span-2 min-h-[140px]',
     title: { ru: 'CLASSIC', en: 'CLASSIC' },
-    desc: { 
-      ru: 'Качество на каждый день.', 
-      en: 'Daily quality standard.' 
-    }
+    desc: { ru: 'Качество на каждый день.', en: 'Daily quality standard.' }
   },
   {
     id: 'premium-showcase',
@@ -45,12 +63,9 @@ const SHOWCASE_CARDS = [
     borderColor: '#10B98140',
     icon: Sparkles,
     iconColor: '#10B981',
-    spanClass: 'col-span-2 min-h-[140px]', // 1/3 ширины
+    spanClass: 'col-span-2 min-h-[140px]',
     title: { ru: 'PREMIUM', en: 'PREMIUM' },
-    desc: { 
-      ru: 'Яркие вкусовые профили.', 
-      en: 'Rich terpene profiles.' 
-    }
+    desc: { ru: 'Яркие вкусовые профили.', en: 'Rich terpene profiles.' }
   },
   {
     id: 'elite-showcase',
@@ -60,12 +75,9 @@ const SHOWCASE_CARDS = [
     borderColor: '#A855F740',
     icon: Crown,
     iconColor: '#A855F7',
-    spanClass: 'col-span-2 min-h-[140px]', // 1/3 ширины
+    spanClass: 'col-span-2 min-h-[140px]',
     title: { ru: 'IMPORT', en: 'IMPORT' },
-    desc: { 
-      ru: 'Топовый импорт и эксклюзивы.', 
-      en: 'Top-shelf & exclusives.' 
-    }
+    desc: { ru: 'Топовый импорт и эксклюзивы.', en: 'Top-shelf & exclusives.' }
   },
   {
     id: 'extracts-showcase',
@@ -74,12 +86,9 @@ const SHOWCASE_CARDS = [
     borderColor: '#34D39940',
     icon: Droplets,
     iconColor: '#34D399',
-    spanClass: 'col-span-3 min-h-[130px]', // 1/2 ширины (второй ряд)
+    spanClass: 'col-span-3 min-h-[130px]',
     title: { ru: 'CONCENTRATES', en: 'CONCENTRATES' },
-    desc: { 
-      ru: 'Чистейшая экстракция высокого уровня.', 
-      en: 'Purest high-tier extractions.' 
-    }
+    desc: { ru: 'Чистейшая экстракция высокого уровня.', en: 'Purest high-tier extractions.' }
   },
   {
     id: 'prerolls-showcase',
@@ -88,12 +97,9 @@ const SHOWCASE_CARDS = [
     borderColor: '#F472B640',
     icon: Cigarette,
     iconColor: '#F472B6',
-    spanClass: 'col-span-3 min-h-[130px]', // 1/2 ширины (второй ряд)
+    spanClass: 'col-span-3 min-h-[130px]',
     title: { ru: 'PREROLLS', en: 'PREROLLS' },
-    desc: { 
-      ru: 'Готовые решения ручной работы.', 
-      en: 'Handcrafted ready solutions.' 
-    }
+    desc: { ru: 'Готовые решения ручной работы.', en: 'Handcrafted ready solutions.' }
   }
 ];
 
@@ -206,8 +212,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   
+  // Состояния для новых модальных окон
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = React.useState(false);
+  const [isGuaranteesModalOpen, setIsGuaranteesModalOpen] = React.useState(false);
+
   const [closedGrades, setClosedGrades] = React.useState<string[]>([]);
-  const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
   
@@ -347,42 +356,31 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[4px]">
-          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-2 relative z-10 px-2 max-w-[320px] mx-auto">
-            {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
-          </h2>
-          <div className="grid grid-cols-2 gap-2 relative z-10">
-             {[ 
-               {ru: '3 года на рынке', en: '3 years on market'}, 
-               {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
-               {ru: 'оплата наличными при получении', en: 'cash on delivery'}, 
-               {ru: 'бесплатная доставка за 60мин', en: 'free 60min delivery'} 
-             ].map((item, i) => (
-               <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
-               </div>
-             ))}
-          </div>
-        </div>
-
-        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[16px] transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
-          <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
-            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3></div>
-            <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
+        {/* ИНТЕРАКТИВНЫЙ БЛОК ИНФО-КНОПОК */}
+        <div className="grid grid-cols-2 gap-2 px-2 mb-4 mt-2 relative z-20">
+          <button 
+            onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(true); }}
+            className="flex items-center justify-center gap-2.5 py-3 px-4 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/10 backdrop-blur-md transition-all"
+          >
+            <Bike size={15} className="text-emerald-400 shrink-0" />
+            <span className="text-[10.5px] font-black uppercase tracking-wider text-white/90">
+              {lang === 'ru' ? 'Доставка и оплата' : 'Delivery & Payment'}
+            </span>
           </button>
-          <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="space-y-5 pl-9 pb-2">
-               <div className="flex items-center gap-4"><Timer size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div></div>
-               <div className="flex items-center gap-4"><Plus size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{"`"}{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}{"`"}</p></div></div>
-               <div className="flex items-center gap-4"><Laptop size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? (<>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>) : (<>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>)}</p></div></div>
-               <div className="flex items-center gap-4"><Wallet size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div></div>
-               <div className="flex items-center gap-4"><Bike size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{"`"}{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}{"`"}</p></div></div>
-            </div>
-          </div>
+
+          <button 
+            onClick={() => { triggerHaptic('light'); setIsGuaranteesModalOpen(true); }}
+            className="flex items-center justify-center gap-2.5 py-3 px-4 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/10 backdrop-blur-md transition-all"
+          >
+            <ShieldCheck size={15} className="text-emerald-400 shrink-0" />
+            <span className="text-[10.5px] font-black uppercase tracking-wider text-white/90">
+              {lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}
+            </span>
+          </button>
         </div>
 
-        {/* ОБНОВЛЕННЫЙ ПРЕЗЕНТАЦИОННЫЙ ХАБ (Правка: Изменен порядок и сетка grid-cols-6) */}
-        <div className="grid grid-cols-6 gap-3 px-2 mt-6 mb-6 relative z-20">
+        {/* ХАБ КАТЕГОРИЙ */}
+        <div className="grid grid-cols-6 gap-3 px-2 mb-6 relative z-20">
           {SHOWCASE_CARDS.map((card) => {
             const Icon = card.icon;
             return (
@@ -695,12 +693,94 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         </div>
       )}
       
+      {/* МОДАЛЬНОЕ ОКНО: ДОСТАВКА И ОПЛАТА */}
+      <InfoModal 
+        isOpen={isDeliveryModalOpen} 
+        onClose={() => setIsDeliveryModalOpen(false)}
+        title={lang === 'ru' ? 'Доставка и Оплата' : 'Delivery & Payment'}
+      >
+        <div className="flex items-center gap-4">
+          <Timer size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Plus size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <CreditCard size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Расчет при получении' : 'Payment on Delivery'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? 'Наличные в руки курьеру' : 'Cash on delivery to the courier'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Wallet size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Другие способы оплаты' : 'Other payment methods'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? 'Банковский перевод, Крипта, Рубли' : 'Bank transfer, Crypto, Rubles'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Bike size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Сроки доставки' : 'Delivery times'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}
+            </p>
+          </div>
+        </div>
+      </InfoModal>
+
+      {/* МОДАЛЬНОЕ ОКНО: О НАС И ГАРАНТИИ */}
+      <InfoModal 
+        isOpen={isGuaranteesModalOpen} 
+        onClose={() => setIsGuaranteesModalOpen(false)}
+        title={lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}
+      >
+        <div className="flex items-center gap-4">
+          <Trophy size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Опыт на рынке' : 'Market Experience'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? '3 года стабильной работы' : '3 years of solid experience'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Users size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Репутация' : 'Reputation'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Сотни довольных постоянных клиентов' : 'Hundreds of satisfied regular loyal clients'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Sparkles size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Прямые поставки' : 'Direct Sourcing'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
+              {lang === 'ru' ? 'Партнерство с лучшими фермерами и поставщиками' : 'Partnership with top-tier growers & suppliers'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <EyeOff size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Конфиденциальность' : 'Privacy'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'Полная анонимность каждого заказа' : 'Complete anonymity for every single order'}
+            </p>
+          </div>
+        </div>
+      </InfoModal>
+
       {selectedProduct && (
         <ProductModal 
-          product={{
-            ...selectedProduct,
-            unitLabel: selectedProduct.category === 'accessories' ? 'pcs' : 'g'
-          }} 
+          product={{ ...selectedProduct, unitLabel: selectedProduct.category === 'accessories' ? 'pcs' : 'g' }} 
           t={t} 
           style={
             selectedProduct.category === 'concentrates' 
@@ -714,10 +794,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       )}
       {isCheckoutOpen && (
         <CheckoutModal 
-          items={items.map(item => ({
-            ...item,
-            unitLabel: item.category === 'accessories' ? 'pcs' : 'g'
-          }))} 
+          items={items.map(item => ({ ...item, unitLabel: item.category === 'accessories' ? 'pcs' : 'g' }))} 
           total={getTotal()} 
           t={t} 
           lang={lang} 
