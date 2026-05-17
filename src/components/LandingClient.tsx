@@ -163,18 +163,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const [closedGrades, setClosedGrades] = React.useState<string[]>([]);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
-  
-  const descriptionsMap = React.useMemo(() => {
-    const map: Record<string, any> = {};
-    initialDescriptions.forEach(d => { if (d.subcategory) map[d.subcategory.toLowerCase().trim()] = d; });
-    return map;
-  }, [initialDescriptions]);
-
-  const getDesc = (id: string) => {
-    const data = descriptionsMap[id.toLowerCase().trim()];
-    if (!data) return null;
-    return lang === 'ru' ? data.description_ru : data.description_eng;
-  };
 
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p.badge?.toUpperCase() === 'NEW');
@@ -257,13 +245,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     }
   };
 
-  // Вычисляем общие описания для отображения в объединенном хабе меню
-  const descClassic = getDesc('classic');
-  const descSelected = getDesc('selected');
-  const combinedFlowerDesc = lang === 'ru' 
-    ? 'Основное меню соцветий: от выверенной классики до премиальных селекционных сортов.' 
-    : 'Main flower menu: from true time-tested classics to selected premium grades.';
-
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
@@ -290,32 +271,33 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 px-2 mb-4 mt-2 relative z-20">
+        {/* НАВИГАЦИОННЫЕ КНОПКИ */}
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 px-2 mb-4 mt-2 relative z-20">
           <button 
             onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(true); }}
-            className="flex items-center justify-center gap-2.5 py-3 px-4 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/10 backdrop-blur-md transition-all"
+            className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/10 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden"
           >
             <Bike size={15} className="text-emerald-400 shrink-0" />
-            <span className="text-[10.5px] font-black uppercase tracking-wider text-white/90">
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/90 truncate">
               {lang === 'ru' ? 'Доставка и оплата' : 'Delivery & Payment'}
             </span>
           </button>
 
           <button 
             onClick={() => { triggerHaptic('light'); setIsGuaranteesModalOpen(true); }}
-            className="flex items-center justify-center gap-2.5 py-3 px-4 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/10 backdrop-blur-md transition-all"
+            className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/10 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden"
           >
             <ShieldCheck size={15} className="text-emerald-400 shrink-0" />
-            <span className="text-[10.5px] font-black uppercase tracking-wider text-white/90">
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/90 truncate">
               {lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}
             </span>
           </button>
         </div>
 
-        {/* АДАПТИВНЫЙ СМЫСЛОВОЙ ХАБ МЕНЮ */}
+        {/* СМЫСЛОВОЙ ХАБ С ХАРДКОДНЫМИ ПЕРЕВОДАМИ КАТЕГОРИЙ */}
         <div className="grid grid-cols-2 gap-2 px-2 mb-6 relative z-20">
           
-          {/* УРОВЕНЬ 1: ЦАРЬ-ПЛИТКА (ОСНОВНОЕ МЕНЮ ШИШЕК) — col-span-2 */}
+          {/* УРОВЕНЬ 1: ЦАРЬ-ПЛИТКА (MAIN MENU) */}
           <div
             onClick={() => {
               triggerHaptic('medium');
@@ -329,7 +311,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             <div className="absolute inset-0 opacity-20 pointer-events-none z-0 transition-opacity group-hover:opacity-35" 
                  style={{ background: `linear-gradient(135deg, ${GOLDEN_COLOR} 0%, transparent 50%, #10B981 100%)` }} />
 
-            {/* Скрещенные водяные знаки по бокам внутри плитки */}
             <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none z-0 opacity-[0.07] scale-[2.5] blur-[0.5px] transition-transform group-hover:scale-[2.7] duration-500">
               <Leaf style={{ color: GOLDEN_COLOR }} strokeWidth={1.2} />
             </div>
@@ -347,13 +328,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 </span>
               </div>
               <p className="text-[10px] font-medium text-white/50 leading-tight mt-2 max-w-[90%] group-hover:text-white/80 transition-colors">
-                {combinedFlowerDesc}
+                {lang === 'ru' 
+                  ? 'Основное меню соцветий: от выверенной классики до премиальных селекционных сортов.' 
+                  : 'Main flower menu: from true time-tested classics to selected premium grades.'}
               </p>
             </div>
           </div>
 
-          {/* УРОВЕНЬ 2: ОСОБЫЙ ТЯЖЕЛЫЙ ПРОДУКТ (Квадраты 50/50) */}
-          {/* Эксклюзив & Импорт */}
+          {/* УРОВЕНЬ 2: Квадраты 50/50 */}
+          {/* Эксклюзив */}
           <div
             onClick={() => {
               triggerHaptic('medium');
@@ -376,7 +359,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 {lang === 'ru' ? 'ЭКСКЛЮЗИВ' : 'EXCLUSIVES'}
               </h3>
               <p className="text-[9.5px] font-medium text-white/40 leading-tight mt-auto group-hover:text-white/70 transition-colors line-clamp-2">
-                {getDesc('import loose') || (lang === 'ru' ? 'Импорт и локальный эксклюзив' : 'Import & local tops')}
+                {lang === 'ru' ? 'Импорт и локальный эксклюзив' : 'Import & local tops'}
               </p>
             </div>
           </div>
@@ -406,12 +389,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 {lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES'}
               </h3>
               <p className="text-[9.5px] font-medium text-white/40 leading-tight mt-auto group-hover:text-white/70 transition-colors line-clamp-2">
-                {getDesc('live rosin') || (lang === 'ru' ? 'Экстракты экстра-класса' : 'Premium fresh frozen extracts')}
+                {lang === 'ru' ? 'Экстракты экстра-класса' : 'Premium fresh frozen extracts'}
               </p>
             </div>
           </div>
 
-          {/* УРОВЕНЬ 3: ГОТОВЫЕ РЕШЕНИЯ И СОПУТКА (Компактные карточки 50/50) */}
+          {/* УРОВЕНЬ 3: БЕЗ ОПИСАНИЙ (Прероллы и Аксессуары) */}
           {/* Прероллы */}
           <div
             onClick={() => {
@@ -421,7 +404,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               });
               scrollToSection('prerolls-menu');
             }}
-            className="relative rounded-2xl border p-3 flex flex-col justify-between overflow-hidden cursor-pointer transition-all duration-300 bg-[#0D1F18] active:scale-[0.98] group col-span-1 h-[86px]"
+            className="relative rounded-2xl border p-3 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#0D1F18] active:scale-[0.98] group col-span-1 h-[64px]"
             style={{ borderColor: '#F472B635' }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 pointer-events-none z-0" />
@@ -432,13 +415,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <Cigarette style={{ color: '#F472B6' }} strokeWidth={1.5} />
             </div>
 
-            <div className="relative z-10 flex flex-col justify-between w-full h-full min-w-0">
-              <h3 className="text-[10px] font-black tracking-wider text-white uppercase leading-none truncate">
+            <div className="relative z-10 flex items-center justify-center w-full min-w-0">
+              <h3 className="text-[11px] font-black tracking-widest text-white uppercase leading-none text-center">
                 {lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS'}
               </h3>
-              <p className="text-[9px] font-medium text-white/40 leading-tight mt-auto group-hover:text-white/70 transition-colors line-clamp-1">
-                {getDesc('prerolls') || (lang === 'ru' ? 'Готовые джоинты' : 'Ready joints')}
-              </p>
             </div>
           </div>
 
@@ -451,7 +431,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               });
               scrollToSection('accessories-menu');
             }}
-            className="relative rounded-2xl border p-3 flex flex-col justify-between overflow-hidden cursor-pointer transition-all duration-300 bg-[#0D1F18] active:scale-[0.98] group col-span-1 h-[86px]"
+            className="relative rounded-2xl border p-3 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#0D1F18] active:scale-[0.98] group col-span-1 h-[64px]"
             style={{ borderColor: '#EC489935' }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 pointer-events-none z-0" />
@@ -462,13 +442,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <Layers style={{ color: '#EC4899' }} strokeWidth={1.5} />
             </div>
 
-            <div className="relative z-10 flex flex-col justify-between w-full h-full min-w-0">
-              <h3 className="text-[10px] font-black tracking-wider text-white uppercase leading-none truncate">
+            <div className="relative z-10 flex items-center justify-center w-full min-w-0">
+              <h3 className="text-[11px] font-black tracking-widest text-white uppercase leading-none text-center">
                 {lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES'}
               </h3>
-              <p className="text-[9px] font-medium text-white/40 leading-tight mt-auto group-hover:text-white/70 transition-colors line-clamp-1">
-                {getDesc('accessories') || (lang === 'ru' ? 'Девайсы и сопутствующие товары' : 'Devices & essentials')}
-              </p>
             </div>
           </div>
 
@@ -510,6 +487,23 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
+
+                    {/* ЖЕСТКИЕ ЛОКАЛЬНЫЕ ПЕРЕВОДЫ ДЛЯ КЛАССИКА И ПРЕМИУМА ЧТОБЫ ИЗБЕЖАТЬ СМЕШИВАНИЯ */}
+                    {isClassic && (
+                      <p className="px-4 text-[11px] font-medium text-white/50 mt-1 leading-tight">
+                        {lang === 'ru' 
+                          ? 'Проверенные и доступные сорта по низким ценам' 
+                          : 'Verified and affordable strains at low prices'}
+                      </p>
+                    )}
+                    {isPremium && (
+                      <p className="px-4 text-[11px] font-medium text-white/50 mt-1 leading-tight">
+                        {lang === 'ru' 
+                          ? 'Хиты продаж, сорта-призеры, именитые фермы и лучшие генетики' 
+                          : 'Best-sellers, iconic genetics & renowned farms'}
+                      </p>
+                    )}
+
                     <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
