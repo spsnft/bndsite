@@ -128,7 +128,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
-  const [openGrades, setOpenGrades] = React.useState<string[]>(['classic', 'top', 'local exclusive', 'import', 'import loose']);
+  
+  // Храним в стейте только те ID, которые юзер закрыл вручную (по дефолту пустой, значит всё открыто)
+  const [closedGrades, setClosedGrades] = React.useState<string[]>([]);
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
@@ -217,6 +219,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     const subs = Array.from(new Set(allJoints.map(p => p.subcategory)));
     return subs.map(sub => ({ id: sub, title: sub || "Prerolls", items: allJoints.filter(p => p.subcategory === sub), color: GOLDEN_COLOR, icon: Cigarette }));
   }, [processedProducts]);
+
+  const toggleSection = (id: string) => {
+    triggerHaptic('light');
+    setClosedGrades(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  };
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
@@ -332,10 +339,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
           <div className="space-y-3">
             {gradeSections.map(({ grade, regularItems, saleItems, priceRef, salePriceRef, isClassic }) => {
-              const isOpen = openGrades.includes(grade.id);
+              // Открыто ВСЕГДА, если только юзер сам не нажал свернуть
+              const isOpen = !closedGrades.includes(grade.id);
               return (
                 <div key={grade.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(grade.id) ? p.filter(x => x !== grade.id) : [...p, grade.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                  <button onClick={() => toggleSection(grade.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                       <div className="flex items-center gap-2">
@@ -398,10 +406,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
             
             {eliteSections.map(sec => {
-              const isOpen = openGrades.includes(sec.id);
+              // Исключительно buds категорий, открыто изначально
+              const isOpen = !closedGrades.includes(sec.id);
               return sec.items.length > 0 && (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
+                  <button onClick={() => toggleSection(sec.id)} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <div className="flex items-center gap-2">
@@ -417,12 +426,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
 
             {importLooseSection && (
-                <div key={importLooseSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: openGrades.includes(importLooseSection.id) ? `${importLooseSection.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(importLooseSection.id) ? p.filter(x => x !== importLooseSection.id) : [...p, importLooseSection.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                <div key={importLooseSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: !closedGrades.includes(importLooseSection.id) ? `${importLooseSection.color}80` : 'rgba(255,255,255,0.05)' }}>
+                  <button onClick={() => toggleSection(importLooseSection.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
                       <div className="flex items-center gap-2">
-                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${openGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
+                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${!closedGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
                     {getDesc(importLooseSection.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(importLooseSection.id)}</p>)}
@@ -438,7 +447,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                        })}
                     </div>
                   </button>
-                  <div className={`overflow-hidden transition-all duration-500 ${openGrades.includes(importLooseSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                  <div className={`overflow-hidden transition-all duration-500 ${!closedGrades.includes(importLooseSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     <div className="divide-y divide-white/10 bg-white/5">{importLooseSection.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
                   </div>
                 </div>
@@ -452,10 +461,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
           <div className="space-y-3">
             {concentrateSections.map(sec => {
-              const isOpen = openGrades.includes(sec.id);
+              // Другие категории (не buds) изначально ЗАКРЫТЫ, поэтому проверяем на вхождение
+              const isOpen = closedGrades.includes(sec.id);
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <div className="flex items-center gap-2">
@@ -491,11 +501,11 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
           <div className="space-y-3">
             {prerollSections.map(sec => {
-              const isOpen = openGrades.includes(sec.id);
+              const isOpen = closedGrades.includes(sec.id);
               const priceRef = sec.items[0];
               return (
                 <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                       <div className="flex items-center gap-2">
@@ -531,10 +541,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               </div>
               <div className="space-y-3">
                 {accessoriesSections.map(sec => {
-                  const isOpen = openGrades.includes(sec.id);
+                  const isOpen = closedGrades.includes(sec.id);
                   return (
                     <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                      <button onClick={() => { triggerHaptic('light'); setOpenGrades(p => p.includes(sec.id) ? p.filter(x => x !== sec.id) : [...p, sec.id]); }} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
+                      <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
                         <div className="w-full flex items-center justify-between px-4">
                           <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
                           <div className="flex items-center gap-2">
