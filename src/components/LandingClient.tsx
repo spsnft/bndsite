@@ -128,7 +128,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
-  const [openGrades, setOpenGrades] = React.useState<string[]>(['classic', 'local exclusive', 'import', 'import loose']);
+  const [openGrades, setOpenGrades] = React.useState<string[]>(['classic', 'top', 'local exclusive', 'import', 'import loose']);
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
   const t = translations[lang as keyof typeof translations];
@@ -276,13 +276,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
 
         <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[16px] transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
           <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
-            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">FAQ</h3></div>
+            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3></div>
             <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
           </button>
           <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
             <div className="space-y-5 pl-9 pb-2">
                <div className="flex items-center gap-4"><Timer size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div></div>
-               <div className="flex items-center gap-4"><Plus size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p></div></div>
+               <div className="flex items-center gap-4"><Plus size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{"`"}{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}{"`"}</p></div></div>
                <div className="flex items-center gap-4"><Laptop size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? (<>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>) : (<>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>)}</p></div></div>
                <div className="flex items-center gap-4"><Wallet size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div></div>
                <div className="flex items-center gap-4"><Bike size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">{"`"}{lang === 'ru' ? 'Пхукет: 60 мин, Таиланд: 2-3 дня' : 'Phuket: 60 min, Thailand: 2-3 days'}{"`"}</p></div></div>
