@@ -20,62 +20,79 @@ import {
   TYPE_COLORS, GRADES, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR, GOLDEN_COLOR 
 } from "@/lib/utils"
 
-// Конфигурация карточек презентационного хаба
+// Конфигурация карточек презентационного хаба (Обновлено: сетка 3 в первом ряду, 2 во втором)
 const SHOWCASE_CARDS = [
-  {
-    id: 'elite-showcase',
-    targetId: 'buds-menu',
-    bgGlow: 'radial-gradient(circle at 50% 120%, #10B981, transparent 70%)',
-    borderColor: '#10B98180',
-    icon: Crown,
-    iconColor: '#10B981',
-    fullWidth: true,
-    title: { ru: 'ELITE COUTURE', en: 'ELITE COUTURE' },
-    desc: { 
-      ru: 'Selected & Local Exclusives. Мастер-дропы от топовых гроверов Пхукета. Ограниченные партии для настоящих ценителей.', 
-      en: 'Selected & Local Exclusives. Master drops from top Phuket growers. Limited batches for true connoisseurs.' 
-    }
-  },
   {
     id: 'classic-showcase',
     targetId: 'buds-menu',
+    targetGradeId: 'classic',
     bgGlow: 'radial-gradient(circle at 50% 120%, #F59E0B, transparent 70%)',
-    borderColor: '#F59E0B40',
+    borderColor: '#F59E0B50',
     icon: Leaf,
     iconColor: '#F59E0B',
-    fullWidth: false,
-    title: { ru: 'CLASSIC LINE', en: 'CLASSIC LINE' },
+    spanClass: 'col-span-2 min-h-[140px]', // 1/3 ширины
+    title: { ru: 'CLASSIC', en: 'CLASSIC' },
     desc: { 
-      ru: 'Стабильное качество и баланс на каждый день.', 
-      en: 'Time-tested quality and balance for your daily lifestyle.' 
+      ru: 'Качество на каждый день.', 
+      en: 'Daily quality standard.' 
+    }
+  },
+  {
+    id: 'premium-showcase',
+    targetId: 'buds-menu',
+    targetGradeId: 'premium',
+    bgGlow: 'radial-gradient(circle at 50% 120%, #10B981, transparent 70%)',
+    borderColor: '#10B98140',
+    icon: Sparkles,
+    iconColor: '#10B981',
+    spanClass: 'col-span-2 min-h-[140px]', // 1/3 ширины
+    title: { ru: 'PREMIUM', en: 'PREMIUM' },
+    desc: { 
+      ru: 'Яркие вкусовые профили.', 
+      en: 'Rich terpene profiles.' 
+    }
+  },
+  {
+    id: 'elite-showcase',
+    targetId: 'buds-menu',
+    targetGradeId: 'elite',
+    bgGlow: 'radial-gradient(circle at 50% 120%, #A855F7, transparent 70%)',
+    borderColor: '#A855F740',
+    icon: Crown,
+    iconColor: '#A855F7',
+    spanClass: 'col-span-2 min-h-[140px]', // 1/3 ширины
+    title: { ru: 'IMPORT', en: 'IMPORT' },
+    desc: { 
+      ru: 'Топовый импорт и эксклюзивы.', 
+      en: 'Top-shelf & exclusives.' 
     }
   },
   {
     id: 'extracts-showcase',
     targetId: 'concentrates-menu',
-    bgGlow: 'radial-gradient(circle at 50% 120%, #A855F7, transparent 70%)',
-    borderColor: '#A855F750',
+    bgGlow: 'radial-gradient(circle at 50% 120%, #34D399, transparent 70%)',
+    borderColor: '#34D39940',
     icon: Droplets,
-    iconColor: '#A855F7',
-    fullWidth: false,
+    iconColor: '#34D399',
+    spanClass: 'col-span-3 min-h-[130px]', // 1/2 ширины (второй ряд)
     title: { ru: 'CONCENTRATES', en: 'CONCENTRATES' },
     desc: { 
-      ru: 'Fresh Frozen & Live Rosin. Чистая экстракция.', 
-      en: 'Fresh Frozen & Live Rosin. Pure and advanced tech.' 
+      ru: 'Чистейшая экстракция высокого уровня.', 
+      en: 'Purest high-tier extractions.' 
     }
   },
   {
-    id: 'ready-showcase',
+    id: 'prerolls-showcase',
     targetId: 'prerolls-menu',
     bgGlow: 'radial-gradient(circle at 50% 120%, #F472B6, transparent 70%)',
-    borderColor: '#F472B650',
-    icon: FlameKindling,
+    borderColor: '#F472B640',
+    icon: Cigarette,
     iconColor: '#F472B6',
-    fullWidth: true,
-    title: { ru: 'READY SOLUTIONS', en: 'READY SOLUTIONS' },
+    spanClass: 'col-span-3 min-h-[130px]', // 1/2 ширины (второй ряд)
+    title: { ru: 'PREROLLS', en: 'PREROLLS' },
     desc: { 
-      ru: 'Прероллы ручной работы и брендовые аксессуары для максимального комфорта.', 
-      en: 'Handcrafted prerolls and premium gear for your ultimate comfort.' 
+      ru: 'Готовые решения ручной работы.', 
+      en: 'Handcrafted ready solutions.' 
     }
   }
 ];
@@ -189,7 +206,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
   
-  // Храним в стейте только те ID, которые юзер закрыл вручную (по дефолту пустой, значит всё открыто)
   const [closedGrades, setClosedGrades] = React.useState<string[]>([]);
   const [isInfoOpen, setIsInfoOpen] = React.useState(false);
   const { items, getTotal, lang, setLang } = useCart();
@@ -230,10 +246,18 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         const saleItems = allItems.filter(p => p.badge?.toUpperCase() === 'SALE');
         const priceRef = regularItems[0] || allItems[0];
         const salePriceRef = saleItems[0]; 
-        return { grade, regularItems, saleItems, priceRef, salePriceRef, isClassic: true };
+        return { grade, regularItems, saleItems, priceRef, salePriceRef, isClassic: true, isPremiumGrade: false };
       }
 
-      return { grade, regularItems: allItems, saleItems: [], priceRef: allItems[0], isClassic: false };
+      if (grade.id === 'premium') {
+        const regularItems = allItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
+        const saleItems = allItems.filter(p => p.badge?.toUpperCase() === 'SALE');
+        const priceRef = regularItems[0] || allItems[0];
+        const salePriceRef = saleItems[0];
+        return { grade, regularItems, saleItems, priceRef, salePriceRef, isClassic: false, isPremiumGrade: true };
+      }
+
+      return { grade, regularItems: allItems, saleItems: [], priceRef: allItems[0], isClassic: false, isPremiumGrade: false };
     }).filter(g => g.regularItems.length > 0 || g.saleItems.length > 0);
   }, [processedProducts]);
 
@@ -357,8 +381,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
         </div>
 
-        {/* ПРЕЗЕНТАЦИОННЫЙ ХАБ КАТЕГОРИЙ (Вместо старых кнопок-ссылок) */}
-        <div className="grid grid-cols-2 gap-3 px-2 mt-6 mb-6 relative z-20">
+        {/* ОБНОВЛЕННЫЙ ПРЕЗЕНТАЦИОННЫЙ ХАБ (Правка: Изменен порядок и сетка grid-cols-6) */}
+        <div className="grid grid-cols-6 gap-3 px-2 mt-6 mb-6 relative z-20">
           {SHOWCASE_CARDS.map((card) => {
             const Icon = card.icon;
             return (
@@ -366,47 +390,38 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 key={card.id}
                 onClick={() => {
                   triggerHaptic('medium');
-                  // Если нажали на Classic — убираем его из закрытых, чтобы он точно распахнулся
-                  if (card.id === 'classic-showcase') {
-                    setClosedGrades(p => p.filter(x => x !== 'classic'));
+                  if (card.targetGradeId) {
+                    setClosedGrades(p => p.filter(x => x !== card.targetGradeId));
                   }
-                  // Если нажали на концентраты/прероллы/аксессуары — принудительно открываем их разделы
                   if (card.id === 'extracts-showcase') {
                     concentrateSections.forEach(sec => {
                       setClosedGrades(p => p.includes(sec.id) ? p : [...p, sec.id]);
                     });
                   }
-                  if (card.id === 'ready-showcase') {
+                  if (card.id === 'prerolls-showcase') {
                     prerollSections.forEach(sec => {
                       setClosedGrades(p => p.includes(sec.id) ? p : [...p, sec.id]);
                     });
-                    if (accessoriesSections) {
-                      accessoriesSections.forEach(sec => {
-                        setClosedGrades(p => p.includes(sec.id) ? p : [...p, sec.id]);
-                      });
-                    }
                   }
                   scrollToSection(card.targetId);
                 }}
-                className={`relative rounded-[2rem] border p-5 flex flex-col justify-between overflow-hidden cursor-pointer transition-all duration-300 bg-[#0D1F18] active:scale-[0.98] group ${
-                  card.fullWidth ? 'col-span-2 min-h-[120px]' : 'col-span-1 min-h-[155px]'
-                }`}
+                className={`relative rounded-[2rem] border p-4 flex flex-col justify-between overflow-hidden cursor-pointer transition-all duration-300 bg-[#0D1F18] active:scale-[0.98] group ${card.spanClass}`}
                 style={{ borderColor: card.borderColor }}
               >
                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60 pointer-events-none z-0" />
                 <div className="absolute inset-0 opacity-25 pointer-events-none z-0 transition-opacity group-hover:opacity-45" style={{ background: card.bgGlow }} />
 
-                <div className="relative z-10 flex items-start justify-between gap-2">
-                  <h3 className="text-[13px] font-black tracking-wider text-white uppercase leading-none mt-1.5">
+                <div className="relative z-10 flex items-start justify-between gap-1.5 w-full">
+                  <h3 className="text-[11px] font-black tracking-wider text-white uppercase leading-tight mt-1">
                     {lang === 'ru' ? card.title.ru : card.title.en}
                   </h3>
-                  <div className="p-2 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 shadow-lg shrink-0">
-                    <Icon size={16} style={{ color: card.iconColor }} />
+                  <div className="p-1.5 bg-black/40 backdrop-blur-md rounded-xl border border-white/10 shadow-lg shrink-0">
+                    <Icon size={14} style={{ color: card.iconColor }} />
                   </div>
                 </div>
 
-                <div className="relative z-10 mt-3">
-                  <p className="text-[11px] font-medium text-white/50 leading-relaxed max-w-[95%] group-hover:text-white/80 transition-colors">
+                <div className="relative z-10 mt-2">
+                  <p className="text-[9.5px] font-medium text-white/40 leading-snug max-w-[98%] group-hover:text-white/70 transition-colors line-clamp-2">
                     {lang === 'ru' ? card.desc.ru : card.desc.en}
                   </p>
                 </div>
@@ -437,7 +452,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
           <div className="space-y-3">
-            {gradeSections.map(({ grade, regularItems, saleItems, priceRef, salePriceRef, isClassic }) => {
+            {gradeSections.map(({ grade, regularItems, saleItems, priceRef, salePriceRef, isClassic, isPremiumGrade }) => {
               const isOpen = !closedGrades.includes(grade.id);
               return (
                 <div key={grade.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)' }}>
@@ -445,7 +460,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="w-full flex items-center justify-between mb-3 px-4">
                       <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
                       <div className="flex items-center gap-2">
-                        {isClassic && (
+                        {(isClassic || isPremiumGrade) && (
                           <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
                             {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
                           </span>
@@ -470,7 +485,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     <div className="divide-y divide-white/10 bg-white/5">
                         {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
                         
-                        {isClassic && saleItems.length > 0 && (
+                        {(isClassic || isPremiumGrade) && saleItems.length > 0 && (
                             <div className="bg-emerald-500/5 pt-6 pb-2">
                                 <div className="px-8 flex flex-col gap-4">
                                     <div className="flex items-center gap-2 opacity-90">
@@ -552,9 +567,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </div>
 
           <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
-             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#A855F7]/30 bg-[#A855F7]/10 backdrop-blur-md" style={{ color: '#A855F7' }}>{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
-             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md" style={{ color: '#A855F7', borderColor: '#A855F730' }}>{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
           <div className="space-y-3">
             {concentrateSections.map(sec => {
