@@ -105,7 +105,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       
       {!hideBadge && item.badge && (<div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75' : 'scale-90'}`}><BadgeIcon type={item.badge} /></div>)}
       
-      <div className="relative z-10 px-4 py-3 pb-0 flex-1 flex flex-col min-h-0">
+      <div className="relative z-10 px-5 py-3 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[11px]' : 'text-[13px]'} font-black uppercase tracking-tight leading-tight text-white group-hover:text-emerald-300 transition-colors`}>{item.name}</h3>
           {showSubcategory && (<p className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-bold mt-1 text-white/50 uppercase tracking-widest italic`}>{item.subcategory === 'classic' ? 'Classic' : (item.subcategory === 'selected' ? 'Selected' : item.subcategory || "Product")}</p>)}
@@ -115,7 +115,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
         </div>
       </div>
 
-      <div className="relative z-10 flex justify-between items-end px-4 pb-4 mt-auto">
+      <div className="relative z-10 flex justify-between items-end px-5 pb-4 mt-auto">
         <span className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-black uppercase tracking-widest brightness-125`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end">
           {oldPrice > currentPrice && <span className={`${isMini ? 'text-[9px]' : 'text-[11px]'} font-bold line-through opacity-40 text-white canvas-leading-none mb-0.5`}>{oldPrice}<BahtSymbol /></span>}
@@ -266,6 +266,27 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     setClosedGrades(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   };
 
+  // ПРАВКА ПУНКТА 4: Плавный доезд до секции, и только затем (через 400ms) открытие нужной категории «перед глазами» клиента
+  const handleAnchorNavigation = (targetSectionId: string, accordionIdsToOpen: string[], allAccordionIds: string[]) => {
+    triggerHaptic('medium');
+    
+    // 1. Сначала плавно перемещаем экран к нужному якорю меню
+    const el = document.getElementById(targetSectionId);
+    if (el) {
+      const offset = 20;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
+    }
+
+    // 2. С задержкой в 400мс (когда скролл завершен) раскрываем целевые подразделы и сворачиваем остальные
+    setTimeout(() => {
+      const newClosedGrades = allAccordionIds.filter(id => !accordionIdsToOpen.includes(id));
+      setClosedGrades(newClosedGrades);
+    }, 400);
+  };
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -278,11 +299,19 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     }
   };
 
+  // Массив всех зарегистрированных ID вкладок аккордеонов для логики исключений
+  const allSectionIds = React.useMemo(() => {
+    const ids = ['classic', 'premium'];
+    if (combinedEliteSection) ids.push(combinedEliteSection.id);
+    concentrateSections.forEach(s => ids.push(s.id));
+    prerollSections.forEach(s => ids.push(s.id));
+    if (accessoriesSections) accessoriesSections.forEach(s => ids.push(s.id));
+    return ids;
+  }, [combinedEliteSection, concentrateSections, prerollSections, accessoriesSections]);
+
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
-        
-        {/* ШАПКА — ИСПРАВЛЕНО: Кнопки соцсетей уменьшены до w-[46px] h-[46px], размер иконок изменен на 18 */}
         <div className="flex items-center justify-between px-2 mb-[4px]"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
@@ -294,8 +323,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   <SendHorizontal size={18} className="opacity-80"/>
                 </Link>
 
+                {/* ПРАВКА ПУНКТА 1: Кнопка WhatsApp оставлена неактивной (opacity-20 grayscale cursor-default) */}
                 <div className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
-                  <Phone size={18} />
+                  <MessageCircle size={18} />
                 </div>
 
                 <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
@@ -306,7 +336,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
            </div>
         </div>
 
-        {/* НАВИГАЦИОННЫЕ КНОПКИ — ИСПРАВЛЕНО: Теперь используют rounded-[1.5rem] для сохранения единого стиля геометрии первого экрана */}
         <div className="flex flex-wrap sm:flex-nowrap gap-2 px-2 mb-4 mt-2 relative z-20">
           <button onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-[1.5rem] border border-white/15 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden">
             <Bike size={15} className="text-emerald-400 shrink-0" />
@@ -322,13 +351,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           
           {/* SPLIT CARD (FLOWERS) */}
           <div className="relative rounded-[1.5rem] border border-white/15 flex overflow-hidden col-span-2 bg-[#112D21] h-[68px]">
-            {/* Левая половина - CLASSIC */}
+            {/* Левая половина - CLASSIC (Якорь доводит скролл и открывает только Classic с задержкой) */}
             <div 
-              onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'classic')); scrollToSection('buds-menu'); }} 
+              onClick={() => handleAnchorNavigation('buds-menu', ['classic'], allSectionIds)} 
               className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 group border-r border-white/15"
             >
               <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.15] scale-[2.2] -rotate-12 transition-transform group-hover:scale-[2.4] duration-500">
-                <Leaf style={{ color: '#FFF' }} strokeWidth={1.5} />
+                <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" width={40} height={40} className="w-10 h-10 object-contain invert" alt="Leaf overlay" />
               </div>
               <div className="relative z-10 flex flex-col items-center text-center gap-0.5 min-w-0 pl-14">
                 <span className="text-[11px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">{lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}</span>
@@ -336,9 +365,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               </div>
             </div>
 
-            {/* Правая половина - PREMIUM */}
+            {/* Правая половина - PREMIUM (Якорь доводит скролл и открывает только Premium с задержкой) */}
             <div 
-              onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'premium')); scrollToSection('buds-menu'); }} 
+              onClick={() => handleAnchorNavigation('buds-menu', ['premium'], allSectionIds)} 
               className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30 group"
             >
               <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.15] scale-[2.2] rotate-12 transition-transform group-hover:scale-[2.4] duration-500">
@@ -351,16 +380,28 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           </div>
 
-          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ */}
+          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ (ПРАВКА ПУНКТА 3: Теперь все якоря точечно раскрывают свои категории с задержкой) */}
           {[
-            { id: 'import', title: lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВЫ' : 'IMPORT & EXCLUSIVES', icon: MapPin, scroll: 'buds-menu', bgClass: 'bg-blue-500/10 hover:bg-blue-500/20' },
-            { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', icon: Droplets, scroll: 'concentrates-menu', bgClass: 'bg-amber-500/10 hover:bg-amber-500/20' },
-            { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', icon: Cigarette, scroll: 'prerolls-menu', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' },
-            { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', icon: Layers, scroll: 'accessories-menu', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' }
+            { id: 'import', title: lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВЫ' : 'IMPORT & EXCLUSIVES', icon: MapPin, scroll: 'import-menu-section', bgClass: 'bg-blue-500/10 hover:bg-blue-500/20' },
+            { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', icon: Droplets, scroll: 'concentrates-menu-section', bgClass: 'bg-amber-500/10 hover:bg-amber-500/20' },
+            { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', icon: Cigarette, scroll: 'prerolls-menu-section', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' },
+            { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', icon: Layers, scroll: 'accessories-menu-section', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' }
           ].map((btn) => (
             <div 
               key={btn.id} 
-              onClick={() => { triggerHaptic('medium'); if(btn.id==='concentrates') concentrateSections.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='prerolls') prerollSections.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='accessories') accessoriesSections?.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='import') setClosedGrades(p=>p.filter(x=>x!=='import_exclusive_combined')); scrollToSection(btn.scroll); }} 
+              onClick={() => {
+                if (btn.id === 'import' && combinedEliteSection) {
+                  handleAnchorNavigation(btn.scroll, [combinedEliteSection.id], allSectionIds);
+                } else if (btn.id === 'concentrates') {
+                  handleAnchorNavigation(btn.scroll, concentrateSections.map(s => s.id), allSectionIds);
+                } else if (btn.id === 'prerolls') {
+                  handleAnchorNavigation(btn.scroll, prerollSections.map(s => s.id), allSectionIds);
+                } else if (btn.id === 'accessories' && accessoriesSections) {
+                  handleAnchorNavigation(btn.scroll, accessoriesSections.map(s => s.id), allSectionIds);
+                } else {
+                  scrollToSection(btn.scroll);
+                }
+              }} 
               className={`relative rounded-[1.5rem] border border-white/15 flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 backdrop-blur-sm active:scale-[0.98] group col-span-1 h-[52px] ${btn.bgClass}`}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 pointer-events-none z-0" />
@@ -455,7 +496,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             })}
             
             {combinedEliteSection && (
-              <div key={combinedEliteSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: !closedGrades.includes(combinedEliteSection.id) ? `${combinedEliteSection.color}A0` : 'rgba(255,255,255,0.08)' }}>
+              <div key={combinedEliteSection.id} id="import-menu-section" className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: !closedGrades.includes(combinedEliteSection.id) ? `${combinedEliteSection.color}A0` : 'rgba(255,255,255,0.08)' }}>
                 <button onClick={() => toggleSection(combinedEliteSection.id)} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left group">
                   <div className="w-full flex items-center justify-between">
                     <div className="flex items-center gap-3"><combinedEliteSection.icon size={22} style={{ color: combinedEliteSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: combinedEliteSection.color }}>{combinedEliteSection.title}</h2></div>
@@ -466,34 +507,35 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   </div>
                 </button>
                 <div className={`overflow-hidden transition-all duration-500 ${!closedGrades.includes(combinedEliteSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                  <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{combinedEliteSection.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
+                  {/* ПРАВКА ПУНКТА 4: showSubcategory переведен в положение true для отображения подписей */}
+                  <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{combinedEliteSection.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={true} />))}</div>
                 </div>
               </div>
             )}
           </div>
 
-          <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+          <div id="concentrates-menu-section" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md" style={{ color: '#10B981', borderColor: '#10B98130' }}>{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
-          <div className="space-y-3">{concentrateSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[1, 5, 10, 20].map(w => { const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0); return ( <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
+          <div className="space-y-3">{concentrateSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[1, 5, 10, 20].map(w => { const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0); return ( <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
 
-          <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+          <div id="prerolls-menu-section" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md" style={{ borderColor: `${GOLDEN_COLOR}4d`, color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
-          <div className="space-y-3">{prerollSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); const priceRef = sec.items[0]; return ( <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => { const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0); return ( <div key={unit.w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[10px] font-black opacity-60 uppercase leading-none mb-[1px]">{unit.l}</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
+          <div className="space-y-3">{prerollSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); const priceRef = sec.items[0]; return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => { const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0); return ( <div key={unit.w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[10px] font-black opacity-60 uppercase leading-none mb-[1px]">{unit.l}</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
 
           {accessoriesSections && (
-            <div id="accessories-menu" className="pt-4">
+            <div id="accessories-menu-section" className="pt-4">
               <div className="flex items-center gap-4 pt-6 pb-6 relative">
                  <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#EC4899]/50 to-[#EC4899]"></div>
                  <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#EC4899]/30 bg-[#EC4899]/10 backdrop-blur-md" style={{ color: '#EC4899' }}>{lang === 'ru' ? 'Аксессуары' : 'Accessories'}</span>
                  <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#EC4899]/50 to-[#EC4899]"></div>
               </div>
-              <div className="space-y-3">{accessoriesSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
+              <div className="space-y-3">{accessoriesSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => packs.map ? p : <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />)}</div> </div> </div> ); })} </div>
             </div>
           )}
         </div>
