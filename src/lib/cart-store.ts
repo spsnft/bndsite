@@ -1,3 +1,4 @@
+"use client"
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
 import { getInterpolatedPrice, isElite } from "./utils"
@@ -34,31 +35,40 @@ export const useCart = create<CartStore>()(
       setLang: (lang) => set({ lang }),
 
       addItem: (newItem) => set((state) => {
+        if (!newItem) return state;
+
         const existingIndex = state.items.findIndex((i) => i.id === newItem.id);
         
         // Извлекаем числовое значение (например, "3.5G" -> 3.5)
-        const addedWeightNum = parseFloat(newItem.weight);
+        const addedWeightNum = parseFloat(newItem.weight) || 0;
 
         if (existingIndex > -1) {
           const existingItem = state.items[existingIndex];
-          const currentWeightNum = parseFloat(existingItem.weight);
+          const currentWeightNum = parseFloat(existingItem.weight) || 0;
           const totalWeightNum = currentWeightNum + addedWeightNum;
 
+          // Безопасный фоллбек-объект для утилит, объединяющий старые данные и новые
+          const safeItemForCheck = { ...newItem, ...existingItem };
+
           // Определяем, является ли товар элитным/импортом
-          const isEliteProduct = isElite(existingItem) && existingItem.subcategory?.toLowerCase() !== 'import loose';
+          const isEliteProduct = isElite(safeItemForCheck) && safeItemForCheck.subcategory?.toLowerCase() !== 'import loose';
 
           // ПРОВЕРКА: Если цены передаются в newItem, используем их, иначе берем из существующего
           const priceData = existingItem.prices || newItem.prices;
 
           // Пересчитываем цену. 
-          // Если getInterpolatedPrice вернет 0 или undefined, ставим старую цену + цену нового (как фоллбек)
-          let newTotalPrice = Math.round(
-            getInterpolatedPrice(totalWeightNum, priceData, isEliteProduct)
-          );
+          let newTotalPrice = 0;
+          try {
+            newTotalPrice = Math.round(
+              getInterpolatedPrice(totalWeightNum, priceData, isEliteProduct)
+            );
+          } catch (e) {
+            console.error("Price interpolation failed", e);
+          }
 
           // Если расчет не удался (вернул 0), просто плюсуем цены (защита от "цены 0")
           if (!newTotalPrice || newTotalPrice === 0) {
-            newTotalPrice = existingItem.price + newItem.price;
+            newTotalPrice = (existingItem.price || 0) + (newItem.price || 0);
           }
 
           const updatedItems = [...state.items];
@@ -82,8 +92,8 @@ export const useCart = create<CartStore>()(
       clearCart: () => set({ items: [] }),
 
       getTotal: () => {
-        const items = get().items;
-        return items.reduce((acc, item) => acc + (item.price || 0), 0);
+        const items = get().items || [];
+        return items.reduce((acc, item) => acc + (Number(item.price) || 0), 0);
       },
     }),
     { 
