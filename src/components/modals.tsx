@@ -22,6 +22,7 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
   const [isAdded, setIsAdded] = React.useState(false);
   const addItem = useCart((s: any) => s.addItem);
   
+  // Расчет цен поднят НАВЕРХ, чтобы useMemo видел переменную perGram
   const currentPrice = Math.round(getInterpolatedPrice(weight, product.prices, isEliteProduct));
   const oldPrice = product.old_prices ? Math.round(getInterpolatedPrice(weight, product.old_prices, isEliteProduct)) : 0;
   const perGram = weight > 0 ? Math.round(currentPrice / weight) : 0;
