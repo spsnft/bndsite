@@ -332,7 +332,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           
           {/* SPLIT CARD (FLOWERS) */}
           <div 
-            className="relative rounded-2xl border flex overflow-hidden col-span-2 bg-[#112D21] border-white/15 transition-all duration-300"
+            className="relative rounded-2xl border border-white/15 flex overflow-hidden col-span-2 bg-[#112D21] transition-all duration-300"
           >
             {/* Левая половина - CLASSIC */}
             <div 
@@ -346,7 +346,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <div className="absolute inset-0 opacity-25 pointer-events-none transition-opacity group-hover:opacity-40" 
                    style={{ background: `radial-gradient(circle at 50% 50%, #10B981, transparent 70%)` }} />
               
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.4] duration-500">
+              {/* Исправлено 1: Размер иконки Leaf увеличен на 20% (scale-[2.2] / hover:scale-[2.5]) */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[2.2] transition-transform group-hover:scale-[2.5] duration-500">
                 <Leaf style={{ color: '#FFF' }} strokeWidth={1.5} />
               </div>
 
@@ -375,7 +376,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <div className="absolute inset-0 opacity-25 pointer-events-none transition-opacity group-hover:opacity-40" 
                    style={{ background: `radial-gradient(circle at 50% 50%, #A855F7, transparent 70%)` }} />
               
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.4] duration-500">
+              {/* Исправлено 1: Размер иконки Crown увеличен на 20% (scale-[2.2] / hover:scale-[2.5]) */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[2.2] transition-transform group-hover:scale-[2.5] duration-500">
                 <Crown style={{ color: '#FFF' }} strokeWidth={1.5} />
               </div>
 
@@ -393,12 +395,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           </div>
 
-          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ — ИСПРАВЛЕНО: Скругления изменены с rounded-xl на rounded-2xl для 100% сходства с верхней плитой */}
+          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ */}
           {[
-            { id: 'import', isImport: true, color: IMPORT_COLOR, icon: MapPin, scroll: 'buds-menu', hoverBorder: 'group-hover:border-[#60A5FA]', bgLight: '#60A5FA' },
-            { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', color: '#34D399', icon: Droplets, scroll: 'concentrates-menu', hoverBorder: 'group-hover:border-[#34D399]', bgLight: '#34D399' },
-            { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', color: '#F472B6', icon: Cigarette, scroll: 'prerolls-menu', hoverBorder: 'group-hover:border-[#F472B6]', bgLight: '#F472B6' },
-            { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', color: '#EC4899', icon: Layers, scroll: 'accessories-menu', hoverBorder: 'group-hover:border-[#EC4899]', bgLight: '#EC4899' }
+            { id: 'import', isImport: true, color: IMPORT_COLOR, icon: MapPin, scroll: 'buds-menu', bgLight: '#60A5FA' },
+            { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', color: '#34D399', icon: Droplets, scroll: 'concentrates-menu', bgLight: '#34D399' },
+            { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', color: '#F472B6', icon: Cigarette, scroll: 'prerolls-menu', bgLight: '#34D399' }, // Исправлено 2: зеленая подсветка
+            { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', color: '#EC4899', icon: Layers, scroll: 'accessories-menu', bgLight: '#34D399' }  // Исправлено 2: зеленая подсветка
           ].map((btn) => (
             <div 
               key={btn.id} 
@@ -415,8 +417,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 }
                 scrollToSection(btn.scroll);
               }} 
-              // ИСПРАВЛЕНО: Теперь здесь стоит строго rounded-2xl и чистый border border-white/15 как на верхних плитах
-              className={`relative rounded-2xl border border-white/15 flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-white/5 backdrop-blur-md active:scale-[0.98] group col-span-1 h-[52px] ${btn.hoverBorder}`}
+              // ИСПРАВЛЕНО: Убран динамический hover цвета бордера. Теперь у всех кнопок одинаковый, чистый border-white/15 в любых состояниях.
+              className="relative rounded-2xl border border-white/15 flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-white/5 backdrop-blur-md active:scale-[0.98] group col-span-1 h-[52px]"
             >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
               <div className="absolute inset-0 opacity-20 pointer-events-none z-0 transition-opacity group-hover:opacity-40" style={{ background: `radial-gradient(circle at 50% 50%, ${btn.bgLight}, transparent 70%)` }} />
@@ -504,7 +506,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     <div className="divide-y divide-white/10 bg-white/5">
-                        {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                        {regularItems.map((p: any) => Parsed => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
                         
                         {saleItems.length > 0 && (
                             <>
