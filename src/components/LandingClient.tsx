@@ -300,9 +300,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           {/* SPLIT CARD (FLOWERS) */}
           <div 
             className="relative rounded-2xl border flex overflow-hidden col-span-2 bg-[#112D21]"
-            style={{ borderColor: `${GOLDEN_COLOR}50` }}
+            style={{ borderColor: `rgba(255,255,255,0.15)` }}
           >
-            {/* Левая половина - CLASSIC */}
+            {/* Левая половина - CLASSIC (Теперь ЗЕЛЕНЫЙ) */}
             <div 
               onClick={() => {
                 triggerHaptic('medium');
@@ -311,15 +311,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               }}
               className="relative flex-1 py-3 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group border-r border-white/5"
             >
-              <div className="absolute inset-0 opacity-15 pointer-events-none transition-opacity group-hover:opacity-35" 
-                   style={{ background: `radial-gradient(circle at 20% 120%, ${GOLDEN_COLOR}, transparent 70%)` }} />
+              <div className="absolute inset-0 opacity-25 pointer-events-none transition-opacity group-hover:opacity-40" 
+                   style={{ background: `radial-gradient(circle at 20% 120%, #10B981, transparent 70%)` }} />
               
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.06] scale-[2.2] blur-[0.5px] transition-transform group-hover:scale-[2.4] duration-500">
-                <Leaf style={{ color: GOLDEN_COLOR }} strokeWidth={1.2} />
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.1] scale-[2.2] blur-[0.5px] transition-transform group-hover:scale-[2.4] duration-500">
+                <Leaf style={{ color: '#10B981' }} strokeWidth={1.2} />
               </div>
 
               <div className="relative z-10 flex flex-col gap-1 min-w-0">
-                <span className="text-[8px] font-black tracking-[0.2em] text-emerald-400/70 uppercase leading-none">
+                <span className="text-[8px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">
                   {lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}
                 </span>
                 
@@ -333,7 +333,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               </div>
             </div>
 
-            {/* Правая половина - PREMIUM */}
+            {/* Правая половина - PREMIUM (Теперь ФИОЛЕТОВЫЙ) */}
             <div 
               onClick={() => {
                 triggerHaptic('medium');
@@ -342,15 +342,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               }}
               className="relative flex-1 py-3 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group"
             >
-              <div className="absolute inset-0 opacity-15 pointer-events-none transition-opacity group-hover:opacity-35" 
-                   style={{ background: `radial-gradient(circle at 80% 120%, #10B981, transparent 70%)` }} />
+              <div className="absolute inset-0 opacity-25 pointer-events-none transition-opacity group-hover:opacity-40" 
+                   style={{ background: `radial-gradient(circle at 80% 120%, #A855F7, transparent 70%)` }} />
               
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.06] scale-[2.2] blur-[0.5px] transition-transform group-hover:scale-[2.4] duration-500">
-                <Crown style={{ color: '#10B981' }} strokeWidth={1.2} />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.1] scale-[2.2] blur-[0.5px] transition-transform group-hover:scale-[2.4] duration-500">
+                <Crown style={{ color: '#A855F7' }} strokeWidth={1.2} />
               </div>
 
               <div className="relative z-10 flex flex-col gap-1 min-w-0">
-                <span className="text-[8px] font-black tracking-[0.2em] text-emerald-400/70 uppercase leading-none">
+                <span className="text-[8px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">
                   {lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}
                 </span>
                 
