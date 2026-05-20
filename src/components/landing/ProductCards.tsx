@@ -25,6 +25,8 @@ export const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?
 });
 
 export const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: any) => {
+  if (!item) return null;
+
   const sub = item.subcategory?.toLowerCase() || "";
   
   // Определяем основной цвет. Если это classic — берем золотой.
@@ -32,8 +34,20 @@ export const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, i
     ? (sub.includes('fresh frozen premium') ? "#34D399" : sub.includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
     : (isElite(item) ? (sub.includes('import') ? IMPORT_COLOR : SELECTED_COLOR) : (sub === 'classic' ? GOLDEN_COLOR : (GRADES.find(g => g.id === sub)?.color || SELECTED_COLOR)));
   
-  const { price: currentPrice, weight: firstWeight } = getFirstAvailablePrice(item);
-  const oldPrice = item.old_prices ? Math.round(getInterpolatedPrice(firstWeight, item.old_prices, isElite(item))) : 0;
+  // Безопасный деструктуринг цен
+  const priceInfo = getFirstAvailablePrice(item) || { price: 0, weight: 0 };
+  const currentPrice = priceInfo.price || 0;
+  const firstWeight = priceInfo.weight || 0;
+
+  // Безопасный расчет старой цены (только если есть валидный вес и массив цен)
+  let oldPrice = 0;
+  if (item.old_prices && firstWeight > 0) {
+    try {
+      oldPrice = Math.round(getInterpolatedPrice(firstWeight, item.old_prices, isElite(item))) || 0;
+    } catch (e) {
+      console.error("Failed to calculate old price", e);
+    }
+  }
 
   return (
     <div 
@@ -51,7 +65,7 @@ export const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, i
         </div>
       </div>
       <div className="relative z-10 flex justify-between items-end px-5 pb-5">
-        <span className="text-[9px] font-black uppercase" style={{ color: TYPE_COLORS[item.type?.toLowerCase()] }}>{item.type}</span>
+        <span className="text-[9px] font-black uppercase" style={{ color: TYPE_COLORS[item.type?.toLowerCase() || ''] }}>{item.type}</span>
         <div className="flex flex-col items-end">
           {oldPrice > currentPrice && <span className="text-[12px] line-through opacity-30 text-white">{oldPrice}<Baht /></span>}
           <p className="text-[20px] font-black" style={{ color: accentColor }}>{currentPrice > 0 ? <>{currentPrice}<Baht /></> : '—'}</p>
@@ -61,17 +75,20 @@ export const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, i
   );
 });
 
-export const ProductRow = React.memo(({ p, onClick }: any) => (
-  <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer text-white border-b border-white/5 last:border-none">
-    <div className="flex items-center gap-4 truncate flex-1">
-      <div className="w-8 flex justify-center">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
-      <div className="flex flex-col truncate">
-        <span className="text-[14px] font-black uppercase truncate">{p.name}</span>
-        {p.badge?.toUpperCase() === 'SALE' && <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-tighter">Special Offer</span>}
+export const ProductRow = React.memo(({ p, onClick }: any) => {
+  if (!p) return null;
+  return (
+    <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 active:bg-white/5 transition-colors cursor-pointer text-white border-b border-white/5 last:border-none">
+      <div className="flex items-center gap-4 truncate flex-1">
+        <div className="w-8 flex justify-center">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
+        <div className="flex flex-col truncate">
+          <span className="text-[14px] font-black uppercase truncate">{p.name}</span>
+          {p.badge?.toUpperCase() === 'SALE' && <span className="text-[9px] font-bold text-emerald-400/60 uppercase tracking-tighter">Special Offer</span>}
+        </div>
+      </div>
+      <div className="flex items-center gap-5 shrink-0 pr-4">
+        <span className="text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[p.type?.toLowerCase() || ''] }}>{p.type}</span>
       </div>
     </div>
-    <div className="flex items-center gap-5 shrink-0 pr-4">
-      <span className="text-[10px] font-black uppercase" style={{ color: TYPE_COLORS[p.type?.toLowerCase()] }}>{p.type}</span>
-    </div>
-  </div>
-));
+  );
+});
