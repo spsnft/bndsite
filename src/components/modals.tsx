@@ -155,7 +155,7 @@ export function ProductModal({ product, style, onClose, t }: { product: any, sty
 
           <button onClick={() => { 
               triggerHaptic('success');
-              addItem({ ...product, price: currentPrice, weight: getLabel(weight), subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
+              addItem({ ...product, price: currentPrice, weight: weight, subcategory: product.subcategory, type: product.type, image: product.image, prices: product.prices }); 
               setIsAdded(true); 
               setTimeout(() => {setIsAdded(false); onClose();}, 800); 
             }} 
