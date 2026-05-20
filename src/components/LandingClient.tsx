@@ -168,7 +168,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     return [...sales].sort((a, b) => (Number(b.id) || 0) - (Number(a.id) || 0));
   }, [processedProducts]);
   
-  // Разделение каталога: Классика и Премиум
   const gradeSections = React.useMemo(() => {
     const buds = processedProducts.filter(p => p.category === 'buds' && !isElite(p));
     
@@ -185,7 +184,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       sections.push({
         id: 'classic',
         title: 'Classic Grade',
-        color: '#10B981', // Изменено на зеленый
+        color: '#10B981',
         icon: Leaf,
         regularItems: classicRegular,
         saleItems: classicSale,
@@ -200,7 +199,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
       sections.push({
         id: 'premium',
         title: 'Premium Grade',
-        color: '#A855F7', // Изменено на фиолетовый
+        color: '#A855F7',
         icon: Crown,
         regularItems: premiumRegular,
         saleItems: premiumSale,
@@ -214,7 +213,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
     return sections;
   }, [processedProducts]);
 
-  // Группировка: local exclusive + import + import loose в одну общую категорию
   const combinedEliteSection = React.useMemo(() => {
     const items = processedProducts.filter(p => 
       (p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')) ||
@@ -329,13 +327,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </button>
         </div>
 
-        {/* СМЫСЛОВОЙ ХАБ СО SPLIT CARD */}
+        {/* СМЫСЛОВОЙ ХАБ СО SPLIT CARD (РАЗДЕЛ КАТЕГОРИЙ) */}
         <div className="grid grid-cols-2 gap-2 px-2 mb-6 relative z-20">
           
-          {/* SPLIT CARD (FLOWERS) */}
+          {/* SPLIT CARD (FLOWERS) - ИСПРАВЛЕНО: ТЕПЕРЬ С СЕРЫМ БОРДЕРОМ border-white/15 СТАТИЧНО */}
           <div 
-            className="relative rounded-2xl border flex overflow-hidden col-span-2 bg-[#112D21]"
-            style={{ borderColor: `rgba(255,255,255,0.15)` }}
+            className="relative rounded-2xl border flex overflow-hidden col-span-2 bg-[#112D21] border-white/15 transition-all duration-300"
           >
             {/* Левая половина - CLASSIC */}
             <div 
@@ -344,13 +341,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 setClosedGrades(p => p.filter(x => x !== 'classic'));
                 scrollToSection('buds-menu');
               }}
-              className="relative flex-1 py-3 px-4 flex items-center justify-center cursor-pointer transition-all duration-300 active:bg-black/20 group border-r border-white/5"
+              className="relative flex-1 py-3 px-4 flex items-center justify-center cursor-pointer transition-all duration-300 active:bg-black/20 group border-r border-white/15"
             >
-              {/* Изменено на зеленый по центру */}
               <div className="absolute inset-0 opacity-25 pointer-events-none transition-opacity group-hover:opacity-40" 
                    style={{ background: `radial-gradient(circle at 50% 50%, #10B981, transparent 70%)` }} />
               
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.4] duration-500">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.0] duration-500">
                 <Leaf style={{ color: '#10B981' }} strokeWidth={1.5} />
               </div>
 
@@ -361,7 +357,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
                   {lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}
                 </h3>
-                {/* Исправлено: текст с маленькой буквы */}
                 <p className="text-[9.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2 max-w-[150px]">
                   {lang === 'ru' ? 'качественные сорта с проверенных ферм по низким ценам' : 'high-quality strains from verified farms at budget prices'}
                 </p>
@@ -377,11 +372,10 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               }}
               className="relative flex-1 py-3 px-4 flex items-center justify-center cursor-pointer transition-all duration-300 active:bg-black/20 group"
             >
-              {/* Изменено на фиолетовый по центру */}
               <div className="absolute inset-0 opacity-25 pointer-events-none transition-opacity group-hover:opacity-40" 
                    style={{ background: `radial-gradient(circle at 50% 50%, #A855F7, transparent 70%)` }} />
               
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.4] duration-500">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.0] duration-500">
                 <Crown style={{ color: '#A855F7' }} strokeWidth={1.5} />
               </div>
 
@@ -392,7 +386,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
                   {lang === 'ru' ? 'ПРЕМИУМ' : 'PREMIUM'}
                 </h3>
-                {/* Исправлено: текст с маленькой буквы */}
                 <p className="text-[9.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2 max-w-[150px]">
                   {lang === 'ru' ? 'сорта-призеры, хиты продаж, лучшие фермы и генетики' : 'award-winning strains, top sellers, best farms & genetics'}
                 </p>
@@ -400,12 +393,12 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           </div>
 
-          {/* НИЖНИЕ КАТЕГОРИИ С ЕДИНЫМ СТИЛЕМ И ПОДСВЕТКОЙ */}
+          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ - ИСПРАВЛЕНО: СТАТИЧНЫЙ БОРДЕР СТАТЬ СЕРЫМ border-white/15, ЦВЕТНОЙ НА ХОВЕР */}
           {[
-            { id: 'import', isImport: true, color: IMPORT_COLOR, icon: MapPin, scroll: 'buds-menu' },
-            { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', color: '#34D399', icon: Droplets, scroll: 'concentrates-menu' },
-            { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', color: '#F472B6', icon: Cigarette, scroll: 'prerolls-menu' },
-            { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', color: '#EC4899', icon: Layers, scroll: 'accessories-menu' }
+            { id: 'import', isImport: true, color: IMPORT_COLOR, icon: MapPin, scroll: 'buds-menu', hoverBorder: 'group-hover:border-[#60A5FA]' },
+            { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', color: '#34D399', icon: Droplets, scroll: 'concentrates-menu', hoverBorder: 'group-hover:border-[#34D399]' },
+            { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', color: '#F472B6', icon: Cigarette, scroll: 'prerolls-menu', hoverBorder: 'group-hover:border-[#F472B6]' },
+            { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', color: '#EC4899', icon: Layers, scroll: 'accessories-menu', hoverBorder: 'group-hover:border-[#EC4899]' }
           ].map((btn) => (
             <div 
               key={btn.id} 
@@ -422,8 +415,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 }
                 scrollToSection(btn.scroll);
               }} 
-              className="relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-white/5 backdrop-blur-md active:scale-[0.98] group col-span-1 h-[52px]" 
-              style={{ borderColor: `${btn.color}40` }}
+              // ИСПРАВЛЕНО: border-white/15 статично, цветной бордер активируется по hoverBorder
+              className={`relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-white/5 backdrop-blur-md active:scale-[0.98] group col-span-1 h-[52px] border-white/15 ${btn.hoverBorder}`}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
               <div className="absolute inset-0 opacity-20 pointer-events-none z-0 transition-opacity group-hover:opacity-40" style={{ background: `radial-gradient(circle at 50% 50%, ${btn.color}, transparent 70%)` }} />
@@ -517,7 +510,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                                 <div className="px-8 flex flex-col gap-4">
                                     <div className="flex items-center gap-2 opacity-90">
                                         <Tag size={14} style={{ color: color }} />
-                                        {/* Исправлено: универсальный заголовок "Сорта со скидкой" */}
                                         <span className="text-[11px] font-black uppercase tracking-[0.1em]" style={{ color: color }}>
                                             {lang === 'ru' ? 'Сорта со скидкой' : 'Strains on Sale'}
                                         </span>
@@ -548,7 +540,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               );
             })}
             
-            {/* НОВАЯ ОБЪЕДИНЕННАЯ СЕКЦИЯ: ИМПОРТ И ЛОКАЛЬНЫЕ ЭКСКЛЮЗИВЫ */}
+            {/* ОБЪЕДИНЕННАЯ СЕКЦИЯ ИМПОРТА И ЭКСКЛЮЗИВОВ */}
             {combinedEliteSection && (
               <div key={combinedEliteSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: !closedGrades.includes(combinedEliteSection.id) ? `${combinedEliteSection.color}A0` : 'rgba(255,255,255,0.08)' }}>
                 <button onClick={() => toggleSection(combinedEliteSection.id)} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left group">
@@ -561,7 +553,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 </button>
                 <div className={`overflow-hidden transition-all duration-500 ${!closedGrades.includes(combinedEliteSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                   <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
-                    {combinedEliteSection.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}
+                    {combinedEliteSection.items.map(p => Gang => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}
                   </div>
                 </div>
               </div>
@@ -712,7 +704,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           <Plus size={18} className="text-emerald-400 shrink-0" />
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{"От 1000฿, Доставка бесплатная"}</p>
           </div>
         </div>
         <div className="flex items-center gap-4">
