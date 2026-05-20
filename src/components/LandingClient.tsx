@@ -365,7 +365,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           </div>
 
-          {/* НОВЫЕ СЕКЦИОННЫЕ КНОПКИ С КРАСИВЫМИ ПОДСВЕТКАМИ И ИКОНКАМИ НА ФОНЕ */}
+          {/* НОВЫЕ СЕКЦИОННЫЕ КНОПКИ С ЯРКОЙ ПОДСВЕТКОЙ ОДИН В ОДИН КАК СВЕРХУ */}
           {[
             { id: 'import', title: lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВ' : 'IMPORT & EXCLUSIVE', color: IMPORT_COLOR, icon: MapPin, scroll: 'buds-menu' },
             { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', color: '#34D399', icon: Droplets, scroll: 'concentrates-menu' },
@@ -391,7 +391,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               style={{ borderColor: `${btn.color}45` }}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
-              <div className="absolute inset-0 opacity-20 pointer-events-none z-0 transition-opacity group-hover:opacity-40" style={{ background: `radial-gradient(circle at 50% 120%, ${btn.color}, transparent 70%)` }} />
+              {/* Исправлено: Сделал opacity-25 и group-hover:opacity-40 для идеального соответствия верхнему ряду */}
+              <div className="absolute inset-0 opacity-25 pointer-events-none z-0 transition-opacity group-hover:opacity-40" style={{ background: `radial-gradient(circle at 50% 120%, ${btn.color}, transparent 70%)` }} />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.08] scale-[1.8] blur-[0.5px] transition-transform group-hover:scale-[2.0] duration-500">
                 <btn.icon style={{ color: btn.color }} strokeWidth={1.5} />
               </div>
