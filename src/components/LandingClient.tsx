@@ -2,9 +2,13 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  Plus, Tag, Zap, MapPin, Star, Phone, 
-  Droplets, Snowflake, Box, Laptop, Info, Cigarette, Layers,
-  ShoppingBag, Send, Instagram, SendHorizontal, ChevronDown, Bike, Wallet, Timer
+  Plus, Tag, Zap, MapPin, Leaf, Wind, Crown, 
+  ShoppingBag, Send, MessageCircle, Instagram, 
+  SendHorizontal, ChevronDown, Star, Phone, 
+  Droplets, Snowflake, Box, Sparkles, Flame, Percent,
+  ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
+  Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
+  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette, Layers, X, EyeOff
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -13,8 +17,29 @@ import { translations } from "@/lib/translations"
 import { ProductModal, CheckoutModal } from "@/components/modals"
 import { 
   triggerHaptic, getFirstAvailablePrice, getInterpolatedPrice, isElite,
-  TYPE_COLORS, GRADES, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR, GOLDEN_COLOR 
+  TYPE_COLORS, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR, GOLDEN_COLOR 
 } from "@/lib/utils"
+
+const InfoModal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 animate-fade-in">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+      <div className="relative w-full max-w-sm bg-[#112D21] border border-white/15 rounded-[2.5rem] p-6 text-white shadow-2xl overflow-hidden z-10 max-h-[85vh] flex flex-col">
+        <div className="absolute inset-0 opacity-15 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 0%, #10B981, transparent 70%)` }} />
+        <div className="flex items-center justify-between mb-6 shrink-0 relative z-10">
+          <h3 className="text-[14px] font-black uppercase tracking-[0.15em] text-white">{title}</h3>
+          <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 active:scale-90 rounded-full border border-white/10 transition-all text-white/60 hover:text-white">
+            <X size={16} />
+          </button>
+        </div>
+        <div className="overflow-y-auto pr-1 flex-1 relative z-10 space-y-5 no-scrollbar">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const processProductData = (rawProducts: any[]) => {
   if (!Array.isArray(rawProducts)) return [];
@@ -32,6 +57,7 @@ const processProductData = (rawProducts: any[]) => {
         oldPrices[weight] = p[key];
       }
     });
+
     return {
       ...p,
       prices: Object.keys(prices).length ? prices : p.prices,
@@ -45,7 +71,7 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
   const iconSize = isSmall ? 13 : 18;
   const colorClass = { NEW: "text-blue-400", SALE: "text-emerald-400", HIT: "text-orange-400" }[type.toUpperCase()] || "text-white";
   const iconWrapper = (icon: React.ReactNode) => (
-    <div className={`${isSmall ? '' : 'p-2 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-lg'}`}>{icon}</div>
+    <div className={`${isSmall ? '' : 'p-2 bg-black/40 backdrop-blur-md rounded-full border border-white/15 shadow-lg'}`}>{icon}</div>
   );
   switch (type.toUpperCase()) {
     case "NEW": return iconWrapper(<Plus size={iconSize} className={colorClass} strokeWidth={3} />);
@@ -65,8 +91,8 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   const sub = item.subcategory?.toLowerCase() || "";
   
   const accentColor = item.category === 'concentrates' 
-    ? (sub.includes('fresh frozen premium') ? "#34D399" : sub.includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isPrerolls ? GOLDEN_COLOR : (isElite(item) ? (sub.includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR) : (sub === 'classic' ? GOLDEN_COLOR : (GRADES.find(g => g.id === item.subcategory)?.color || SELECTED_COLOR))));
+    ? (sub?.includes('fresh frozen premium') ? "#34D399" : sub?.includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
+    : (isPrerolls ? GOLDEN_COLOR : (isElite(item) ? (sub?.includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR) : (sub === 'classic' ? '#10B981' : (sub === 'selected' ? SELECTED_COLOR : '#A855F7'))));
   
   const priceInfo = getFirstAvailablePrice(item) || { price: 0, weight: 0 };
   const currentPrice = priceInfo.price || 0;
@@ -84,28 +110,28 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   return (
     <div 
       onClick={() => { triggerHaptic('light'); onClick(); }} 
-      className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border ${isMini ? 'h-[170px]' : 'h-[230px]'} bg-[#0D1F18]`} 
-      style={{ borderColor: `${accentColor}80` }}
+      className={`relative rounded-[2rem] active:scale-[0.98] transition-all cursor-pointer group flex flex-col overflow-hidden border ${isMini ? 'h-[170px]' : 'h-[230px]'} bg-[#112D21] hover:border-white/30`} 
+      style={{ borderColor: `${accentColor}A0` }}
     >
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/80 pointer-events-none" />
-      <div className="absolute inset-0 opacity-40 pointer-events-none" style={{ background: `radial-gradient(circle at 50% 110%, ${accentColor}, transparent 70%)` }} />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/10 to-black/70 pointer-events-none" />
+      <div className="absolute inset-0 opacity-50 pointer-events-none transition-opacity group-hover:opacity-70" style={{ background: `radial-gradient(circle at 50% 100%, ${accentColor}, transparent 65%)` }} />
       
       {!hideBadge && item.badge && (<div className={`absolute top-2 right-2 z-20 ${isMini ? 'scale-75' : 'scale-90'}`}><BadgeIcon type={item.badge} /></div>)}
       
-      <div className="relative z-10 px-4 py-3 pb-0 flex-1 flex flex-col min-h-0">
+      <div className="relative z-10 px-5 py-3 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
-          <h3 className={`${isMini ? 'text-[11px]' : 'text-[13px]'} font-black uppercase tracking-tight leading-tight text-white`}>{item.name}</h3>
-          {showSubcategory && (<p className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-bold mt-1 text-white/40 uppercase tracking-widest italic`}>{item.subcategory === 'classic' ? 'Classic' : (item.subcategory || "Product")}</p>)}
+          <h3 className={`${isMini ? 'text-[11px]' : 'text-[13px]'} font-black uppercase tracking-tight leading-tight text-white group-hover:text-emerald-300 transition-colors`}>{item.name}</h3>
+          {showSubcategory && (<p className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-bold mt-1 text-white/50 uppercase tracking-widest italic`}>{item.subcategory === 'classic' ? 'Classic' : (item.subcategory === 'selected' ? 'Selected' : item.subcategory || "Product")}</p>)}
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-1">
-            <BlurImage src={item.image} priority={priority} width={180} height={180} className="max-h-full object-contain" alt={item.name} />
+            <BlurImage src={item.image} priority={priority} width={180} height={180} className="max-w-full max-h-full object-contain transform group-hover:scale-105 transition-transform duration-300" alt={item.name} />
         </div>
       </div>
 
-      <div className="relative z-10 flex justify-between items-end px-4 pb-4 mt-auto">
-        <span className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-black uppercase tracking-widest brightness-125`} style={{ color: TYPE_COLORS[typeKey] || "#FFF" }}>{item.type}</span>
+      <div className="relative z-10 flex justify-between items-end px-5 pb-4 mt-auto">
+        <span className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-black uppercase tracking-widest brightness-125`} style={{ color: TYPE_COLORS[item.type?.toLowerCase()] || "#FFF" }}>{item.type}</span>
         <div className="flex flex-col items-end">
-          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[9px]' : 'text-[11px]'} font-bold line-through opacity-30 text-white leading-none mb-0.5`}>{oldPrice}<BahtSymbol /></span>}
+          {oldPrice > currentPrice && <span className={`${isMini ? 'text-[9px]' : 'text-[11px]'} font-bold line-through opacity-40 text-white canvas-leading-none mb-0.5`}>{oldPrice}<BahtSymbol /></span>}
           <p className={`${isMini ? 'text-[15px]' : 'text-[19px]'} font-black tracking-tighter leading-none text-white`}>{currentPrice > 0 ? (<>{currentPrice}<BahtSymbol /></>) : '—'}</p>
         </div>
       </div>
@@ -118,16 +144,16 @@ const ProductRow = React.memo(({ p, onClick }: { p: any, onClick: () => void }) 
   const isAccessory = p.category === 'accessories';
   const typeKey = p.type?.toLowerCase() || "";
   return (
-    <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 text-white border-b border-white/10 last:border-b-0 active:bg-white/5 transition-colors cursor-pointer group">
+    <div onClick={() => { triggerHaptic('light'); onClick(); }} className="flex items-center justify-between gap-3 px-4 py-4 text-white border-b border-white/10 last:border-b-0 active:bg-white/5 hover:bg-white/5 transition-colors cursor-pointer group">
         <div className="flex items-center gap-4 truncate flex-1">
           <div className="w-8 flex justify-center shrink-0">{p.badge && <BadgeIcon type={p.badge} isSmall={true} />}</div>
-          <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight">{p.name}</span>
+          <span className="text-[14px] font-black uppercase tracking-tight text-white/90 truncate leading-tight group-hover:text-emerald-300 transition-colors">{p.name}</span>
         </div>
         <div className="flex items-center gap-5 shrink-0 pr-4">
           {isAccessory ? (
             <span className="text-[14px] font-black text-white/90">{Math.round(Number(p.prices?.['1']) || 0)}<BahtSymbol /></span>
           ) : (
-            p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/40 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>
+            p.farm && p.farm !== "-" && <span className="text-[9px] font-bold text-white/50 uppercase tracking-widest truncate max-w-[90px]">{p.farm}</span>
           )}
           <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: TYPE_COLORS[typeKey] || '#10B981' }}>{p.type}</span>
         </div>
@@ -139,23 +165,13 @@ export default function LandingClient({ initialProducts = [], initialDescription
   const processedProducts = React.useMemo(() => processProductData(initialProducts), [initialProducts]);
   const [selectedProduct, setSelectedProduct] = React.useState<any>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = React.useState(false);
-  const [closedGrades, setClosedGrades] = React.useState<string[]>([]);
-  const [isInfoOpen, setIsInfoOpen] = React.useState(false);
-  const { items = [], getTotal, lang, setLang } = useCart();
-  const t = translations[lang as keyof typeof translations] || translations['en'];
   
-  const descriptionsMap = React.useMemo(() => {
-    const map: Record<string, any> = {};
-    initialDescriptions.forEach(d => { if (d && d.subcategory) map[d.subcategory.toLowerCase().trim()] = d; });
-    return map;
-  }, [initialDescriptions]);
+  const [isDeliveryModalOpen, setIsDeliveryModalOpen] = React.useState(false);
+  const [isGuaranteesModalOpen, setIsGuaranteesModalOpen] = React.useState(false);
 
-  const getDesc = (id: string) => {
-    if (!id) return null;
-    const data = descriptionsMap[id.toLowerCase().trim()];
-    if (!data) return null;
-    return lang === 'ru' ? data.description_ru : data.description_eng;
-  };
+  const [closedGrades, setClosedGrades] = React.useState<string[]>([]);
+  const { items, getTotal, lang, setLang } = useCart();
+  const t = translations[lang as keyof typeof translations];
 
   const recentUpdates = React.useMemo(() => {
     const news = processedProducts.filter(p => p && p.badge?.toUpperCase() === 'NEW');
@@ -168,42 +184,72 @@ export default function LandingClient({ initialProducts = [], initialDescription
   }, [processedProducts]);
   
   const gradeSections = React.useMemo(() => {
-    return GRADES.map(grade => {
-      const allItems = processedProducts.filter(p => 
-        p && p.subcategory?.toLowerCase() === grade.id.toLowerCase() && 
-        p.category === 'buds' && 
-        !isElite(p)
-      );
+    const buds = processedProducts.filter(p => p.category === 'buds' && !isElite(p));
+    
+    const classicItems = buds.filter(p => p.subcategory?.toLowerCase() === 'classic');
+    const classicRegular = classicItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
+    const classicSale = classicItems.filter(p => p.badge?.toUpperCase() === 'SALE');
+    
+    const premiumRegular = buds.filter(p => p.subcategory?.toLowerCase() === 'selected');
+    const premiumSale = buds.filter(p => p.subcategory?.toLowerCase() === 'premium');
 
-      if (grade.id === 'classic') {
-        const regularItems = allItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
-        const saleItems = allItems.filter(p => p.badge?.toUpperCase() === 'SALE');
-        const priceRef = regularItems[0] || allItems[0];
-        const salePriceRef = saleItems[0]; 
-        return { grade, regularItems, saleItems, priceRef, salePriceRef, isClassic: true };
-      }
-
-      return { grade, regularItems: allItems, saleItems: [], priceRef: allItems[0], isClassic: false };
-    }).filter(g => g.regularItems.length > 0 || g.saleItems.length > 0);
+    const sections = [];
+    
+    if (classicItems.length > 0) {
+      sections.push({
+        id: 'classic',
+        title: 'Classic Grade',
+        color: '#10B981',
+        icon: Leaf,
+        regularItems: classicRegular,
+        saleItems: classicSale,
+        priceRef: classicRegular[0] || classicItems[0],
+        salePriceRef: classicSale[0],
+        isClassic: true,
+        isPremium: false
+      });
+    }
+    
+    if (premiumRegular.length > 0 || premiumSale.length > 0) {
+      sections.push({
+        id: 'premium',
+        title: 'Premium Grade',
+        color: '#A855F7',
+        icon: Crown,
+        regularItems: premiumRegular,
+        saleItems: premiumSale,
+        priceRef: premiumRegular[0] || premiumSale[0],
+        salePriceRef: premiumSale[0],
+        isClassic: false,
+        isPremium: true
+      });
+    }
+    
+    return sections;
   }, [processedProducts]);
 
-  const eliteSections = [
-    { id: 'local exclusive', title: 'Local Exclusives', items: processedProducts.filter(p => p && p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')), color: SELECTED_COLOR, icon: MapPin },
-    { id: 'import', title: 'Import', items: processedProducts.filter(p => p && p.category === 'buds' && p.subcategory?.toLowerCase().includes('import') && !p.subcategory?.toLowerCase().includes('loose')), color: IMPORT_COLOR, icon: Star }
-  ];
-
-  const importLooseSection = React.useMemo(() => {
-    const items = processedProducts.filter(p => p && (p.category === 'import loose' || p.subcategory?.toLowerCase() === 'import loose'));
+  const combinedEliteSection = React.useMemo(() => {
+    const items = processedProducts.filter(p => 
+      (p.category === 'buds' && p.subcategory?.toLowerCase().includes('exclusive')) ||
+      (p.category === 'buds' && p.subcategory?.toLowerCase().includes('import') && !p.subcategory?.toLowerCase().includes('loose')) ||
+      (p.category === 'import loose' || p.subcategory?.toLowerCase() === 'import loose')
+    );
+    
     if (items.length === 0) return null;
-    const priceRef = items.find(p => p.badge?.toUpperCase() !== 'SALE') || items[0];
-    return { id: 'import loose', title: 'Import Loose', items, priceRef, color: IMPORT_COLOR, icon: Star };
-  }, [processedProducts]);
+    return {
+      id: 'import_exclusive_combined',
+      title: lang === 'ru' ? 'Импорт и эксклюзивы' : 'Import & Exclusives',
+      items,
+      color: IMPORT_COLOR,
+      icon: MapPin
+    };
+  }, [processedProducts, lang]);
 
   const concentrateSections = React.useMemo(() => {
     const allConcs = processedProducts.filter(p => p && p.category === 'concentrates');
     const subs = Array.from(new Set(allConcs.map(p => p.subcategory).filter(Boolean)));
     return subs.map(sub => {
-      let color = SELECTED_COLOR; let icon = Droplets; const subLower = sub?.toLowerCase() || "";
+      let color = '#10B981'; let icon = Droplets; const subLower = sub?.toLowerCase() || "";
       if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
       else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
       else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
@@ -219,7 +265,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
       id: sub,
       title: sub || (lang === 'ru' ? 'Аксессуары' : 'Accessories'),
       items: allAccs.filter(p => p.subcategory === sub),
-      color: "#F472B6",
+      color: "#EC4899",
       icon: Layers
     }));
   }, [processedProducts, lang]);
@@ -235,6 +281,24 @@ export default function LandingClient({ initialProducts = [], initialDescription
     setClosedGrades(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
   };
 
+  const handleAnchorNavigation = (targetSectionId: string, accordionIdsToOpen: string[], allAccordionIds: string[]) => {
+    triggerHaptic('medium');
+    
+    const el = document.getElementById(targetSectionId);
+    if (el) {
+      const offset = 20;
+      const bodyRect = document.body.getBoundingClientRect().top;
+      const elementRect = el.getBoundingClientRect().top;
+      const elementPosition = elementRect - bodyRect;
+      window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
+    }
+
+    setTimeout(() => {
+      const newClosedGrades = allAccordionIds.filter(id => !accordionIdsToOpen.includes(id));
+      setClosedGrades(newClosedGrades);
+    }, 400);
+  };
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -247,23 +311,14 @@ export default function LandingClient({ initialProducts = [], initialDescription
     }
   };
 
-  // Вычисление цвета для модалки в едином формате объекта
-  const getModalStyle = () => {
-    if (!selectedProduct) return { color: '#FFF' };
-    if (selectedProduct.category === 'concentrates') {
-      const concSec = concentrateSections.find(s => s.id === selectedProduct.subcategory);
-      return { color: concSec?.color || CONCENTRATES_COLOR };
-    }
-    if (selectedProduct.category === 'joints') {
-      return { color: GOLDEN_COLOR };
-    }
-    if (isElite(selectedProduct)) {
-      const isExclusive = selectedProduct.subcategory?.toLowerCase().includes('exclusive');
-      return { color: isExclusive ? SELECTED_COLOR : IMPORT_COLOR };
-    }
-    const targetGrade = GRADES.find(g => g.id === selectedProduct.subcategory);
-    return { color: targetGrade?.color || '#FFF' };
-  };
+  const allSectionIds = React.useMemo(() => {
+    const ids = ['classic', 'premium'];
+    if (combinedEliteSection) ids.push(combinedEliteSection.id);
+    concentrateSections.forEach(s => ids.push(s.id));
+    prerollSections.forEach(s => ids.push(s.id));
+    if (accessoriesSections) accessoriesSections.forEach(s => ids.push(s.id));
+    return ids;
+  }, [combinedEliteSection, concentrateSections, prerollSections, accessoriesSections]);
 
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
@@ -274,72 +329,98 @@ export default function LandingClient({ initialProducts = [], initialDescription
               <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={80} height={80} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
-              <div className="flex gap-3">
-                <Link href="https://t.me/bshk_phuket" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
-                  <SendHorizontal size={22} className="opacity-80"/>
+              <div className="flex gap-2">
+                <Link href="https://t.me/bshk_phuket" target="_blank" className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
+                  <SendHorizontal size={18} className="opacity-80"/>
                 </Link>
-                <div className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
-                  <Phone size={22} />
+
+                <div className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
+                  <MessageCircle size={18} />
                 </div>
-                <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 active:scale-90 transition-all shadow-xl">
-                  <Instagram size={22} className="opacity-80"/>
+
+                <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
+                  <Instagram size={18} className="opacity-80"/>
                 </Link>
               </div>
-              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-3 w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
+              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-2 w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 font-black text-[10px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
         </div>
 
-        <div className="relative pt-3 pb-3 px-6 text-center bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[4px]">
-          <h2 className="text-[16px] font-black uppercase tracking-[0.12em] text-white mb-2 relative z-10 px-2 max-w-[320px] mx-auto">
-            {lang === 'ru' ? <>Ваш проводник в мир премиального качества</> : <>Your trusted guide to a world of premium quality</>}
-          </h2>
-          <div className="grid grid-cols-2 gap-2 relative z-10">
-             {[ 
-               {ru: '3 года на рынке', en: '3 years on market'}, 
-               {ru: 'сотни довольных клиентов', en: 'hundreds of happy clients'}, 
-               {ru: 'оплата наличными при получении', en: 'cash on delivery'}, 
-               {ru: 'бесплатная доставка за 60мин', en: 'free 60min delivery'} 
-             ].map((item, i) => (
-               <div key={i} className="flex items-center justify-center gap-2 px-3 py-2 bg-white/5 rounded-2xl border border-white/5 min-h-[44px]">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/80 text-center">{lang === 'ru' ? item.ru : item.en}</span>
-               </div>
-             ))}
-          </div>
+        <div className="flex flex-wrap sm:flex-nowrap gap-2 px-2 mb-4 mt-2 relative z-20">
+          <button onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-[1.5rem] border border-white/15 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden">
+            <Bike size={15} className="text-emerald-400 shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/90 truncate">{lang === 'ru' ? 'Доставка и оплата' : 'Delivery & Payment'}</span>
+          </button>
+          <button onClick={() => { triggerHaptic('light'); setIsGuaranteesModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-[1.5rem] border border-white/15 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden">
+            <ShieldCheck size={15} className="text-emerald-400 shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/90 truncate">{lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}</span>
+          </button>
         </div>
 
-        <div id="order-info" className={`relative bg-white/5 rounded-[2.5rem] border border-white/10 backdrop-blur-md overflow-hidden mb-[16px] transition-all duration-300 ${isInfoOpen ? 'pb-6' : 'pb-0'}`}>
-          <button onClick={() => { triggerHaptic('light'); setIsInfoOpen(!isInfoOpen); }} className="w-full pt-3 pb-3 px-6 flex items-center justify-between active:bg-white/5 transition-colors">
-            <div className="flex items-center gap-3"><div className="p-1.5 bg-[#F59E0B]/20 rounded-lg text-[#F59E0B] shadow-lg"><Info size={14}/></div><h3 className="text-[12px] font-black uppercase tracking-[0.15em] text-white">{lang === 'ru' ? 'Как заказать' : 'How to order'}</h3></div>
-            <ChevronDown size={16} className={`opacity-20 transition-transform duration-300 ${isInfoOpen ? 'rotate-180' : ''}`} />
-          </button>
-          <div className={`overflow-hidden transition-all duration-500 ${isInfoOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="space-y-5 pl-9 pb-2">
-               <div className="flex items-center gap-4"><Timer size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p></div></div>
-               <div className="flex items-center gap-4"><Plus size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">From 1000฿, Free delivery</p></div></div>
-               <div className="flex items-center gap-4"><Laptop size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оформления' : 'How to order'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? (<>Онлайн или <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">оператор telegram</a></>) : (<>Online or <a href="https://t.me/bshk_phuket" target="_blank" className="text-[#F59E0B]">telegram operator</a></>)}</p></div></div>
-               <div className="flex items-center gap-4"><Wallet size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Оплата' : 'Payment'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em] leading-relaxed">{lang === 'ru' ? 'Наличка, перевод, крипта, рубли' : 'Cash, transfer, crypto'}</p></div></div>
-               <div className="flex items-center gap-4"><Bike size={18} className="text-[#F59E0B] shrink-0" /><div><p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Доставка' : 'Delivery'}</p><p className="text-[13px] font-bold text-white tracking-[0.1em]">Phuket: 60 min, Thailand: 2-3 days</p></div></div>
+        <div className="grid grid-cols-2 gap-2 px-2 mb-6 relative z-20">
+          
+          {/* SPLIT CARD (FLOWERS) */}
+          <div className="relative rounded-[1.5rem] border border-white/15 flex overflow-hidden col-span-2 bg-[#112D21] h-[68px]">
+            <div 
+              onClick={() => handleAnchorNavigation('buds-menu', ['classic'], allSectionIds)} 
+              className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 group border-r border-white/15"
+            >
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.15] scale-[2.2] -rotate-12 transition-transform group-hover:scale-[2.4] duration-500">
+                <Leaf style={{ color: '#FFF' }} strokeWidth={1.5} />
+              </div>
+              <div className="relative z-10 flex flex-col items-center text-center gap-0.5 min-w-0 pl-14">
+                <span className="text-[11px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">{lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}</span>
+                <h3 className="text-[15px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">{lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}</h3>
+              </div>
+            </div>
+
+            <div 
+              onClick={() => handleAnchorNavigation('buds-menu', ['premium'], allSectionIds)} 
+              className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30 group"
+            >
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.15] scale-[2.2] rotate-12 transition-transform group-hover:scale-[2.4] duration-500">
+                <Crown style={{ color: '#FFF' }} strokeWidth={1.5} />
+              </div>
+              <div className="relative z-10 flex flex-col items-center text-center gap-0.5 min-w-0 pr-14">
+                <span className="text-[11px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">{lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}</span>
+                <h3 className="text-[15px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">{lang === 'ru' ? 'ПРЕМИУМ' : 'PREMIUM'}</h3>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-col gap-3 px-2 mt-[16px] mb-[16px] relative z-20">
-          <button onClick={() => scrollToSection('buds-menu')} className="w-full px-4 py-3 bg-emerald-500/20 rounded-2xl border-2 border-emerald-500/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-            {lang === 'ru' ? 'Основное меню' : 'Flowers'}
-          </button>
-          <div className="flex gap-3">
-            <button onClick={() => scrollToSection('concentrates-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#A855F7]/20 rounded-2xl border-2 border-[#A855F7]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]">
-              {lang === 'ru' ? 'Экстракты' : 'Extracts'}
-            </button>
-            <button onClick={() => scrollToSection('prerolls-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F59E0B]/20 rounded-2xl border-2 border-[#F59E0B]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)]">
-              {lang === 'ru' ? 'Прероллы' : 'Prerolls'}
-            </button>
-            {accessoriesSections && (
-              <button onClick={() => scrollToSection('accessories-menu')} className="flex-1 min-w-[80px] px-4 py-3 bg-[#F472B6]/20 rounded-2xl border-2 border-[#F472B6]/30 text-[10px] font-black uppercase tracking-widest text-white active:scale-95 transition-all shadow-[0_0_20px_rgba(244,114,182,0.2)]">
-                {lang === 'ru' ? 'Аксессуары' : 'Accessories'}
-              </button>
-            )}
-          </div>
+          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ */}
+          {[
+            { id: 'import', title: lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВЫ' : 'IMPORT & EXCLUSIVES', icon: MapPin, scroll: 'import-menu-section', bgClass: 'bg-blue-500/10 hover:bg-blue-500/20' },
+            { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', icon: Droplets, scroll: 'concentrates-menu-section', bgClass: 'bg-amber-500/10 hover:bg-amber-500/20' },
+            { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', icon: Cigarette, scroll: 'prerolls-menu-section', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' },
+            { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', icon: Layers, scroll: 'accessories-menu-section', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' }
+          ].map((btn) => (
+            <div 
+              key={btn.id} 
+              onClick={() => {
+                if (btn.id === 'import' && combinedEliteSection) {
+                  handleAnchorNavigation(btn.scroll, [combinedEliteSection.id], allSectionIds);
+                } else if (btn.id === 'concentrates') {
+                  handleAnchorNavigation(btn.scroll, concentrateSections.map(s => s.id), allSectionIds);
+                } else if (btn.id === 'prerolls') {
+                  handleAnchorNavigation(btn.scroll, prerollSections.map(s => s.id), allSectionIds);
+                } else if (btn.id === 'accessories' && accessoriesSections) {
+                  handleAnchorNavigation(btn.scroll, accessoriesSections.map(s => s.id), allSectionIds);
+                } else {
+                  scrollToSection(btn.scroll);
+                }
+              }} 
+              className={`relative rounded-[1.5rem] border border-white/15 flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 backdrop-blur-sm active:scale-[0.98] group col-span-1 h-[52px] ${btn.bgClass}`}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 pointer-events-none z-0" />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.0] duration-500">
+                <btn.icon style={{ color: '#FFF' }} strokeWidth={1.5} />
+              </div>
+              <div className="relative z-10 flex items-center justify-center w-full min-w-0 px-2 text-center">
+                <h3 className="font-black text-[10px] tracking-wider text-white uppercase group-hover:text-emerald-300 transition-colors whitespace-nowrap overflow-hidden text-ellipsis truncate max-w-full">{btn.title}</h3>
+              </div>
+            </div>
+          ))}
         </div>
       </header>
 
@@ -363,25 +444,23 @@ export default function LandingClient({ initialProducts = [], initialDescription
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md">{t.flowerMenu || 'Menu'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
+          
           <div className="space-y-3">
-            {gradeSections.map(({ grade, regularItems, saleItems, priceRef, salePriceRef, isClassic }) => {
-              const isOpen = !closedGrades.includes(grade.id);
+            {gradeSections.map(({ id, title, color, icon: Icon, regularItems, saleItems, priceRef, salePriceRef, isClassic, isPremium }) => {
+              const isOpen = !closedGrades.includes(id);
               return (
-                <div key={grade.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${grade.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => toggleSection(grade.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between mb-3 px-4">
-                      <div className="flex items-center gap-3"><grade.icon size={22} style={{ color: grade.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: grade.color }}>{grade.title}</h2></div>
+                <div key={id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${color}A0` : 'rgba(255,255,255,0.08)' }}>
+                  <button onClick={() => toggleSection(id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group">
+                    <div className="w-full flex items-center justify-between px-4">
+                      <div className="flex items-center gap-3"><Icon size={22} style={{ color: color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: color }}>{title}</h2></div>
                       <div className="flex items-center gap-2">
-                        {isClassic && (
-                          <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                            {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
-                          </span>
-                        )}
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                        </span>
                         <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
-                    {getDesc(grade.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(grade.id)}</p>)}
-                    <div className="w-full grid grid-cols-4 gap-2 px-4">
+                    <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3">
                        {[1, 5, 10, 20].map(w => {
                          const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
                          return (
@@ -396,33 +475,27 @@ export default function LandingClient({ initialProducts = [], initialDescription
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
                     <div className="divide-y divide-white/10 bg-white/5">
                         {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
-                        
-                        {isClassic && saleItems.length > 0 && (
-                            <div className="bg-emerald-500/5 pt-6 pb-2">
-                                <div className="px-8 flex flex-col gap-4">
-                                    <div className="flex items-center gap-2 opacity-90">
-                                        <Tag size={14} style={{ color: GOLDEN_COLOR }} />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.1em]" style={{ color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Акционные предложения' : 'Special Sale Offers'}</span>
+                        {saleItems.length > 0 && (
+                            <>
+                                <div className="border-t border-b border-amber-500/20 bg-amber-500/[0.02] py-4 px-8 flex flex-col gap-3">
+                                    <div className="flex items-center gap-2 opacity-90 text-amber-400">
+                                        <Tag size={14} className="text-amber-400 fill-amber-400/10" />
+                                        <span className="text-[11px] font-black uppercase tracking-[0.1em]">{lang === 'ru' ? 'Сорта со скидкой' : 'Strains on Sale'}</span>
                                     </div>
-                                    
                                     <div className="grid grid-cols-4 gap-2">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
                                             return (
                                                 <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-xl border border-white/5">
                                                     <span className="text-[10px] font-black opacity-40 uppercase leading-none mb-[1px]">{w}g</span>
-                                                    <span className="text-[14px] font-black text-emerald-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
                                     </div>
                                 </div>
-                                <div className="mt-4 divide-y divide-white/5">
-                                    {saleItems.map((p: any) => (
-                                        <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
-                                    ))}
-                                </div>
-                            </div>
+                                {saleItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                            </>
                         )}
                     </div>
                   </div>
@@ -430,160 +503,46 @@ export default function LandingClient({ initialProducts = [], initialDescription
               );
             })}
             
-            {eliteSections.map(sec => {
-              const isOpen = !closedGrades.includes(sec.id);
-              return sec.items.length > 0 && (
-                <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => toggleSection(sec.id)} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between">
-                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                      <div className="flex items-center gap-2">
-                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                      </div>
+            {combinedEliteSection && (
+              <div key={combinedEliteSection.id} id="import-menu-section" className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: !closedGrades.includes(combinedEliteSection.id) ? `${combinedEliteSection.color}A0` : 'rgba(255,255,255,0.08)' }}>
+                <button onClick={() => toggleSection(combinedEliteSection.id)} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left group">
+                  <div className="w-full flex items-center justify-between">
+                    <div className="flex items-center gap-3"><combinedEliteSection.icon size={22} style={{ color: combinedEliteSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: combinedEliteSection.color }}>{combinedEliteSection.title}</h2></div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{!closedGrades.includes(combinedEliteSection.id) ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span>
+                      <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${!closedGrades.includes(combinedEliteSection.id) ? 'rotate-180' : ''}`} />
                     </div>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{sec.items.map((p, idx) => (<HighlightCard key={p?.id || idx} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}</div>
                   </div>
+                </button>
+                <div className={`overflow-hidden transition-all duration-500 ${!closedGrades.includes(combinedEliteSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                  <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{combinedEliteSection.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={true} />))}</div>
                 </div>
-              );
-            })}
-
-            {importLooseSection && (
-                <div key={importLooseSection.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: !closedGrades.includes(importLooseSection.id) ? `${importLooseSection.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => toggleSection(importLooseSection.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between mb-3 px-4">
-                      <div className="flex items-center gap-3"><importLooseSection.icon size={22} style={{ color: importLooseSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: importLooseSection.color }}>{importLooseSection.title}</h2></div>
-                      <div className="flex items-center gap-2">
-                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${!closedGrades.includes(importLooseSection.id) ? 'rotate-180' : ''}`} />
-                      </div>
-                    </div>
-                    {getDesc(importLooseSection.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(importLooseSection.id)}</p>)}
-                    <div className="w-full grid grid-cols-4 gap-2 px-4">
-                       {[1, 5, 10, 20].map(w => {
-                         const p = Math.round(Number(importLooseSection.priceRef?.prices?.[w]) || 0);
-                         return (
-                          <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
-                            <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span>
-                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
-                          </div>
-                         )
-                       })}
-                    </div>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ${!closedGrades.includes(importLooseSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="divide-y divide-white/10 bg-white/5">{importLooseSection.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
-                  </div>
-                </div>
+              </div>
             )}
           </div>
 
-          <div id="concentrates-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
-             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
-             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#A855F7]/30 bg-[#A855F7]/10 backdrop-blur-md" style={{ color: '#A855F7' }}>{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
-             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#A855F7]/50 to-[#A855F7]"></div>
+          <div id="concentrates-menu-section" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+             <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-emerald-500/50 to-emerald-500"></div>
+             <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md" style={{ color: '#10B981', borderColor: '#10B98130' }}>{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
+             <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
-          <div className="space-y-3">
-            {concentrateSections.map(sec => {
-              const isOpen = closedGrades.includes(sec.id);
-              return (
-                <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between mb-3 px-4">
-                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                      <div className="flex items-center gap-2">
-                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                      </div>
-                    </div>
-                    {getDesc(sec.id) && (<p className="px-4 mb-3 text-[14px] font-medium text-white leading-relaxed">{getDesc(sec.id)}</p>)}
-                    
-                    <div className="w-full grid grid-cols-4 gap-2 px-4">
-                       {[1, 5, 10, 20].map(w => {
-                         const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0);
-                         return (
-                          <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
-                            <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span>
-                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
-                          </div>
-                         )
-                       })}
-                    </div>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <div className="space-y-3">{concentrateSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[1, 5, 10, 20].map(w => { const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0); return ( <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
 
-          <div id="prerolls-menu" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
+          <div id="prerolls-menu-section" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md" style={{ borderColor: `${GOLDEN_COLOR}4d`, color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
-          <div className="space-y-3">
-            {prerollSections.map(sec => {
-              const isOpen = closedGrades.includes(sec.id);
-              const priceRef = sec.items[0];
-              return (
-                <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
-                    <div className="w-full flex items-center justify-between mb-3 px-4">
-                      <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                      <div className="flex items-center gap-2">
-                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                      </div>
-                    </div>
-                    <div className="w-full grid grid-cols-4 gap-2 px-4">
-                       {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
-                         const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0);
-                         return (
-                          <div key={unit.w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
-                            <span className="text-[10px] font-black opacity-60 uppercase leading-none mb-[1px]">{unit.l}</span>
-                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
-                          </div>
-                         )
-                       })}
-                    </div>
-                  </button>
-                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <div className="space-y-3">{prerollSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); const priceRef = sec.items[0]; return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => { const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0); return ( <div key={unit.w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[10px] font-black opacity-60 uppercase leading-none mb-[1px]">{unit.l}</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
 
           {accessoriesSections && (
-            <div id="accessories-menu" className="pt-4">
+            <div id="accessories-menu-section" className="pt-4">
               <div className="flex items-center gap-4 pt-6 pb-6 relative">
-                 <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
-                 <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#F472B6]/30 bg-[#F472B6]/10 backdrop-blur-md" style={{ color: '#F472B6' }}>{lang === 'ru' ? 'Аксессуары' : 'Accessories'}</span>
-                 <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F472B6]/50 to-[#F472B6]"></div>
+                 <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#EC4899]/50 to-[#EC4899]"></div>
+                 <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#EC4899]/30 bg-[#EC4899]/10 backdrop-blur-md" style={{ color: '#EC4899' }}>{lang === 'ru' ? 'Аксессуары' : 'Accessories'}</span>
+                 <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#EC4899]/50 to-[#EC4899]"></div>
               </div>
-              <div className="space-y-3">
-                {accessoriesSections.map(sec => {
-                  const isOpen = closedGrades.includes(sec.id);
-                  return (
-                    <div key={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#1d4837]/40 backdrop-blur-xl`} style={{ borderColor: isOpen ? `${sec.color}80` : 'rgba(255,255,255,0.05)' }}>
-                      <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left">
-                        <div className="w-full flex items-center justify-between px-4">
-                          <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter" style={{ color: sec.color }}>{sec.title}</h2></div>
-                          <div className="flex items-center gap-2">
-                            <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                          </div>
-                        </div>
-                      </button>
-                      <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                        <div className="divide-y divide-white/10 bg-white/5">
-                          {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              <div className="space-y-3">{accessoriesSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
             </div>
           )}
         </div>
@@ -607,27 +566,111 @@ export default function LandingClient({ initialProducts = [], initialDescription
         </div>
       )}
       
+      <InfoModal 
+        isOpen={isDeliveryModalOpen} 
+        onClose={() => setIsDeliveryModalOpen(false)}
+        title={lang === 'ru' ? 'Доставка и Оплата' : 'Delivery & Payment'}
+      >
+        <div className="flex items-center gap-4">
+          <Timer size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Часы работы' : 'Working hours'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">12:00 — 00:00</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Plus size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{"От 1000฿, Доставка бесплатная"}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <CreditCard size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Расчет при получении' : 'Payment on Delivery'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? 'Наличные в руки курьеру' : 'Cash on delivery to the courier'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Wallet size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Другие способы оплаты' : 'Other payment methods'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? 'Банковский перевод, Крипта, Рубли' : 'Bank transfer, Crypto, Rubles'}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Bike size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Сроки доставки' : 'Delivery times'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}
+            </p>
+          </div>
+        </div>
+      </InfoModal>
+
+      <InfoModal 
+        isOpen={isGuaranteesModalOpen} 
+        onClose={() => setIsGuaranteesModalOpen(false)}
+        title={lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}
+      >
+        <div className="flex items-center gap-4">
+          <Trophy size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Опыт на рынке' : 'Market Experience'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? '3 года стабильной работы' : '3 years of solid experience'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Users size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Репутация' : 'Reputation'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'Сотни довольных постоянных клиентов' : 'Hundreds of satisfied regular loyal clients'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <Sparkles size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Прямые поставки' : 'Direct Sourcing'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
+              {lang === 'ru' ? 'Партнерство с лучшими фермерами и поставщиками' : 'Partnership with top-tier growers & suppliers'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <EyeOff size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Конфиденциальность' : 'Privacy'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'Полная анонимность каждого заказа' : 'Complete anonymity for every single order'}
+            </p>
+          </div>
+        </div>
+      </InfoModal>
+
       {selectedProduct && (
         <ProductModal 
-          product={{
-            ...selectedProduct,
-            unitLabel: selectedProduct.category === 'accessories' ? 'pcs' : 'g'
-          }} 
+          product={{ ...selectedProduct, unitLabel: selectedProduct.category === 'accessories' ? 'pcs' : 'g' }} 
           t={t} 
-          style={getModalStyle()} 
+          style={
+            selectedProduct.category === 'concentrates' 
+              ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || '#10B981' } 
+              : (selectedProduct.category === 'joints' ? { color: GOLDEN_COLOR } 
+              : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('exclusive') ? '#10B981' : IMPORT_COLOR} 
+              : (selectedProduct.subcategory?.toLowerCase() === 'classic' ? { color: '#10B981' } : { color: '#A855F7' })))
+          } 
           onClose={() => setSelectedProduct(null)} 
         />
       )}
       {isCheckoutOpen && (
         <CheckoutModal 
-          items={(items || []).map(item => {
-            if (!item) return item;
-            return {
-              ...item,
-              unitLabel: item.category === 'accessories' ? 'pcs' : 'g'
-            };
-          })} 
-          total={typeof getTotal === 'function' ? getTotal() : 0} 
+          items={items.map(item => ({ ...item, unitLabel: item.category === 'accessories' ? 'pcs' : 'g' }))} 
+          total={getTotal()} 
           t={t} 
           lang={lang} 
           onClose={() => setIsCheckoutOpen(false)} 
