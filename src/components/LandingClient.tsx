@@ -299,7 +299,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           
           {/* SPLIT CARD (FLOWERS) */}
           <div 
-            className="relative rounded-2xl border flex overflow-hidden col-span-2 h-[110px] bg-[#112D21]"
+            className="relative rounded-2xl border flex overflow-hidden col-span-2 bg-[#112D21]"
             style={{ borderColor: `${GOLDEN_COLOR}50` }}
           >
             {/* Левая половина - CLASSIC */}
@@ -309,7 +309,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 setClosedGrades(p => p.filter(x => x !== 'classic'));
                 scrollToSection('buds-menu');
               }}
-              className="relative flex-1 py-4 px-4 flex flex-col justify-between cursor-pointer transition-all duration-300 active:bg-black/20 group border-r border-white/5"
+              className="relative flex-1 py-5 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group border-r border-white/5"
             >
               <div className="absolute inset-0 opacity-15 pointer-events-none transition-opacity group-hover:opacity-35" 
                    style={{ background: `radial-gradient(circle at 20% 120%, ${GOLDEN_COLOR}, transparent 70%)` }} />
@@ -318,13 +318,16 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <Leaf style={{ color: GOLDEN_COLOR }} strokeWidth={1.2} />
               </div>
 
-              <div className="relative z-10 flex flex-col justify-between h-full min-w-0">
-                <div className="flex items-center justify-between w-full">
-                  <h3 className="text-[11px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
-                    {lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}
-                  </h3>
-                </div>
-                <p className="text-[9.5px] font-medium text-white/50 leading-tight mt-2 line-clamp-2">
+              <div className="relative z-10 flex flex-col gap-1 min-w-0">
+                <span className="text-[8px] font-black tracking-[0.2em] text-emerald-400/70 uppercase leading-none">
+                  {lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}
+                </span>
+                
+                <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
+                  {lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}
+                </h3>
+                
+                <p className="text-[9.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2">
                   {lang === 'ru' ? 'Проверенные сорта по низким ценам' : 'Verified strains at budget prices'}
                 </p>
               </div>
@@ -337,7 +340,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 setClosedGrades(p => p.filter(x => x !== 'premium'));
                 scrollToSection('buds-menu');
               }}
-              className="relative flex-1 py-4 px-4 flex flex-col justify-between cursor-pointer transition-all duration-300 active:bg-black/20 group"
+              className="relative flex-1 py-5 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group"
             >
               <div className="absolute inset-0 opacity-15 pointer-events-none transition-opacity group-hover:opacity-35" 
                    style={{ background: `radial-gradient(circle at 80% 120%, #10B981, transparent 70%)` }} />
@@ -346,14 +349,17 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <Crown style={{ color: '#10B981' }} strokeWidth={1.2} />
               </div>
 
-              <div className="relative z-10 flex flex-col justify-between h-full min-w-0">
-                <div className="flex items-center justify-between w-full">
-                  <h3 className="text-[11px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
-                    {lang === 'ru' ? 'ПРЕМИУМ' : 'PREMIUM'}
-                  </h3>
-                </div>
-                <p className="text-[9.5px] font-medium text-white/50 leading-tight mt-2 line-clamp-2">
-                  {lang === 'ru' ? 'Хиты, сорта-призеры, лучшие генетики и фермы' : 'Best-sellers, iconic genetics & renowned farms'}
+              <div className="relative z-10 flex flex-col gap-1 min-w-0">
+                <span className="text-[8px] font-black tracking-[0.2em] text-emerald-400/70 uppercase leading-none">
+                  {lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}
+                </span>
+                
+                <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
+                  {lang === 'ru' ? 'ПРЕМИУМ' : 'PREMIUM'}
+                </h3>
+                
+                <p className="text-[9.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2">
+                  {lang === 'ru' ? 'Хиты, сорта-призеры, лучшие генетики' : 'Best-sellers, iconic genetics & top farms'}
                 </p>
               </div>
             </div>
@@ -366,7 +372,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               setClosedGrades(p => p.filter(x => !x.includes('exclusive') && x !== 'import'));
               scrollToSection('buds-menu');
             }}
-            className="relative rounded-xl border p-2 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
+            className="relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
             style={{ borderColor: `${IMPORT_COLOR}45` }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
@@ -377,19 +383,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <MapPin style={{ color: IMPORT_COLOR }} strokeWidth={1.5} />
             </div>
 
-            <div className="relative z-10 flex flex-col items-center justify-center w-full min-w-0 px-1 text-center">
-              <h3 className="text-[10px] font-black text-white uppercase leading-[1.1] group-hover:text-emerald-300 transition-colors">
-                {lang === 'ru' ? (
-                  <>
-                    <span className="tracking-wide">ИМПОРТНЫЕ ПРОДУКТЫ</span><br />
-                    <span className="text-[9px] opacity-90 font-black tracking-wider">И ЛОКАЛЬНЫЕ ЭКСКЛЮЗИВЫ</span>
-                  </>
-                ) : (
-                  <>
-                    <span className="tracking-wide">IMPORTED PRODUCTS</span><br />
-                    <span className="text-[9px] opacity-90 font-black tracking-wider">& LOCAL EXCLUSIVES</span>
-                  </>
-                )}
+            <div className="relative z-10 flex items-center justify-center w-full min-w-0 px-4 text-center">
+              <h3 className="text-[11px] font-black tracking-wider text-white uppercase leading-none group-hover:text-emerald-300 transition-colors">
+                {lang === 'ru' ? 'ИМПОРТ' : 'IMPORT'}
               </h3>
             </div>
           </div>
@@ -403,7 +399,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               });
               scrollToSection('concentrates-menu');
             }}
-            className="relative rounded-xl border p-2 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
+            className="relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
             style={{ borderColor: '#34D39945' }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
@@ -430,7 +426,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               });
               scrollToSection('prerolls-menu');
             }}
-            className="relative rounded-xl border p-2 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
+            className="relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
             style={{ borderColor: '#F472B645' }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
@@ -457,7 +453,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               });
               scrollToSection('accessories-menu');
             }}
-            className="relative rounded-xl border p-2 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
+            className="relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
             style={{ borderColor: '#EC489945' }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
