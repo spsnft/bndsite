@@ -330,7 +330,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
         {/* СМЫСЛОВОЙ ХАБ СО SPLIT CARD (РАЗДЕЛ КАТЕГОРИЙ) */}
         <div className="grid grid-cols-2 gap-2 px-2 mb-6 relative z-20">
           
-          {/* SPLIT CARD (FLOWERS) - ИСПРАВЛЕНО: ТЕПЕРЬ С СЕРЫМ БОРДЕРОМ border-white/15 СТАТИЧНО */}
+          {/* SPLIT CARD (FLOWERS) */}
           <div 
             className="relative rounded-2xl border flex overflow-hidden col-span-2 bg-[#112D21] border-white/15 transition-all duration-300"
           >
@@ -357,7 +357,8 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
                   {lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}
                 </h3>
-                <p className="text-[9.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2 max-w-[150px]">
+                {/* Исправлено: размер шрифта увеличен на 1px (text-[10.5px]) */}
+                <p className="text-[10.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2 max-w-[150px]">
                   {lang === 'ru' ? 'качественные сорта с проверенных ферм по низким ценам' : 'high-quality strains from verified farms at budget prices'}
                 </p>
               </div>
@@ -386,14 +387,15 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">
                   {lang === 'ru' ? 'ПРЕМИУМ' : 'PREMIUM'}
                 </h3>
-                <p className="text-[9.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2 max-w-[150px]">
+                {/* Исправлено: размер шрифта увеличен на 1px (text-[10.5px]) */}
+                <p className="text-[10.5px] font-medium text-white/50 leading-tight pt-0.5 line-clamp-2 max-w-[150px]">
                   {lang === 'ru' ? 'сорта-призеры, хиты продаж, лучшие фермы и генетики' : 'award-winning strains, top sellers, best farms & genetics'}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ - ИСПРАВЛЕНО: СТАТИЧНЫЙ БОРДЕР СТАТЬ СЕРЫМ border-white/15, ЦВЕТНОЙ НА ХОВЕР */}
+          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ */}
           {[
             { id: 'import', isImport: true, color: IMPORT_COLOR, icon: MapPin, scroll: 'buds-menu', hoverBorder: 'group-hover:border-[#60A5FA]' },
             { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', color: '#34D399', icon: Droplets, scroll: 'concentrates-menu', hoverBorder: 'group-hover:border-[#34D399]' },
@@ -415,7 +417,6 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 }
                 scrollToSection(btn.scroll);
               }} 
-              // ИСПРАВЛЕНО: border-white/15 статично, цветной бордер активируется по hoverBorder
               className={`relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-white/5 backdrop-blur-md active:scale-[0.98] group col-span-1 h-[52px] border-white/15 ${btn.hoverBorder}`}
             >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
@@ -502,37 +503,39 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                     </div>
                   </button>
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
+                    {/* Исправлено: Обычные и акционные сорта теперь идут единым монолитным списком, без разрывов дизайна */}
                     <div className="divide-y divide-white/10 bg-white/5">
                         {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
                         
                         {saleItems.length > 0 && (
-                            <div className="bg-emerald-500/5 pt-6 pb-2">
-                                <div className="px-8 flex flex-col gap-4">
-                                    <div className="flex items-center gap-2 opacity-90">
-                                        <Tag size={14} style={{ color: color }} />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.1em]" style={{ color: color }}>
+                            <>
+                                {/* Акционная плашка-разделитель — оформлена в ярком акцентном стиле text-amber-400 */}
+                                <div className="border-t border-b border-amber-500/20 bg-amber-500/[0.02] py-4 px-8 flex flex-col gap-3">
+                                    <div className="flex items-center gap-2 opacity-95 text-amber-400">
+                                        <Tag size={14} className="text-amber-400 fill-amber-400/10" />
+                                        <span className="text-[11px] font-black uppercase tracking-[0.1em]">
                                             {lang === 'ru' ? 'Сорта со скидкой' : 'Strains on Sale'}
                                         </span>
                                     </div>
                                     
+                                    {/* Ценники акционных товаров также подсвечены в text-amber-400 */}
                                     <div className="grid grid-cols-4 gap-2">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
                                             return (
                                                 <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-xl border border-white/5">
                                                     <span className="text-[10px] font-black opacity-40 uppercase leading-none mb-[1px]">{w}g</span>
-                                                    <span className="text-[14px] font-black text-emerald-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
                                     </div>
                                 </div>
-                                <div className="mt-4 divide-y divide-white/5">
-                                    {saleItems.map((p: any) => (
-                                        <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
-                                    ))}
-                                </div>
-                            </div>
+                                {/* Акционные товары выводятся в точно таком же стиле ProductRow, не ломая верстку */}
+                                {saleItems.map((p: any) => (
+                                    <ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />
+                                ))}
+                            </>
                         )}
                     </div>
                   </div>
@@ -553,7 +556,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 </button>
                 <div className={`overflow-hidden transition-all duration-500 ${!closedGrades.includes(combinedEliteSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
                   <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">
-                    {combinedEliteSection.items.map(p => Gang => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}
+                    {combinedEliteSection.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={false} />))}
                   </div>
                 </div>
               </div>
