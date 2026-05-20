@@ -359,27 +359,27 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           </div>
 
-          {/* ИМПОРТНЫЕ ПРОДУКТЫ И ЛОКАЛЬНЫЕ ЭКСКЛЮЗИВЫ */}
+          {/* ИМПОРТ И ЛОКАЛЬНЫЕ ЭКСКЛЮЗИВЫ */}
           <div
             onClick={() => {
               triggerHaptic('medium');
               setClosedGrades(p => p.filter(x => !x.includes('exclusive') && x !== 'import'));
               scrollToSection('buds-menu');
             }}
-            className="relative rounded-2xl border p-3.5 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[100px]"
+            className="relative rounded-xl border p-2 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
             style={{ borderColor: `${IMPORT_COLOR}45` }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
-            <div className="absolute inset-0 opacity-20 pointer-events-none z-0 transition-opacity group-hover:opacity-45" 
+            <div className="absolute inset-0 opacity-15 pointer-events-none z-0 transition-opacity group-hover:opacity-35" 
                  style={{ background: `radial-gradient(circle at 50% 120%, ${IMPORT_COLOR}, transparent 70%)` }} />
 
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.08] scale-[2.2] blur-[1px] transition-transform group-hover:scale-[2.4] duration-500">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.06] scale-[1.8] blur-[1px] transition-transform group-hover:scale-[2.0] duration-500">
               <MapPin style={{ color: IMPORT_COLOR }} strokeWidth={1.5} />
             </div>
 
             <div className="relative z-10 flex items-center justify-center w-full min-w-0">
-              <h3 className="text-[10.5px] font-black tracking-wider text-white uppercase leading-tight text-center group-hover:text-emerald-300 transition-colors">
-                {lang === 'ru' ? 'ИМПОРТ И ЛОКАЛЬНЫЕ ЭКСКЛЮЗИВЫ' : 'IMPORTED PRODUCTS & LOCAL EXCLUSIVES'}
+              <h3 className="text-[12px] font-black tracking-wide text-white uppercase leading-tight text-center group-hover:text-emerald-300 transition-colors">
+                {lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВЫ' : 'IMPORT & EXCLUSIVES'}
               </h3>
             </div>
           </div>
@@ -393,25 +393,25 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               });
               scrollToSection('concentrates-menu');
             }}
-            className="relative rounded-2xl border p-3.5 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[100px]"
+            className="relative rounded-xl border p-2 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
             style={{ borderColor: '#34D39945' }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
-            <div className="absolute inset-0 opacity-20 pointer-events-none z-0 transition-opacity group-hover:opacity-45" 
+            <div className="absolute inset-0 opacity-15 pointer-events-none z-0 transition-opacity group-hover:opacity-35" 
                  style={{ background: `radial-gradient(circle at 50% 120%, #34D399, transparent 70%)` }} />
 
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.08] scale-[2.2] blur-[1px] transition-transform group-hover:scale-[2.4] duration-500">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.06] scale-[1.8] blur-[1px] transition-transform group-hover:scale-[2.0] duration-500">
               <Droplets style={{ color: '#34D399' }} strokeWidth={1.5} />
             </div>
 
             <div className="relative z-10 flex items-center justify-center w-full min-w-0">
-              <h3 className="text-[10.5px] font-black tracking-wider text-white uppercase leading-none text-center group-hover:text-emerald-300 transition-colors">
+              <h3 className="text-[12px] font-black tracking-wide text-white uppercase leading-none text-center group-hover:text-emerald-300 transition-colors">
                 {lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES'}
               </h3>
             </div>
           </div>
 
-          {/* ПРЕРОЛЛЫ (Твой вариант: 8px отступы, 12px шрифт) */}
+          {/* ПРЕРОЛЛЫ */}
           <div
             onClick={() => {
               triggerHaptic('medium');
@@ -438,7 +438,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           </div>
 
-          {/* АКСЕССУАРЫ (Мой вариант: 10px отступы, 11px шрифт) */}
+          {/* АКСЕССУАРЫ */}
           <div
             onClick={() => {
               triggerHaptic('medium');
@@ -447,7 +447,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               });
               scrollToSection('accessories-menu');
             }}
-            className="relative rounded-2xl border p-2.5 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[58px]"
+            className="relative rounded-xl border p-2 flex flex-col justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]"
             style={{ borderColor: '#EC489945' }}
           >
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
@@ -459,7 +459,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
 
             <div className="relative z-10 flex items-center justify-center w-full min-w-0">
-              <h3 className="text-[11px] font-black tracking-wider text-white uppercase leading-none text-center group-hover:text-emerald-300 transition-colors">
+              <h3 className="text-[12px] font-black tracking-wide text-white uppercase leading-none text-center group-hover:text-emerald-300 transition-colors">
                 {lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES'}
               </h3>
             </div>
