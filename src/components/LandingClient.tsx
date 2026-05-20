@@ -281,35 +281,38 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
   return (
     <div className="min-h-screen bg-[#193D2E] text-white p-4 pb-32 selection:bg-emerald-500/30 font-sans">
       <header className="max-w-xl mx-auto pt-0 mb-0">
+        
+        {/* ШАПКА — ИСПРАВЛЕНО: Кнопки соцсетей уменьшены до w-[46px] h-[46px], размер иконок изменен на 18 */}
         <div className="flex items-center justify-between px-2 mb-[4px]"> 
            <div className="relative">
               <div className="absolute inset-0 bg-emerald-500/10 rounded-full blur-[35px]"></div>
               <BlurImage src="https://res.cloudinary.com/dpjwbcgrq/image/upload/v1774704686/IMG_0036_t5cnic.png" priority width={80} height={80} className="w-20 h-20 object-contain relative z-10" alt="Logo" />
            </div>
            <div className="flex items-center flex-1 justify-end">
-              <div className="flex gap-3">
-                <Link href="https://t.me/bshk_phuket" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
-                  <SendHorizontal size={22} className="opacity-80"/>
+              <div className="flex gap-2">
+                <Link href="https://t.me/bshk_phuket" target="_blank" className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
+                  <SendHorizontal size={18} className="opacity-80"/>
                 </Link>
 
-                <div className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
-                  <Phone size={22} />
+                <div className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
+                  <Phone size={18} />
                 </div>
 
-                <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
-                  <Instagram size={22} className="opacity-80"/>
+                <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
+                  <Instagram size={18} className="opacity-80"/>
                 </Link>
               </div>
-              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-3 w-14 h-14 flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 font-black text-[11px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
+              <button onClick={() => { triggerHaptic('light'); setLang(lang === 'en' ? 'ru' : 'en'); }} className="ml-2 w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 font-black text-[10px] text-emerald-400 active:scale-90 transition-all shrink-0">{lang === 'en' ? 'RU' : 'EN'}</button>
            </div>
         </div>
 
+        {/* НАВИГАЦИОННЫЕ КНОПКИ — ИСПРАВЛЕНО: Теперь используют rounded-[1.5rem] для сохранения единого стиля геометрии первого экрана */}
         <div className="flex flex-wrap sm:flex-nowrap gap-2 px-2 mb-4 mt-2 relative z-20">
-          <button onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/15 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden">
+          <button onClick={() => { triggerHaptic('light'); setIsDeliveryModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-[1.5rem] border border-white/15 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden">
             <Bike size={15} className="text-emerald-400 shrink-0" />
             <span className="text-[10px] font-black uppercase tracking-wider text-white/90 truncate">{lang === 'ru' ? 'Доставка и оплата' : 'Delivery & Payment'}</span>
           </button>
-          <button onClick={() => { triggerHaptic('light'); setIsGuaranteesModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-2xl border border-white/15 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden">
+          <button onClick={() => { triggerHaptic('light'); setIsGuaranteesModalOpen(true); }} className="flex-1 flex items-center justify-center gap-2 h-[44px] px-2.5 bg-white/5 active:bg-white/10 active:scale-[0.98] rounded-[1.5rem] border border-white/15 backdrop-blur-md transition-all whitespace-nowrap overflow-hidden">
             <ShieldCheck size={15} className="text-emerald-400 shrink-0" />
             <span className="text-[10px] font-black uppercase tracking-wider text-white/90 truncate">{lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}</span>
           </button>
@@ -324,11 +327,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'classic')); scrollToSection('buds-menu'); }} 
               className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 group border-r border-white/15"
             >
-              {/* ИСПРАВЛЕНО: left-6 вместо left-4 сдвигает иконку глубже внутрь от рамки */}
               <div className="absolute left-6 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.15] scale-[2.2] -rotate-12 transition-transform group-hover:scale-[2.4] duration-500">
                 <Leaf style={{ color: '#FFF' }} strokeWidth={1.5} />
               </div>
-              {/* ИСПРАВЛЕНО: pl-14 балансирует внутреннее пространство, размеры шрифта теперь text-[11px] и text-[15px] */}
               <div className="relative z-10 flex flex-col items-center text-center gap-0.5 min-w-0 pl-14">
                 <span className="text-[11px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">{lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}</span>
                 <h3 className="text-[15px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">{lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}</h3>
@@ -340,11 +341,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'premium')); scrollToSection('buds-menu'); }} 
               className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30 group"
             >
-              {/* ИСПРАВЛЕНО: right-6 вместо right-4 сдвигает иконку глубже внутрь от рамки */}
               <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none z-0 opacity-[0.15] scale-[2.2] rotate-12 transition-transform group-hover:scale-[2.4] duration-500">
                 <Crown style={{ color: '#FFF' }} strokeWidth={1.5} />
               </div>
-              {/* ИСПРАВЛЕНО: pr-14 балансирует внутреннее пространство, размеры шрифта теперь text-[11px] и text-[15px] */}
               <div className="relative z-10 flex flex-col items-center text-center gap-0.5 min-w-0 pr-14">
                 <span className="text-[11px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">{lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}</span>
                 <h3 className="text-[15px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">{lang === 'ru' ? 'ПРЕМИУМ' : 'PREMIUM'}</h3>
