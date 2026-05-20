@@ -315,35 +315,52 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
           </button>
         </div>
 
+        {/* СМЫСЛОВОЙ ХАБ С УНИФИЦИРОВАННЫМИ СТИЛЯМИ И ПРОПОРЦИЯМИ */}
         <div className="grid grid-cols-2 gap-2 px-2 mb-6 relative z-20">
-          <div className="relative rounded-[2rem] border border-white/15 flex overflow-hidden col-span-2 bg-[#112D21] transition-all duration-300">
-            <div onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'classic')); scrollToSection('buds-menu'); }} className="relative flex-1 py-3 px-4 flex items-center justify-center cursor-pointer transition-all duration-300 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 group border-r border-white/15">
+          
+          {/* SPLIT CARD (FLOWERS) — ИСПРАВЛЕНО: Теперь имеет высоту h-[68px] для доминирования, скругления rounded-[1.5rem] и чистый border border-white/15 */}
+          <div className="relative rounded-[1.5rem] border border-white/15 flex overflow-hidden col-span-2 bg-[#112D21] h-[68px]">
+            {/* Левая половина - CLASSIC */}
+            <div 
+              onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'classic')); scrollToSection('buds-menu'); }} 
+              className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-emerald-500/10 hover:bg-emerald-500/20 active:bg-emerald-500/30 group border-r border-white/15"
+            >
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[2.2] transition-transform group-hover:scale-[2.5] duration-500">
                 <Leaf style={{ color: '#FFF' }} strokeWidth={1.5} />
               </div>
-              <div className="relative z-10 flex flex-col items-center text-center gap-1 min-w-0">
+              <div className="relative z-10 flex flex-col items-center text-center gap-0.5 min-w-0">
                 <span className="text-[8px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">{lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}</span>
                 <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">{lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}</h3>
               </div>
             </div>
-            <div onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'premium')); scrollToSection('buds-menu'); }} className="relative flex-1 py-3 px-4 flex items-center justify-center cursor-pointer transition-all duration-300 bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30 group">
+
+            {/* Правая половина - PREMIUM */}
+            <div 
+              onClick={() => { triggerHaptic('medium'); setClosedGrades(p => p.filter(x => x !== 'premium')); scrollToSection('buds-menu'); }} 
+              className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30 group"
+            >
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[2.2] transition-transform group-hover:scale-[2.5] duration-500">
                 <Crown style={{ color: '#FFF' }} strokeWidth={1.5} />
               </div>
-              <div className="relative z-10 flex flex-col items-center text-center gap-1 min-w-0">
+              <div className="relative z-10 flex flex-col items-center text-center gap-0.5 min-w-0">
                 <span className="text-[8px] font-black tracking-[0.2em] text-white/50 uppercase leading-none">{lang === 'ru' ? 'БОШКИ' : 'FLOWERS'}</span>
                 <h3 className="text-[12px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">{lang === 'ru' ? 'ПРЕМИУМ' : 'PREMIUM'}</h3>
               </div>
             </div>
           </div>
 
+          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ — ИСПРАВЛЕНО: Скругления rounded-[1.5rem] и статичные рамки border-white/15 в 100% соответствии со сплит-кнопкой */}
           {[
             { id: 'import', title: lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВЫ' : 'IMPORT & EXCLUSIVES', icon: MapPin, scroll: 'buds-menu', bgClass: 'bg-blue-500/10 hover:bg-blue-500/20' },
             { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', icon: Droplets, scroll: 'concentrates-menu', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' },
             { id: 'prerolls', title: lang === 'ru' ? 'ПРЕРОЛЛЫ' : 'PREROLLS', icon: Cigarette, scroll: 'prerolls-menu', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' },
             { id: 'accessories', title: lang === 'ru' ? 'АКСЕССУАРЫ' : 'ACCESSORIES', icon: Layers, scroll: 'accessories-menu', bgClass: 'bg-emerald-500/10 hover:bg-emerald-500/20' }
           ].map((btn) => (
-            <div key={btn.id} onClick={() => { triggerHaptic('medium'); if(btn.id==='concentrates') concentrateSections.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='prerolls') prerollSections.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='accessories') accessoriesSections?.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='import') setClosedGrades(p=>p.filter(x=>x!=='import_exclusive_combined')); scrollToSection(btn.scroll); }} className={`relative rounded-2xl border border-white/15 flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 backdrop-blur-sm active:scale-[0.98] group col-span-1 h-[52px] ${btn.bgClass}`}>
+            <div 
+              key={btn.id} 
+              onClick={() => { triggerHaptic('medium'); if(btn.id==='concentrates') concentrateSections.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='prerolls') prerollSections.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='accessories') accessoriesSections?.forEach(s=>setClosedGrades(p=>p.includes(s.id)?p:[...p,s.id])); else if(btn.id==='import') setClosedGrades(p=>p.filter(x=>x!=='import_exclusive_combined')); scrollToSection(btn.scroll); }} 
+              className={`relative rounded-[1.5rem] border border-white/15 flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 backdrop-blur-sm active:scale-[0.98] group col-span-1 h-[52px] ${btn.bgClass}`}
+            >
               <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30 pointer-events-none z-0" />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.15] scale-[1.8] transition-transform group-hover:scale-[2.0] duration-500">
                 <btn.icon style={{ color: '#FFF' }} strokeWidth={1.5} />
