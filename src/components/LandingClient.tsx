@@ -309,7 +309,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 setClosedGrades(p => p.filter(x => x !== 'classic'));
                 scrollToSection('buds-menu');
               }}
-              className="relative flex-1 py-5 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group border-r border-white/5"
+              className="relative flex-1 py-3 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group border-r border-white/5"
             >
               <div className="absolute inset-0 opacity-15 pointer-events-none transition-opacity group-hover:opacity-35" 
                    style={{ background: `radial-gradient(circle at 20% 120%, ${GOLDEN_COLOR}, transparent 70%)` }} />
@@ -340,7 +340,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 setClosedGrades(p => p.filter(x => x !== 'premium'));
                 scrollToSection('buds-menu');
               }}
-              className="relative flex-1 py-5 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group"
+              className="relative flex-1 py-3 px-4 flex flex-col justify-start cursor-pointer transition-all duration-300 active:bg-black/20 group"
             >
               <div className="absolute inset-0 opacity-15 pointer-events-none transition-opacity group-hover:opacity-35" 
                    style={{ background: `radial-gradient(circle at 80% 120%, #10B981, transparent 70%)` }} />
@@ -383,9 +383,9 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
               <MapPin style={{ color: IMPORT_COLOR }} strokeWidth={1.5} />
             </div>
 
-            <div className="relative z-10 flex items-center justify-center w-full min-w-0 px-4 text-center">
-              <h3 className="text-[11px] font-black tracking-wider text-white uppercase leading-none group-hover:text-emerald-300 transition-colors">
-                {lang === 'ru' ? 'ИМПОРТ' : 'IMPORT'}
+            <div className="relative z-10 flex items-center justify-center w-full min-w-0 px-3 text-center">
+              <h3 className="text-[10px] font-black tracking-wider text-white uppercase leading-tight group-hover:text-emerald-300 transition-colors break-words">
+                {lang === 'ru' ? 'ИМПОРТНЫЕ ТОВАРЫ И ЛОКАЛЬНЫЕ ЭКСКЛЮЗИВЫ' : 'IMPORTED GOODS & LOCAL EXCLUSIVES'}
               </h3>
             </div>
           </div>
