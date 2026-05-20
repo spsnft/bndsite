@@ -365,7 +365,7 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
             </div>
           </div>
 
-          {/* НОВЫЕ СЕКЦИОННЫЕ КНОПКИ С ЯРКОЙ ПОДСВЕТКОЙ ОДИН В ОДИН КАК СВЕРХУ */}
+          {/* ИСПРАВЛЕННЫЙ БЛОК: УБРАН ОГРАНИЧИВАЮЩИЙ bg-[#112D21], ДОБАВЛЕН backdrop-blur-md И bg-white/5 ДЛЯ МАКСИМАЛЬНОЙ ЯРКОСТИ И СХОДСТВА С ВЕРХНИМ РЯДОМ */}
           {[
             { id: 'import', title: lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВ' : 'IMPORT & EXCLUSIVE', color: IMPORT_COLOR, icon: MapPin, scroll: 'buds-menu' },
             { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', color: '#34D399', icon: Droplets, scroll: 'concentrates-menu' },
@@ -387,13 +387,13 @@ export default function LandingClient({ initialProducts, initialDescriptions = [
                 }
                 scrollToSection(btn.scroll);
               }} 
-              className="relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-[#112D21] active:scale-[0.98] group col-span-1 h-[52px]" 
-              style={{ borderColor: `${btn.color}45` }}
+              className="relative rounded-xl border flex items-center justify-center overflow-hidden cursor-pointer transition-all duration-300 bg-white/5 backdrop-blur-md active:scale-[0.98] group col-span-1 h-[52px]" 
+              style={{ borderColor: `${btn.color}50` }}
             >
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/50 pointer-events-none z-0" />
-              {/* Исправлено: Сделал opacity-25 и group-hover:opacity-40 для идеального соответствия верхнему ряду */}
-              <div className="absolute inset-0 opacity-25 pointer-events-none z-0 transition-opacity group-hover:opacity-40" style={{ background: `radial-gradient(circle at 50% 120%, ${btn.color}, transparent 70%)` }} />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.08] scale-[1.8] blur-[0.5px] transition-transform group-hover:scale-[2.0] duration-500">
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/40 pointer-events-none z-0" />
+              {/* Повысил базовую прозрачность радиального градиента до opacity-40 для сочного свечения */}
+              <div className="absolute inset-0 opacity-40 pointer-events-none z-0 transition-opacity group-hover:opacity-70" style={{ background: `radial-gradient(circle at 50% 120%, ${btn.color}, transparent 70%)` }} />
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.12] scale-[1.8] blur-[0.3px] transition-transform group-hover:scale-[2.0] duration-500">
                 <btn.icon style={{ color: btn.color }} strokeWidth={1.5} />
               </div>
               <div className="relative z-10 flex items-center justify-center w-full min-w-0 px-2 text-center">
