@@ -79,7 +79,7 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
 });
 
 const BahtSymbol = React.memo(() => (
-  <span className="font-sans text-[0.7em] ml-0.5 opacity-80 align-baseline">฿</span>
+  <span className="font-sans text-[0.75em] ml-0.5 opacity-90 align-baseline">฿</span>
 ));
 
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean, showSubcategory?: boolean }) => {
@@ -89,7 +89,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
   
   const accentColor = item.category === 'concentrates' 
     ? (sub?.includes('fresh frozen premium') ? "#34D399" : sub?.includes('fresh frozen') ? "#FEC107" : SELECTED_COLOR)
-    : (isPrerolls ? GOLDEN_COLOR : (isElite(item) ? (sub?.includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR) : (sub === 'classic' ? '#10B981' : (sub === 'selected' ? SELECTED_COLOR : '#A855F7'))));
+    : (isPrerolls ? GOLDEN_COLOR : (isElite(item) ? (sub?.includes('exclusive') ? SELECTED_COLOR : IMPORT_COLOR) : (sub.includes('classic') ? '#10B981' : (sub === 'selected' ? SELECTED_COLOR : '#A855F7'))));
   
   const priceInfo = getFirstAvailablePrice(item) || { price: 0, weight: 0 };
   const currentPrice = priceInfo.price || 0;
@@ -116,7 +116,7 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       <div className="relative z-10 px-5 py-3 pb-0 flex-1 flex flex-col min-h-0">
         <div className="min-w-0 pr-6">
           <h3 className={`${isMini ? 'text-[11px]' : 'text-[13px]'} font-black uppercase tracking-tight leading-tight text-white group-hover:text-emerald-300 transition-colors`}>{item.name}</h3>
-          {showSubcategory && (<p className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-bold mt-1 text-white/50 uppercase tracking-widest italic`}>{item.subcategory === 'classic' ? 'Classic' : (item.subcategory === 'selected' ? 'Selected' : item.subcategory || "Product")}</p>)}
+          {showSubcategory && (<p className={`${isMini ? 'text-[8px]' : 'text-[9px]'} font-bold mt-1 text-white/50 uppercase tracking-widest italic`}>{item.subcategory?.includes('classic') ? 'Classic' : 'Premium'}</p>)}
         </div>
         <div className="relative flex-1 w-full min-h-0 flex items-center justify-center my-1">
             <BlurImage src={item.image} priority={priority} width={180} height={180} className="max-w-full max-h-full object-contain transform group-hover:scale-105 transition-transform duration-300" alt={item.name} />
@@ -181,16 +181,15 @@ export default function LandingClient({ initialProducts = [], initialDescription
   const gradeSections = React.useMemo(() => {
     const buds = processedProducts.filter(p => p.category === 'buds' && !isElite(p));
     
-    const classicItems = buds.filter(p => p.subcategory?.toLowerCase() === 'classic');
-    const classicRegular = classicItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
-    const classicSale = classicItems.filter(p => p.badge?.toUpperCase() === 'SALE');
+    const classicRegular = buds.filter(p => p.subcategory?.toLowerCase() === 'classic');
+    const classicSale = buds.filter(p => p.subcategory?.toLowerCase() === 'classic sale');
     
-    const premiumRegular = buds.filter(p => p.subcategory?.toLowerCase() === 'selected');
-    const premiumSale = buds.filter(p => p.subcategory?.toLowerCase() === 'premium');
+    const premiumRegular = buds.filter(p => p.subcategory?.toLowerCase() === 'premium');
+    const premiumSale = buds.filter(p => p.subcategory?.toLowerCase() === 'premium sale');
 
     const sections = [];
     
-    if (classicItems.length > 0) {
+    if (classicRegular.length > 0 || classicSale.length > 0) {
       sections.push({
         id: 'classic',
         title: 'Classic Grade',
@@ -198,7 +197,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
         icon: Leaf,
         regularItems: classicRegular,
         saleItems: classicSale,
-        priceRef: classicRegular[0] || classicItems[0],
+        priceRef: classicRegular[0] || classicSale[0],
         salePriceRef: classicSale[0]
       });
     }
@@ -244,7 +243,21 @@ export default function LandingClient({ initialProducts = [], initialDescription
       if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
       else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
       else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
-      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), priceRef: allConcs.find(p => p.subcategory === sub), color, icon };
+      
+      const subItems = allConcs.filter(p => p.subcategory === sub);
+      const regularItems = subItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
+      const saleItems = subItems.filter(p => p.badge?.toUpperCase() === 'SALE');
+
+      return { 
+        id: sub, 
+        title: sub || "Concentrates", 
+        regularItems,
+        saleItems,
+        priceRef: regularItems[0] || subItems[0], 
+        salePriceRef: saleItems[0],
+        color, 
+        icon 
+      };
     });
   }, [processedProducts]);
 
@@ -264,7 +277,22 @@ export default function LandingClient({ initialProducts = [], initialDescription
   const prerollSections = React.useMemo(() => {
     const allJoints = processedProducts.filter(p => p && p.category === 'joints');
     const subs = Array.from(new Set(allJoints.map(p => p.subcategory).filter(Boolean)));
-    return subs.map(sub => ({ id: sub, title: sub || "Prerolls", items: allJoints.filter(p => p.subcategory === sub), color: GOLDEN_COLOR, icon: Cigarette }));
+    return subs.map(sub => {
+      const subItems = allJoints.filter(p => p.subcategory === sub);
+      const regularItems = subItems.filter(p => p.badge?.toUpperCase() !== 'SALE');
+      const saleItems = subItems.filter(p => p.badge?.toUpperCase() === 'SALE');
+
+      return { 
+        id: sub, 
+        title: sub || "Prerolls", 
+        regularItems,
+        saleItems,
+        priceRef: regularItems[0] || subItems[0],
+        salePriceRef: saleItems[0],
+        color: GOLDEN_COLOR, 
+        icon: Cigarette 
+      };
+    });
   }, [processedProducts]);
 
   const toggleSection = (id: string) => {
@@ -416,7 +444,12 @@ export default function LandingClient({ initialProducts = [], initialDescription
         )}
         {flashSales.length > 0 && (
           <section className="mt-[12px] mb-[12px] space-y-3 overflow-hidden">
-            <div className="flex items-center gap-2 px-2"><BadgeIcon type="SALE" /><h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">{t.sales || 'Sales'}</h2></div>
+            <div className="flex items-center gap-2 px-2">
+              <BadgeIcon type="SALE" />
+              <h2 className="text-[12px] font-black uppercase tracking-[0.3em] text-white/80">
+                {lang === 'ru' ? 'Распродажи недели' : 'Sales of the week'}
+              </h2>
+            </div>
             <div className="flex gap-4 overflow-x-auto pb-1 no-scrollbar mx-[-1rem] px-4 snap-x">{flashSales.map((p, idx) => (<div key={p?.id || idx} className="w-[170px] shrink-0 snap-start"><HighlightCard item={p} onClick={() => setSelectedProduct(p)} priority={idx < 4} hideBadge={true} isMini={false} showSubcategory={true} /></div>))}</div>
           </section>
         )}
@@ -453,15 +486,17 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                 <div className="border-b border-amber-500/10 bg-amber-500/[0.02] py-3.5 px-6 flex flex-col gap-2.5">
                                     <div className="flex items-center gap-2 opacity-90 text-amber-400">
                                         <Tag size={13} className="text-amber-400 fill-amber-400/10" />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Сорта со скидкой (SALE)' : 'Strains on Sale'}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Сорта со скидкой' : 'Strains on Sale'}
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
-                                                    <span className="text-[13px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -478,15 +513,17 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                 <div className="border-b border-white/5 bg-white/5 py-3.5 px-6 flex flex-col gap-2.5">
                                     <div className="flex items-center gap-2 opacity-40 text-white">
                                         <Leaf size={13} />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Регулярные сорта' : 'Regular Strains'}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Лучшие сорта' : 'Top Strains'}
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
-                                                    <span className="text-[13px] font-black text-white/90 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-white/95 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -530,14 +567,14 @@ export default function LandingClient({ initialProducts = [], initialDescription
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
           <div className="space-y-3">
-            {concentrateSections.map(sec => { 
-              const isOpen = !closedGrades.includes(sec.id); 
+            {concentrateSections.map(({ id, title, color, icon: Icon, regularItems, saleItems, priceRef, salePriceRef }) => { 
+              const isOpen = !closedGrades.includes(id); 
               return ( 
-                <div key={sec.id} id={sec.id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> 
-                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
+                <div key={id} id={id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${color}A0` : 'rgba(255,255,255,0.08)' }}> 
+                  <button onClick={() => toggleSection(id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
                     <div className="flex items-center gap-3">
-                      <sec.icon size={22} style={{ color: sec.color }} />
-                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2>
+                      <Icon size={22} style={{ color: color }} />
+                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: color }}>{title}</h2>
                     </div> 
                     <div className="flex items-center gap-2"> 
                       <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> 
@@ -545,8 +582,60 @@ export default function LandingClient({ initialProducts = [], initialDescription
                     </div> 
                   </button> 
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> 
-                    <div className="divide-y divide-white/10 bg-white/5">
-                      {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                    <div className="bg-white/[0.02]">
+                        {saleItems.length > 0 && (
+                            <div className="border-b border-white/5">
+                                <div className="border-b border-amber-500/10 bg-amber-500/[0.02] py-3.5 px-6 flex flex-col gap-2.5">
+                                    <div className="flex items-center gap-2 opacity-90 text-amber-400">
+                                        <Tag size={13} className="text-amber-400 fill-amber-400/10" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Концентраты со скидкой' : 'Concentrates on Sale'}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {[1, 5, 10, 20].map(w => {
+                                            const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
+                                            return (
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="divide-y divide-white/5 bg-white/[0.01]">
+                                  {saleItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                                </div>
+                            </div>
+                        )}
+
+                        {regularItems.length > 0 && (
+                            <div>
+                                <div className="border-b border-white/5 bg-white/5 py-3.5 px-6 flex flex-col gap-2.5">
+                                    <div className="flex items-center gap-2 opacity-40 text-white">
+                                        <Icon size={13} />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Лучшие сорта' : 'Top Strains'}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {[1, 5, 10, 20].map(w => {
+                                            const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
+                                            return (
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-white/95 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="divide-y divide-white/5">
+                                  {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                                </div>
+                            </div>
+                        )}
                     </div> 
                   </div> 
                 </div> 
@@ -560,14 +649,14 @@ export default function LandingClient({ initialProducts = [], initialDescription
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
           <div className="space-y-3">
-            {prerollSections.map(sec => { 
-              const isOpen = !closedGrades.includes(sec.id); 
+            {prerollSections.map(({ id, title, color, icon: Icon, regularItems, saleItems, priceRef, salePriceRef }) => { 
+              const isOpen = !closedGrades.includes(id); 
               return ( 
-                <div key={sec.id} id={sec.id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> 
-                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
+                <div key={id} id={id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${color}A0` : 'rgba(255,255,255,0.08)' }}> 
+                  <button onClick={() => toggleSection(id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
                     <div className="flex items-center gap-3">
-                      <sec.icon size={22} style={{ color: sec.color }} />
-                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2>
+                      <Icon size={22} style={{ color: color }} />
+                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: color }}>{title}</h2>
                     </div> 
                     <div className="flex items-center gap-2"> 
                       <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> 
@@ -575,8 +664,60 @@ export default function LandingClient({ initialProducts = [], initialDescription
                     </div> 
                   </button> 
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> 
-                    <div className="divide-y divide-white/10 bg-white/5">
-                      {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                    <div className="bg-white/[0.02]">
+                        {saleItems.length > 0 && (
+                            <div className="border-b border-white/5">
+                                <div className="border-b border-amber-500/10 bg-amber-500/[0.02] py-3.5 px-6 flex flex-col gap-2.5">
+                                    <div className="flex items-center gap-2 opacity-90 text-amber-400">
+                                        <Tag size={13} className="text-amber-400 fill-amber-400/10" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Прероллы со скидкой' : 'Prerolls on Sale'}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
+                                            const p = Math.round(Number(salePriceRef?.prices?.[unit.w]) || 0);
+                                            return (
+                                                <div key={unit.w} className="flex flex-col items-center justify-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{unit.l}</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="divide-y divide-white/5 bg-white/[0.01]">
+                                  {saleItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                                </div>
+                            </div>
+                        )}
+
+                        {regularItems.length > 0 && (
+                            <div>
+                                <div className="border-b border-white/5 bg-white/5 py-3.5 px-6 flex flex-col gap-2.5">
+                                    <div className="flex items-center gap-2 opacity-40 text-white">
+                                        <Icon size={13} />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Лучшие сорта' : 'Top Strains'}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
+                                            const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0);
+                                            return (
+                                                <div key={unit.w} className="flex flex-col items-center justify-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{unit.l}</span>
+                                                    <span className="text-[14px] font-black text-white/95 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="divide-y divide-white/5">
+                                  {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                                </div>
+                            </div>
+                        )}
                     </div> 
                   </div> 
                 </div> 
@@ -668,7 +809,9 @@ export default function LandingClient({ initialProducts = [], initialDescription
           <Bike size={18} className="text-emerald-400 shrink-0" />
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Сроки доставки' : 'Delivery times'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}
+            </p>
           </div>
         </div>
       </InfoModal>
@@ -721,7 +864,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
               ? { color: concentrateSections.find(s => s.id === selectedProduct.subcategory)?.color || '#10B981' } 
               : (selectedProduct.category === 'joints' ? { color: GOLDEN_COLOR } 
               : (isElite(selectedProduct) ? {color: selectedProduct.subcategory?.toLowerCase().includes('exclusive') ? '#10B981' : IMPORT_COLOR} 
-              : (selectedProduct.subcategory?.toLowerCase() === 'classic' ? { color: '#10B981' } : { color: '#A855F7' })))
+              : (selectedProduct.subcategory?.toLowerCase().includes('classic') ? { color: '#10B981' } : { color: '#A855F7' })))
           } 
           onClose={() => setSelectedProduct(null)} 
         />
