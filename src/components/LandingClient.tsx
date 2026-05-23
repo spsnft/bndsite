@@ -2,13 +2,10 @@
 import * as React from "react"
 import Link from "next/link"
 import { 
-  Plus, Tag, Zap, MapPin, Leaf, Wind, Crown, 
-  ShoppingBag, Send, MessageCircle, Instagram, 
-  SendHorizontal, ChevronDown, Star, Phone, 
-  Droplets, Snowflake, Box, Sparkles, Flame, Percent,
-  ShieldCheck, Clock, CheckCircle2, Trophy, Users, RefreshCcw,
-  Bike, Wallet, Globe, Timer, HelpCircle, CreditCard,
-  ZapOff, FlameKindling, Gem, Laptop, Info, Cigarette, Layers, X, EyeOff
+  Plus, Tag, Zap, MapPin, Leaf, Crown, ShoppingBag, Send, 
+  MessageCircle, Instagram, SendHorizontal, ChevronDown, 
+  Droplets, Snowflake, Box, Sparkles, Bike, Wallet, Timer, 
+  CreditCard, Cigarette, Layers, X, Trophy, Users, ShieldCheck
 } from "lucide-react"
 
 import { useCart } from "@/lib/cart-store"
@@ -17,7 +14,7 @@ import { translations } from "@/lib/translations"
 import { ProductModal, CheckoutModal } from "@/components/modals"
 import { 
   triggerHaptic, getFirstAvailablePrice, getInterpolatedPrice, isElite,
-  TYPE_COLORS, SELECTED_COLOR, IMPORT_COLOR, CONCENTRATES_COLOR, GOLDEN_COLOR 
+  TYPE_COLORS, SELECTED_COLOR, IMPORT_COLOR, GOLDEN_COLOR 
 } from "@/lib/utils"
 
 const InfoModal = ({ isOpen, onClose, title, children }: { isOpen: boolean, onClose: () => void, title: string, children: React.ReactNode }) => {
@@ -104,8 +101,6 @@ const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, 
       oldPrice = Math.round(getInterpolatedPrice(firstWeight, item.old_prices, isElite(item))) || 0;
     } catch(e) {}
   }
-
-  const typeKey = item.type?.toLowerCase() || "";
 
   return (
     <div 
@@ -204,9 +199,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
         regularItems: classicRegular,
         saleItems: classicSale,
         priceRef: classicRegular[0] || classicItems[0],
-        salePriceRef: classicSale[0],
-        isClassic: true,
-        isPremium: false
+        salePriceRef: classicSale[0]
       });
     }
     
@@ -219,9 +212,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
         regularItems: premiumRegular,
         saleItems: premiumSale,
         priceRef: premiumRegular[0] || premiumSale[0],
-        salePriceRef: premiumSale[0],
-        isClassic: false,
-        isPremium: true
+        salePriceRef: premiumSale[0]
       });
     }
     
@@ -253,7 +244,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
       if (subLower.includes('old school')) { color = "#C1C1C1"; icon = Box; }
       else if (subLower.includes('fresh frozen')) { color = subLower.includes('premium') ? "#34D399" : "#FEC107"; icon = Snowflake; }
       else if (subLower.includes('live rosin')) { color = "#A855F7"; icon = Droplets; }
-      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), priceRef: allConcs.find(p => p.subcategory === sub), color, icon, isList: true };
+      return { id: sub, title: sub || "Concentrates", items: allConcs.filter(p => p.subcategory === sub), priceRef: allConcs.find(p => p.subcategory === sub), color, icon };
     });
   }, [processedProducts]);
 
@@ -283,7 +274,6 @@ export default function LandingClient({ initialProducts = [], initialDescription
 
   const handleAnchorNavigation = (targetSectionId: string, accordionIdsToOpen: string[], allAccordionIds: string[]) => {
     triggerHaptic('medium');
-    
     const el = document.getElementById(targetSectionId);
     if (el) {
       const offset = 20;
@@ -292,7 +282,6 @@ export default function LandingClient({ initialProducts = [], initialDescription
       const elementPosition = elementRect - bodyRect;
       window.scrollTo({ top: elementPosition - offset, behavior: 'smooth' });
     }
-
     setTimeout(() => {
       const newClosedGrades = allAccordionIds.filter(id => !accordionIdsToOpen.includes(id));
       setClosedGrades(newClosedGrades);
@@ -333,11 +322,9 @@ export default function LandingClient({ initialProducts = [], initialDescription
                 <Link href="https://t.me/bshk_phuket" target="_blank" className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
                   <SendHorizontal size={18} className="opacity-80"/>
                 </Link>
-
                 <div className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/5 opacity-20 grayscale shadow-xl cursor-default">
                   <MessageCircle size={18} />
                 </div>
-
                 <Link href="https://www.instagram.com/boshkunadoroshku" target="_blank" className="w-[46px] h-[46px] flex items-center justify-center bg-white/5 rounded-2xl border border-white/10 active:scale-90 transition-all shadow-xl">
                   <Instagram size={18} className="opacity-80"/>
                 </Link>
@@ -358,8 +345,6 @@ export default function LandingClient({ initialProducts = [], initialDescription
         </div>
 
         <div className="grid grid-cols-2 gap-2 px-2 mb-6 relative z-20">
-          
-          {/* SPLIT CARD (FLOWERS) */}
           <div className="relative rounded-[1.5rem] border border-white/15 flex overflow-hidden col-span-2 bg-[#112D21] h-[68px]">
             <div 
               onClick={() => handleAnchorNavigation('buds-menu', ['classic'], allSectionIds)} 
@@ -373,7 +358,6 @@ export default function LandingClient({ initialProducts = [], initialDescription
                 <h3 className="text-[15px] font-black tracking-wider text-white uppercase leading-none truncate group-hover:text-emerald-300 transition-colors">{lang === 'ru' ? 'КЛАССИКА' : 'CLASSIC'}</h3>
               </div>
             </div>
-
             <div 
               onClick={() => handleAnchorNavigation('buds-menu', ['premium'], allSectionIds)} 
               className="relative flex-1 flex items-center justify-center cursor-pointer transition-all duration-300 bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30 group"
@@ -388,7 +372,6 @@ export default function LandingClient({ initialProducts = [], initialDescription
             </div>
           </div>
 
-          {/* НИЖНИЕ СЕКЦИОННЫЕ КНОПКИ */}
           {[
             { id: 'import', title: lang === 'ru' ? 'ИМПОРТ И ЭКСКЛЮЗИВЫ' : 'IMPORT & EXCLUSIVES', icon: MapPin, scroll: 'import-menu-section', bgClass: 'bg-blue-500/10 hover:bg-blue-500/20' },
             { id: 'concentrates', title: lang === 'ru' ? 'КОНЦЕНТРАТЫ' : 'CONCENTRATES', icon: Droplets, scroll: 'concentrates-menu-section', bgClass: 'bg-amber-500/10 hover:bg-amber-500/20' },
@@ -446,56 +429,73 @@ export default function LandingClient({ initialProducts = [], initialDescription
           </div>
           
           <div className="space-y-3">
-            {gradeSections.map(({ id, title, color, icon: Icon, regularItems, saleItems, priceRef, salePriceRef, isClassic, isPremium }) => {
+            {gradeSections.map(({ id, title, color, icon: Icon, regularItems, saleItems, priceRef, salePriceRef }) => {
               const isOpen = !closedGrades.includes(id);
               return (
-                <div key={id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${color}A0` : 'rgba(255,255,255,0.08)' }}>
-                  <button onClick={() => toggleSection(id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group">
-                    <div className="w-full flex items-center justify-between px-4">
-                      <div className="flex items-center gap-3"><Icon size={22} style={{ color: color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: color }}>{title}</h2></div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
-                          {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
-                        </span>
-                        <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                      </div>
+                <div key={id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${color}A0` : 'rgba(255,255,255,0.08)' }}>
+                  <button onClick={() => toggleSection(id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group">
+                    <div className="flex items-center gap-3">
+                      <Icon size={22} style={{ color: color }} />
+                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: color }}>{title}</h2>
                     </div>
-                    <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3">
-                       {[1, 5, 10, 20].map(w => {
-                         const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
-                         return (
-                          <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5">
-                            <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span>
-                            <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
-                          </div>
-                         )
-                       })}
+                    <div className="flex items-center gap-2">
+                      <span className="text-[9px] font-black uppercase tracking-widest opacity-40">
+                        {isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}
+                      </span>
+                      <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
                     </div>
                   </button>
+
                   <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                    <div className="divide-y divide-white/10 bg-white/5">
-                        {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                    <div className="bg-white/[0.02]">
                         {saleItems.length > 0 && (
-                            <>
-                                <div className="border-t border-b border-amber-500/20 bg-amber-500/[0.02] py-4 px-8 flex flex-col gap-3">
+                            <div className="border-b border-white/5">
+                                <div className="border-b border-amber-500/10 bg-amber-500/[0.02] py-3.5 px-6 flex flex-col gap-2.5">
                                     <div className="flex items-center gap-2 opacity-90 text-amber-400">
-                                        <Tag size={14} className="text-amber-400 fill-amber-400/10" />
-                                        <span className="text-[11px] font-black uppercase tracking-[0.1em]">{lang === 'ru' ? 'Сорта со скидкой' : 'Strains on Sale'}</span>
+                                        <Tag size={13} className="text-amber-400 fill-amber-400/10" />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Сорта со скидкой (SALE)' : 'Strains on Sale'}</span>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-2">
+                                    <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-xl border border-white/5">
-                                                    <span className="text-[10px] font-black opacity-40 uppercase leading-none mb-[1px]">{w}g</span>
-                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
+                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[13px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
                                     </div>
                                 </div>
-                                {saleItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
-                            </>
+                                <div className="divide-y divide-white/5 bg-white/[0.01]">
+                                  {saleItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                                </div>
+                            </div>
+                        )}
+
+                        {regularItems.length > 0 && (
+                            <div>
+                                <div className="border-b border-white/5 bg-white/5 py-3.5 px-6 flex flex-col gap-2.5">
+                                    <div className="flex items-center gap-2 opacity-40 text-white">
+                                        <Leaf size={13} />
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Регулярные сорта' : 'Regular Strains'}</span>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-1.5">
+                                        {[1, 5, 10, 20].map(w => {
+                                            const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
+                                            return (
+                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
+                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[13px] font-black text-white/90 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                </div>
+                                <div className="divide-y divide-white/5">
+                                  {regularItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                                </div>
+                            </div>
                         )}
                     </div>
                   </div>
@@ -504,18 +504,21 @@ export default function LandingClient({ initialProducts = [], initialDescription
             })}
             
             {combinedEliteSection && (
-              <div key={combinedEliteSection.id} id="import-menu-section" className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: !closedGrades.includes(combinedEliteSection.id) ? `${combinedEliteSection.color}A0` : 'rgba(255,255,255,0.08)' }}>
-                <button onClick={() => toggleSection(combinedEliteSection.id)} className="w-full px-8 py-6 flex flex-col active:bg-white/5 transition-colors text-left group">
-                  <div className="w-full flex items-center justify-between">
-                    <div className="flex items-center gap-3"><combinedEliteSection.icon size={22} style={{ color: combinedEliteSection.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: combinedEliteSection.color }}>{combinedEliteSection.title}</h2></div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{!closedGrades.includes(combinedEliteSection.id) ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span>
-                      <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${!closedGrades.includes(combinedEliteSection.id) ? 'rotate-180' : ''}`} />
-                    </div>
+              <div key={combinedEliteSection.id} id="import-menu-section" className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: !closedGrades.includes(combinedEliteSection.id) ? `${combinedEliteSection.color}A0` : 'rgba(255,255,255,0.08)' }}>
+                <button onClick={() => toggleSection(combinedEliteSection.id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group">
+                  <div className="flex items-center gap-3">
+                    <combinedEliteSection.icon size={22} style={{ color: combinedEliteSection.color }} />
+                    <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: combinedEliteSection.color }}>{combinedEliteSection.title}</h2>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{!closedGrades.includes(combinedEliteSection.id) ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span>
+                    <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${!closedGrades.includes(combinedEliteSection.id) ? 'rotate-180' : ''}`} />
                   </div>
                 </button>
                 <div className={`overflow-hidden transition-all duration-500 ${!closedGrades.includes(combinedEliteSection.id) ? 'max-h-[3000px]' : 'max-h-0'}`}>
-                  <div className="p-6 grid grid-cols-2 gap-4 bg-white/5">{combinedEliteSection.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={true} />))}</div>
+                  <div className="px-4 py-4 grid grid-cols-2 gap-3 bg-white/5">
+                    {combinedEliteSection.items.map(p => (<HighlightCard key={p.id} item={p} onClick={() => setSelectedProduct(p)} showSubcategory={true} />))}
+                  </div>
                 </div>
               </div>
             )}
@@ -526,14 +529,60 @@ export default function LandingClient({ initialProducts = [], initialDescription
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 backdrop-blur-md" style={{ color: '#10B981', borderColor: '#10B98130' }}>{lang === 'ru' ? 'Концентраты' : 'Concentrates'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-emerald-500/50 to-emerald-500"></div>
           </div>
-          <div className="space-y-3">{concentrateSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[1, 5, 10, 20].map(w => { const p = Math.round(Number(sec.priceRef?.prices?.[w]) || 0); return ( <div key={w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[11px] font-black opacity-60 uppercase leading-none mb-[1px]">{w}g</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
+          <div className="space-y-3">
+            {concentrateSections.map(sec => { 
+              const isOpen = !closedGrades.includes(sec.id); 
+              return ( 
+                <div key={sec.id} id={sec.id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> 
+                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
+                    <div className="flex items-center gap-3">
+                      <sec.icon size={22} style={{ color: sec.color }} />
+                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2>
+                    </div> 
+                    <div className="flex items-center gap-2"> 
+                      <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> 
+                      <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> 
+                    </div> 
+                  </button> 
+                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> 
+                    <div className="divide-y divide-white/10 bg-white/5">
+                      {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                    </div> 
+                  </div> 
+                </div> 
+              ); 
+            })} 
+          </div>
 
           <div id="prerolls-menu-section" className="flex items-center gap-4 pt-6 pb-6 mt-4 relative">
              <div className="h-[2px] flex-1 bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
              <span className="text-[16px] font-black uppercase tracking-[0.3em] text-white px-6 py-2 rounded-full border border-[#F59E0B]/30 bg-[#F59E0B]/10 backdrop-blur-md" style={{ borderColor: `${GOLDEN_COLOR}4d`, color: GOLDEN_COLOR }}>{lang === 'ru' ? 'Прероллы' : 'Prerolls'}</span>
              <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#F59E0B]/50 to-[#F59E0B]"></div>
           </div>
-          <div className="space-y-3">{prerollSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); const priceRef = sec.items[0]; return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> <div className="w-full grid grid-cols-4 gap-2 px-4 mt-3"> {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => { const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0); return ( <div key={unit.w} className="flex flex-col items-center gap-0 bg-white/5 py-1.5 rounded-2xl border border-white/5"> <span className="text-[10px] font-black opacity-60 uppercase leading-none mb-[1px]">{unit.l}</span> <span className="text-[18px] font-black text-white leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span> </div> ) })} </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
+          <div className="space-y-3">
+            {prerollSections.map(sec => { 
+              const isOpen = !closedGrades.includes(sec.id); 
+              return ( 
+                <div key={sec.id} id={sec.id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> 
+                  <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
+                    <div className="flex items-center gap-3">
+                      <sec.icon size={22} style={{ color: sec.color }} />
+                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2>
+                    </div> 
+                    <div className="flex items-center gap-2"> 
+                      <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> 
+                      <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> 
+                    </div> 
+                  </button> 
+                  <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> 
+                    <div className="divide-y divide-white/10 bg-white/5">
+                      {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                    </div> 
+                  </div> 
+                </div> 
+              ); 
+            })} 
+          </div>
 
           {accessoriesSections && (
             <div id="accessories-menu-section" className="pt-4">
@@ -542,20 +591,43 @@ export default function LandingClient({ initialProducts = [], initialDescription
                  <span className="text-[16px] font-black uppercase tracking-[0.3em] px-6 py-2 rounded-full border border-[#EC4899]/30 bg-[#EC4899]/10 backdrop-blur-md" style={{ color: '#EC4899' }}>{lang === 'ru' ? 'Аксессуары' : 'Accessories'}</span>
                  <div className="h-[2px] flex-1 bg-gradient-to-l from-transparent via-[#EC4899]/50 to-[#EC4899]"></div>
               </div>
-              <div className="space-y-3">{accessoriesSections.map(sec => { const isOpen = !closedGrades.includes(sec.id); return ( <div key={sec.id} id={sec.id} className={`rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]`} style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex flex-col active:bg-white/5 transition-colors text-left group"> <div className="w-full flex items-center justify-between px-4"> <div className="flex items-center gap-3"><sec.icon size={22} style={{ color: sec.color }} /><h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2></div> <div className="flex items-center gap-2"> <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> </div> </div> </button> <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> <div className="divide-y divide-white/10 bg-white/5">{sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}</div> </div> </div> ); })} </div>
+              <div className="space-y-3">
+                {accessoriesSections.map(sec => { 
+                  const isOpen = !closedGrades.includes(sec.id); 
+                  return ( 
+                    <div key={sec.id} id={sec.id} className="rounded-[2rem] overflow-hidden border transition-all duration-300 bg-[#112D21]" style={{ borderColor: isOpen ? `${sec.color}A0` : 'rgba(255,255,255,0.08)' }}> 
+                      <button onClick={() => toggleSection(sec.id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
+                        <div className="flex items-center gap-3">
+                          <sec.icon size={22} style={{ color: sec.color }} />
+                          <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: sec.color }}>{sec.title}</h2>
+                        </div> 
+                        <div className="flex items-center gap-2"> 
+                          <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> 
+                          <ChevronDown size={20} className={`opacity-40 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /> 
+                        </div> 
+                      </button> 
+                      <div className={`overflow-hidden transition-all duration-500 ${isOpen ? 'max-h-[3000px]' : 'max-h-0'}`}> 
+                        <div className="divide-y divide-white/10 bg-white/5">
+                          {sec.items.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                        </div> 
+                      </div> 
+                    </div> 
+                  ); 
+                })} 
+              </div>
             </div>
           )}
         </div>
       </div>
 
-      {(items || []).length > 0 && (
+      {items.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-6">
           <button onClick={() => { triggerHaptic('medium'); setIsCheckoutOpen(true); }} className="w-full bg-white/10 backdrop-blur-2xl text-white py-3 px-7 rounded-[2.5rem] border border-white/20 shadow-2xl flex justify-between items-center active:scale-95 transition-all">
             <div className="flex items-center gap-4 relative z-10">
               <div className="p-2 bg-emerald-400/20 rounded-xl"><ShoppingBag size={20} className="text-emerald-400"/></div>
               <div className="text-left">
-                <div className="font-black uppercase text-[18px] leading-none mb-0.5">{typeof getTotal === 'function' ? getTotal() : 0}<BahtSymbol /></div>
-                <span className="font-black uppercase text-[9px] text-emerald-400 leading-none">{(items || []).length} {t.items || 'items'}</span>
+                <div className="font-black uppercase text-[18px] leading-none mb-0.5">{getTotal()}<BahtSymbol /></div>
+                <span className="font-black uppercase text-[9px] text-emerald-400 leading-none">{items.length} {t.items || 'items'}</span>
               </div>
             </div>
             <div className="flex items-center gap-3 text-white opacity-70">
@@ -566,11 +638,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
         </div>
       )}
       
-      <InfoModal 
-        isOpen={isDeliveryModalOpen} 
-        onClose={() => setIsDeliveryModalOpen(false)}
-        title={lang === 'ru' ? 'Доставка и Оплата' : 'Delivery & Payment'}
-      >
+      <InfoModal isOpen={isDeliveryModalOpen} onClose={() => setIsDeliveryModalOpen(false)} title={lang === 'ru' ? 'Доставка и Оплата' : 'Delivery & Payment'}>
         <div className="flex items-center gap-4">
           <Timer size={18} className="text-emerald-400 shrink-0" />
           <div>
@@ -582,39 +650,30 @@ export default function LandingClient({ initialProducts = [], initialDescription
           <Plus size={18} className="text-emerald-400 shrink-0" />
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Минимальный заказ' : 'Minimum order'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{"От 1000฿, Доставка бесплатная"}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <CreditCard size={18} className="text-emerald-400 shrink-0" />
-          <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Расчет при получении' : 'Payment on Delivery'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? 'Наличные в руки курьеру' : 'Cash on delivery to the courier'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'От 1000฿, Доставка бесплатная' : 'From 1000฿, Free delivery'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <Wallet size={18} className="text-emerald-400 shrink-0" />
           <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Другие способы оплаты' : 'Other payment methods'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">{lang === 'ru' ? 'Банковский перевод, Крипта, Рубли' : 'Bank transfer, Crypto, Rubles'}</p>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Способы оплаты' : 'Payment methods'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
+              {lang === 'ru' ? 'Наличные, перевод, крипта, рубли' : 'Cash, bank transfer, crypto'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-4">
           <Bike size={18} className="text-emerald-400 shrink-0" />
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Сроки доставки' : 'Delivery times'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
-              {lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}
-            </p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}</p>
           </div>
         </div>
       </InfoModal>
 
-      <InfoModal 
-        isOpen={isGuaranteesModalOpen} 
-        onClose={() => setIsGuaranteesModalOpen(false)}
-        title={lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}
-      >
+      <InfoModal isOpen={isGuaranteesModalOpen} onClose={() => setIsGuaranteesModalOpen(false)} title={lang === 'ru' ? 'О нас и Гарантии' : 'Our Guarantees'}>
         <div className="flex items-center gap-4">
           <Trophy size={18} className="text-emerald-400 shrink-0" />
           <div>
@@ -634,20 +693,20 @@ export default function LandingClient({ initialProducts = [], initialDescription
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <CreditCard size={18} className="text-emerald-400 shrink-0" />
+          <div>
+            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Расчет при получении' : 'Payment on Delivery'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
+              {lang === 'ru' ? 'Наличные в руки курьеру' : 'Cash on delivery to the courier'}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
           <Sparkles size={18} className="text-emerald-400 shrink-0" />
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Прямые поставки' : 'Direct Sourcing'}</p>
             <p className="text-[13px] font-bold text-white tracking-[0.1em] leading-tight">
               {lang === 'ru' ? 'Партнерство с лучшими фермерами и поставщиками' : 'Partnership with top-tier growers & suppliers'}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <EyeOff size={18} className="text-emerald-400 shrink-0" />
-          <div>
-            <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Конфиденциальность' : 'Privacy'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
-              {lang === 'ru' ? 'Полная анонимность каждого заказа' : 'Complete anonymity for every single order'}
             </p>
           </div>
         </div>
