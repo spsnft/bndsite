@@ -513,7 +513,9 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                 <div className="border-b border-white/5 bg-white/5 py-3.5 px-6 flex flex-col gap-2.5">
                                     <div className="flex items-center gap-2 opacity-40 text-white">
                                         <Leaf size={13} />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Регулярные сорта' : 'Regular Strains'}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Лучшие сорта' : 'Top Strains'}
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
@@ -613,7 +615,9 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                 <div className="border-b border-white/5 bg-white/5 py-3.5 px-6 flex flex-col gap-2.5">
                                     <div className="flex items-center gap-2 opacity-40 text-white">
                                         <Icon size={13} />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Базовые позиции' : 'Regular Strains'}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Лучшие сорта' : 'Top Strains'}
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
@@ -693,7 +697,9 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                 <div className="border-b border-white/5 bg-white/5 py-3.5 px-6 flex flex-col gap-2.5">
                                     <div className="flex items-center gap-2 opacity-40 text-white">
                                         <Icon size={13} />
-                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Базовые позиции' : 'Regular Strains'}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-[0.15em]">
+                                            {lang === 'ru' ? 'Лучшие сорта' : 'Top Strains'}
+                                        </span>
                                     </div>
                                     <div className="grid grid-cols-4 gap-1.5">
                                         {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
