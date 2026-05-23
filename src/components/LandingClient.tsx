@@ -79,7 +79,7 @@ const BadgeIcon = React.memo(({ type, isSmall }: { type: string, isSmall?: boole
 });
 
 const BahtSymbol = React.memo(() => (
-  <span className="font-sans text-[0.7em] ml-0.5 opacity-80 align-baseline">฿</span>
+  <span className="font-sans text-[0.75em] ml-0.5 opacity-90 align-baseline">฿</span>
 ));
 
 const HighlightCard = React.memo(({ item, onClick, priority, hideBadge, isMini, showSubcategory }: { item: any, onClick: () => void, priority?: boolean, hideBadge?: boolean, isMini?: boolean, showSubcategory?: boolean }) => {
@@ -484,20 +484,20 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                         <Tag size={13} className="text-amber-400 fill-amber-400/10" />
                                         <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Сорта со скидкой (SALE)' : 'Strains on Sale'}</span>
                                     </div>
-                                    <div className="flex justify-center gap-2">
+                                    <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10 w-[68px] shrink-0">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
-                                                    <span className="text-[13px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
                                     </div>
                                 </div>
                                 <div className="divide-y divide-white/5 bg-white/[0.01]">
-                                  {saleItems.map((p: any) => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
+                                  {saleItems.map((p: any) => Gram => (<ProductRow key={p.id} p={p} onClick={() => setSelectedProduct(p)} />))}
                                 </div>
                             </div>
                         )}
@@ -509,13 +509,13 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                         <Leaf size={13} />
                                         <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Регулярные сорта' : 'Regular Strains'}</span>
                                     </div>
-                                    <div className="flex justify-center gap-2">
+                                    <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5 w-[68px] shrink-0">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
-                                                    <span className="text-[13px] font-black text-white/90 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-white/95 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -566,7 +566,7 @@ export default function LandingClient({ initialProducts = [], initialDescription
                   <button onClick={() => toggleSection(id)} className="w-full px-4 pt-3 pb-3 flex items-center justify-between active:bg-white/5 transition-colors text-left group"> 
                     <div className="flex items-center gap-3">
                       <Icon size={22} style={{ color: color }} />
-                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: color }}>{sec => sec.title}</h2>
+                      <h2 className="text-[15px] font-black uppercase tracking-tighter group-hover:text-emerald-300 transition-colors" style={{ color: color }}>{title}</h2>
                     </div> 
                     <div className="flex items-center gap-2"> 
                       <span className="text-[9px] font-black uppercase tracking-widest opacity-40">{isOpen ? (lang === 'ru' ? 'Свернуть' : 'Close') : (lang === 'ru' ? 'Развернуть' : 'Open')}</span> 
@@ -582,13 +582,13 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                         <Tag size={13} className="text-amber-400 fill-amber-400/10" />
                                         <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Концентраты со скидкой (SALE)' : 'Concentrates on Sale'}</span>
                                     </div>
-                                    <div className="flex justify-center gap-2">
+                                    <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10 w-[68px] shrink-0">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
-                                                    <span className="text-[13px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -607,13 +607,13 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                         <Icon size={13} />
                                         <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Базовые позиции' : 'Regular Strains'}</span>
                                     </div>
-                                    <div className="flex justify-center gap-2">
+                                    <div className="grid grid-cols-4 gap-1.5">
                                         {[1, 5, 10, 20].map(w => {
                                             const p = Math.round(Number(priceRef?.prices?.[w]) || 0);
                                             return (
-                                                <div key={w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5 w-[68px] shrink-0">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{w}g</span>
-                                                    <span className="text-[13px] font-black text-white/90 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={w} className="flex flex-col items-center justify-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{w}g</span>
+                                                    <span className="text-[14px] font-black text-white/95 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -660,13 +660,13 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                         <Tag size={13} className="text-amber-400 fill-amber-400/10" />
                                         <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Прероллы со скидкой (SALE)' : 'Prerolls on Sale'}</span>
                                     </div>
-                                    <div className="flex justify-center gap-2">
+                                    <div className="grid grid-cols-4 gap-1.5">
                                         {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
                                             const p = Math.round(Number(salePriceRef?.prices?.[unit.w]) || 0);
                                             return (
-                                                <div key={unit.w} className="flex flex-col items-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10 w-[68px] shrink-0">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{unit.l}</span>
-                                                    <span className="text-[13px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={unit.w} className="flex flex-col items-center justify-center gap-0.5 bg-amber-500/5 py-1 rounded-xl border border-amber-500/10">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{unit.l}</span>
+                                                    <span className="text-[14px] font-black text-amber-400 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -685,13 +685,13 @@ export default function LandingClient({ initialProducts = [], initialDescription
                                         <Icon size={13} />
                                         <span className="text-[10px] font-black uppercase tracking-[0.15em]">{lang === 'ru' ? 'Базовые позиции' : 'Regular Strains'}</span>
                                     </div>
-                                    <div className="flex justify-center gap-2">
+                                    <div className="grid grid-cols-4 gap-1.5">
                                         {[ {w:1, l:'1pcs'}, {w:5, l:'3pcs'}, {w:10, l:'5pcs'}, {w:20, l:'10pcs'} ].map(unit => {
                                             const p = Math.round(Number(priceRef?.prices?.[unit.w]) || 0);
                                             return (
-                                                <div key={unit.w} className="flex flex-col items-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5 w-[68px] shrink-0">
-                                                    <span className="text-[9px] font-black opacity-40 uppercase leading-none">{unit.l}</span>
-                                                    <span className="text-[13px] font-black text-white/90 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
+                                                <div key={unit.w} className="flex flex-col items-center justify-center gap-0.5 bg-white/5 py-1 rounded-xl border border-white/5">
+                                                    <span className="text-[11px] font-black opacity-50 uppercase leading-none">{unit.l}</span>
+                                                    <span className="text-[14px] font-black text-white/95 leading-none">{p > 0 ? (<>{p}<BahtSymbol /></>) : '—'}</span>
                                                 </div>
                                             )
                                         })}
@@ -793,7 +793,9 @@ export default function LandingClient({ initialProducts = [], initialDescription
           <Bike size={18} className="text-emerald-400 shrink-0" />
           <div>
             <p className="text-[8px] font-black uppercase tracking-[0.15em] text-white/40 mb-1">{lang === 'ru' ? 'Сроки доставки' : 'Delivery times'}</p>
-            <p className="text-[13px] font-bold text-white tracking-[0.1em]">{lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}</p>
+            <p className="text-[13px] font-bold text-white tracking-[0.1em]">
+              {lang === 'ru' ? 'Пхукет: в течение 60 мин, Таиланд: 2-3 дня' : 'Phuket: within 60 min, Thailand: 2-3 days'}
+            </p>
           </div>
         </div>
       </InfoModal>
